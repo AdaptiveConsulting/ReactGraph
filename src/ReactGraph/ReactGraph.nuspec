@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ReactGraph</id>
+    <version>$version$</version>
+    <title>ReactGraph</title>
+    <authors>Adaptive Consulting</authors>
+    <owners>Adaptive Consulting</owners>
+    <licenseUrl>https://github.com/AdaptiveConsulting/ReactGraph/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/AdaptiveConsulting/ReactGraph</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/AdaptiveConsulting/ReactGraph/master/icon/package_icon.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Solves the problem of dependent properties and cascading changes by allowing you to declare formula's for properties and ReactGraph will cascade changes in the most efficient way possible</description>
+    <copyright>Copyright Adaptive Consulting 2014</copyright>
+    <tags>Dependency graph INotifyPropertyChanged formula calculated</tags>
+  </metadata>
+  <files>
+    <file src="ReactGraph.dll" target="lib\net40" />
+    <file src="ReactGraph.pdb" target="lib\net40" />
+    <file src="ReactGraph.xml" target="lib\net40" />
+  </files>
+</package>
