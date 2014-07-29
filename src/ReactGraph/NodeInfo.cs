@@ -1,11 +1,15 @@
+using System;
 using System.Reflection;
 
 namespace ReactGraph
 {
     public class NodeInfo
     {
-        public NodeInfo(object instance, PropertyInfo propertyInfo)
+        private readonly Action _reevaluateValue;
+
+        public NodeInfo(object instance, PropertyInfo propertyInfo, Action reevaluateValue)
         {
+            _reevaluateValue = reevaluateValue;
             PropertyInfo = propertyInfo;
             Instance = instance;
         }
@@ -16,7 +20,7 @@ namespace ReactGraph
 
         public void ReevalValue()
         {
-
+            _reevaluateValue();
         }
 
         private bool Equals(NodeInfo other)

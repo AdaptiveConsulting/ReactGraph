@@ -9,12 +9,12 @@ namespace ReactGraph
     {
         public void AddToGraph<TProp>(DirectedGraph<NodeInfo> graph, Expression<Func<TProp>> target, Expression<Func<TProp>> sourceFunction)
         {
-            var targetVertex = GetNodeInfo(target);
+            var targetVertex = GetNodeInfo(target, sourceFunction);
             var dependentNodes = GetDependentNodeInfos(sourceFunction);
 
             foreach (var dependentNode in dependentNodes)
             {
-                graph.AddEdge(targetVertex, dependentNode, string.Empty);
+                graph.AddEdge(targetVertex, dependentNode);
             }
         }
 
@@ -30,14 +30,14 @@ namespace ReactGraph
                     var constantExpression = (ConstantExpression)expression.Expression;
                     var parentInstance = constantExpression.Value;
                     var instance = ((FieldInfo)expression.Member).GetValue(parentInstance);
-                    return new[] { new NodeInfo(instance, propertyExpression.Member as PropertyInfo) };
+                    return new[] { new NodeInfo(instance, propertyExpression.Member as PropertyInfo, null) };
                 }
 
                 throw new NotSupportedException("Cannot deal with expression");
             }).ToArray();
         }
 
-        private NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target)
+        private NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
         {
             var propertyExpression = target.Body as MemberExpression;
             if (propertyExpression != null)
@@ -46,7 +46,12 @@ namespace ReactGraph
                 var constantExpression = (ConstantExpression)expression.Expression;
                 var parentInstance = constantExpression.Value;
                 var instance = ((FieldInfo)expression.Member).GetValue(parentInstance);
-                return new NodeInfo(instance, propertyExpression.Member as PropertyInfo);
+                var propertyInfo = propertyExpression.Member as PropertyInfo;
+                var getVal = formula.Compile();
+                return new NodeInfo(instance, propertyInfo, () =>
+                {
+                    propertyInfo.SetValue(instance, getVal(), null);
+                });
             }
 
             throw new NotSupportedException("Cannot deal with expression");
