@@ -65,6 +65,11 @@ namespace ReactGraph
             return result;
         }
 
+        public IEnumerable<Vertex<T>> Verticies
+        {
+            get { return _verticies.Values; }
+        }
+
         /// <summary>
         /// Search for source verticies (roots, ie. vertex which have no incoming edges)
         /// </summary>
