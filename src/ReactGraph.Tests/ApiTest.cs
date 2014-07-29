@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using ReactGraph.Internals;
 using Shouldly;
 using Xunit;
 
@@ -35,18 +37,6 @@ namespace ReactGraph.Tests
             var vertex6 = new SinglePropertyType();
             var vertex7 = new SinglePropertyType();
             var vertex8 = new SinglePropertyType();
-            var lookup = new Dictionary<object, string>
-            {
-                {vertex0, "vertex0"},
-                {vertex1, "vertex1"},
-                {vertex2, "vertex2"},
-                {vertex3, "vertex3"},
-                {vertex4, "vertex4"},
-                {vertex5, "vertex5"},
-                {vertex6, "vertex6"},
-                {vertex7, "vertex7"},
-                {vertex8, "vertex8"}
-            };
             var engine = new DependencyEngine();
 
             engine.Bind(() => vertex0.Value, () => Addition(vertex6.Value));
@@ -57,13 +47,8 @@ namespace ReactGraph.Tests
             engine.Bind(() => vertex7.Value, () => Addition(vertex2.Value));
             engine.Bind(() => vertex8.Value, () => Addition(vertex2.Value));
 
-            var changes = new StringBuilder();
-            engine.SettingValue += (o, s) =>
-            {
-                var s1 = lookup[o];
-                if (s1.EndsWith("1") || s1.EndsWith("2") || s1.EndsWith("3"))
-                    changes.AppendLine(s1 + "." + s);
-            };
+            var updatedObjects = new List<SinglePropertyType>();
+            engine.SettingValue += (o, s) => updatedObjects.Add((SinglePropertyType) o);
 
             // We set the value to 2, then tell the engine the value has changed
             vertex0.Value = 2;
@@ -71,10 +56,10 @@ namespace ReactGraph.Tests
             vertex1.Value.ShouldBe(2);
             vertex2.Value.ShouldBe(4);
             vertex3.Value.ShouldBe(6);
-            changes.ToString().Trim().ShouldBe(
-@"vertex1.Value
-vertex2.Value
-vertex3.Value");
+            updatedObjects.ElementAt(0).ShouldBe(vertex1);
+            updatedObjects.ElementAt(1).ShouldBe(vertex2);
+            updatedObjects.ShouldContain(vertex3);
+            updatedObjects.Distinct().Count().ShouldBe(updatedObjects.Count);
         }
 
         private int Addition(int i1, int i2, int i3)
