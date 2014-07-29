@@ -21,6 +21,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(1, 2);
             _sut.AddEdge(1, 3);
             _sut.AddEdge(2, 3);
+            PrintGraphToConsole("PopulateGraph");
 
             _sut.VerticiesCount.ShouldBe(3);
             _sut.EdgesCount.ShouldBe(3);
@@ -33,6 +34,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(1, 3);
             _sut.AddEdge(2, 3);
             _sut.AddEdge(3, 4);
+            PrintGraphToConsole("DeapthFirstSeach");
 
             var result = _sut.DepthFirstSearch(2).Select(v => v.Data);
 
@@ -46,6 +48,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(1, 3);
             _sut.AddEdge(2, 3);
             _sut.AddEdge(3, 4);
+            PrintGraphToConsole("graph");
 
             var result = _sut.SubGraph(2);
 
@@ -61,6 +64,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(2, 3);
             _sut.AddEdge(3, 4);
             _sut.AddEdge(5, 4);
+            PrintGraphToConsole("Sources");
 
             var result = _sut.FindSources();
 
@@ -78,6 +82,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(5, 4);
 
             var result = _sut.TopologicalSort(1);
+            PrintGraphToConsole("TopologicalSort");
 
             result.Select(v => v.Data).ShouldBe(new[] { 1, 2, 3, 4 });
         }
@@ -95,6 +100,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(2, 4);
             _sut.AddEdge(2, 5);
             _sut.AddEdge(4, 5);
+            PrintGraphToConsole("TopologicalSort2");
 
             var result = _sut.TopologicalSort(1);
 
@@ -107,6 +113,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(0, 1);
             _sut.AddEdge(1, 2);
             _sut.AddEdge(2, 0);
+            PrintGraphToConsole("TopologicalSortThrowsOnCycle");
 
             Assert.Throws<InvalidOperationException>(() => _sut.TopologicalSort(0));
         }
@@ -124,6 +131,7 @@ namespace ReactGraph.Tests
             _sut.AddEdge(2, 4);
             _sut.AddEdge(2, 5);
             _sut.AddEdge(4, 5);
+            PrintGraphToConsole("ToDotLanguage");
 
             const string expected = @"digraph Foo {
      0 -> 1;
@@ -139,6 +147,37 @@ namespace ReactGraph.Tests
 }";
 
             _sut.ToDotLanguage("Foo").ShouldBe(expected);
+        }
+
+        [Fact]
+        public void CycleDetection()
+        {
+            // cycle 1
+            _sut.AddEdge(0, 1);
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(2, 0);
+
+            _sut.AddEdge(2, 3);
+
+            // cycle 2
+            _sut.AddEdge(3, 4);
+            _sut.AddEdge(4, 3);
+
+            PrintGraphToConsole("CycleDetection");
+
+            var detectedCyles = _sut.DetectCyles().ToList();
+
+            foreach (var cyle in detectedCyles)
+            {
+                Console.WriteLine("Cycle: " + string.Join(", ", cyle.Select(v => v.Data.ToString())));
+            }
+
+            detectedCyles.Count().ShouldBe(2);
+        }
+
+        private void PrintGraphToConsole(string name)
+        {
+            Console.WriteLine(_sut.ToDotLanguage(name));
         }
     }
 }
