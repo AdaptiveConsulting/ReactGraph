@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace ReactGraph
 {
@@ -30,6 +31,11 @@ namespace ReactGraph
         {
             edge.Source.RemoveSuccessorEdge(edge);
         }
+
+        private IEnumerable<Edge<T>> Edges
+        {
+            get { return _verticies.Values.SelectMany(vertex => vertex.Successors); }
+        } 
 
         /// <summary>
         /// Perform a depth first seach
@@ -71,17 +77,13 @@ namespace ReactGraph
                 perVertexCount[vertex] = 0;
             }
 
-            foreach (var vertex in _verticies.Values)
+            foreach (var edge in Edges)
             {
-                foreach (var edge in vertex.Successors)
-                {
-                    perVertexCount[edge.Target]++;
-                }
+                perVertexCount[edge.Target]++;
             }
 
             return perVertexCount.Where(kvp => kvp.Value == 0).Select(kvp => kvp.Key);
         }  
-
 
         public DirectedGraph<T> SubGraph(T origin)
         {
@@ -144,6 +146,22 @@ namespace ReactGraph
                 _verticies[data] = vertex;
             }
             return _verticies[data];
+        }
+
+        public string ToDotLanguage(string title)
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendFormat("digraph {0} {{", title).AppendLine();
+
+            foreach (var edge in Edges)
+            {
+                sb.AppendFormat("     {0} -> {1};", edge.Source.Data, edge.Target.Data).AppendLine();
+            }
+
+            sb.Append("}");
+
+            return sb.ToString();
         }
     }
 }
