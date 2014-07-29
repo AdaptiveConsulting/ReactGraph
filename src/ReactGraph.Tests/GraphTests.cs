@@ -108,5 +108,37 @@ namespace ReactGraph.Tests
 
             Assert.Throws<InvalidOperationException>(() => _sut.TopologicalSort(0));
         }
+
+        [Fact]
+        public void ToDotLanguage()
+        {
+            _sut.AddEdge(0, 1);
+            _sut.AddEdge(0, 3);
+            _sut.AddEdge(0, 4);
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(3, 2);
+            _sut.AddEdge(3, 4);
+            _sut.AddEdge(2, 4);
+            _sut.AddEdge(2, 5);
+            _sut.AddEdge(4, 5);
+
+            const string expected = @"digraph Foo {
+     0 -> 1;
+     0 -> 3;
+     0 -> 4;
+     1 -> 2;
+     1 -> 3;
+     3 -> 2;
+     3 -> 4;
+     4 -> 5;
+     2 -> 4;
+     2 -> 5;
+}";
+
+            var result = _sut.ToDotLanguage("Foo");
+
+            Assert.Equal(expected, result);
+        }
     }
 }
