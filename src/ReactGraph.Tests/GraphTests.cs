@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using ReactGraph.Internals;
+using Shouldly;
 using Xunit;
 
 namespace ReactGraph.Tests
@@ -21,8 +22,8 @@ namespace ReactGraph.Tests
             _sut.AddEdge(1, 3);
             _sut.AddEdge(2, 3);
 
-            Assert.Equal(3, _sut.VerticiesCount);
-            Assert.Equal(3, _sut.EdgesCount);
+            _sut.VerticiesCount.ShouldBe(3);
+            _sut.EdgesCount.ShouldBe(3);
         }
 
         [Fact]
@@ -35,7 +36,7 @@ namespace ReactGraph.Tests
 
             var result = _sut.DepthFirstSearch(2).Select(v => v.Data);
 
-            Assert.Equal(new []{2, 3, 4}, result);
+            result.ShouldBe(new []{2, 3, 4});
         }
 
         [Fact]
@@ -48,8 +49,8 @@ namespace ReactGraph.Tests
 
             var result = _sut.SubGraph(2);
 
-            Assert.Equal(3, result.VerticiesCount);
-            Assert.Equal(2, result.EdgesCount);
+            result.VerticiesCount.ShouldBe(3);
+            result.EdgesCount.ShouldBe(2);
         }
 
         [Fact]
@@ -63,7 +64,7 @@ namespace ReactGraph.Tests
 
             var result = _sut.FindSources();
 
-            Assert.Equal(new []{1, 5}, result.Select(v => v.Data));
+            result.Select(v => v.Data).ShouldBe(new []{1, 5});
         }
         
         [Fact]
@@ -78,7 +79,7 @@ namespace ReactGraph.Tests
 
             var result = _sut.TopologicalSort(1);
 
-            Assert.Equal(new[]{ 1, 2, 3, 4 }, result.Select(v => v.Data));
+            result.Select(v => v.Data).ShouldBe(new[] { 1, 2, 3, 4 });
         }
         
         [Fact]
@@ -97,7 +98,7 @@ namespace ReactGraph.Tests
 
             var result = _sut.TopologicalSort(1);
 
-            Assert.Equal(new[]{ 1, 3, 2, 4,5 }, result.Select(v => v.Data));
+            result.Select(v => v.Data).ShouldBe(new[] {1, 3, 2, 4, 5});
         }
 
         [Fact]
@@ -137,9 +138,7 @@ namespace ReactGraph.Tests
      2 -> 5;
 }";
 
-            var result = _sut.ToDotLanguage("Foo");
-
-            Assert.Equal(expected, result);
+            _sut.ToDotLanguage("Foo").ShouldBe(expected);
         }
     }
 }
