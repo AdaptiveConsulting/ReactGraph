@@ -4,13 +4,11 @@ namespace ReactGraph
     {
         public Vertex<T> Target { get; set; }
         public Vertex<T> Source { get; set; }
-        public string Tag { get; set; }
 
-        public Edge(Vertex<T> source, Vertex<T> target, string tag)
+        public Edge(Vertex<T> source, Vertex<T> target)
         {
             Source = source;
             Target = target;
-            Tag = tag;
         }
     }
 }

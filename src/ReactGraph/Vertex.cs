@@ -18,9 +18,9 @@ namespace ReactGraph
 
         public IEnumerable<Edge<T>> Successors { get { return _successors; } }
 
-        public void AddSuccessorEdge(Vertex<T> targetVertex, string tag)
+        public void AddSuccessorEdge(Vertex<T> targetVertex)
         {
-            var edge = new Edge<T>(this, targetVertex, tag);
+            var edge = new Edge<T>(this, targetVertex);
             _successors.Add(edge);
             targetVertex.AddPredecessor(edge);
         }

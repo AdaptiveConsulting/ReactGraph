@@ -18,12 +18,12 @@ namespace ReactGraph
             get { return _verticies.Values.Sum(v => v.Successors.Count()); }
         }
 
-        public void AddEdge(T source, T target, string tag)
+        public void AddEdge(T source, T target)
         {
             var sourceVertex = AddVertex(source);
             var targetVertex = AddVertex(target);
 
-            sourceVertex.AddSuccessorEdge(targetVertex, tag);
+            sourceVertex.AddSuccessorEdge(targetVertex);
         }
 
         private void RemoveEdge(Edge<T> edge)
@@ -95,7 +95,7 @@ namespace ReactGraph
                 {
                     if (dfs.Contains(edge.Target))
                     {
-                        graph.AddEdge(vertex.Data, edge.Target.Data, edge.Tag);
+                        graph.AddEdge(vertex.Data, edge.Target.Data);
                     }
                 }
             }

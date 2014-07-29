@@ -16,9 +16,9 @@ namespace ReactGraph.Tests
         [Fact]
         public void PopulateGraph()
         {
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(2, 3, "2 -> 3");
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(2, 3);
 
             Assert.Equal(3, _sut.VerticiesCount);
             Assert.Equal(3, _sut.EdgesCount);
@@ -27,10 +27,10 @@ namespace ReactGraph.Tests
         [Fact]
         public void DeapthFirstSeach()
         {
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(2, 3, "2 -> 3");
-            _sut.AddEdge(3, 4, "3 -> 4");
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(2, 3);
+            _sut.AddEdge(3, 4);
 
             var result = _sut.DepthFirstSearch(2).Select(v => v.Data);
 
@@ -40,10 +40,10 @@ namespace ReactGraph.Tests
         [Fact]
         public void Subgraph()
         {
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(2, 3, "2 -> 3");
-            _sut.AddEdge(3, 4, "3 -> 4");
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(2, 3);
+            _sut.AddEdge(3, 4);
 
             var result = _sut.SubGraph(2);
 
@@ -54,11 +54,11 @@ namespace ReactGraph.Tests
         [Fact]
         public void Sources()
         {
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(2, 3, "2 -> 3");
-            _sut.AddEdge(3, 4, "3 -> 4");
-            _sut.AddEdge(5, 4, "5 -> 4");
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(2, 3);
+            _sut.AddEdge(3, 4);
+            _sut.AddEdge(5, 4);
 
             var result = _sut.FindSources();
 
@@ -68,12 +68,12 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSort()
         {
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(2, 3, "2 -> 3");
-            _sut.AddEdge(3, 4, "3 -> 4");
-            _sut.AddEdge(5, 4, "5 -> 4");
-            _sut.AddEdge(5, 4, "2 -> 4");
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(2, 3);
+            _sut.AddEdge(3, 4);
+            _sut.AddEdge(5, 4);
+            _sut.AddEdge(5, 4);
 
             var result = _sut.TopologicalSort(1);
 
@@ -83,16 +83,16 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSort2()
         {
-            _sut.AddEdge(0, 1, "0 -> 1");
-            _sut.AddEdge(0, 3, "0 -> 3");
-            _sut.AddEdge(0, 4, "0 -> 4");
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(1, 3, "1 -> 3");
-            _sut.AddEdge(3, 2, "3 -> 2");
-            _sut.AddEdge(3, 4, "3 -> 4");
-            _sut.AddEdge(2, 4, "2 -> 4");
-            _sut.AddEdge(2, 5, "2 -> 5");
-            _sut.AddEdge(4, 5, "4 -> 5");
+            _sut.AddEdge(0, 1);
+            _sut.AddEdge(0, 3);
+            _sut.AddEdge(0, 4);
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(1, 3);
+            _sut.AddEdge(3, 2);
+            _sut.AddEdge(3, 4);
+            _sut.AddEdge(2, 4);
+            _sut.AddEdge(2, 5);
+            _sut.AddEdge(4, 5);
 
             var result = _sut.TopologicalSort(1);
 
@@ -102,9 +102,9 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSortThrowsOnCycle()
         {
-            _sut.AddEdge(0, 1, "0 -> 1");
-            _sut.AddEdge(1, 2, "1 -> 2");
-            _sut.AddEdge(2, 0, "2 -> 0");
+            _sut.AddEdge(0, 1);
+            _sut.AddEdge(1, 2);
+            _sut.AddEdge(2, 0);
 
             Assert.Throws<InvalidOperationException>(() => _sut.TopologicalSort(0));
         }
