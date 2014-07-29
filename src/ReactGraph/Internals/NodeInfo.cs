@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace ReactGraph
+namespace ReactGraph.Internals
 {
     public class NodeInfo
     {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ReactGraph.Internals;
 using Xunit;
 
 namespace ReactGraph.Tests

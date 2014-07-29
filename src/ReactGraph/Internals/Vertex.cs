@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace ReactGraph
+namespace ReactGraph.Internals
 {
-    public class Vertex<T>
+    internal class Vertex<T>
     {
         private readonly List<Edge<T>> _predecessors = new List<Edge<T>>();
         private readonly List<Edge<T>> _successors = new List<Edge<T>>();
