@@ -48,6 +48,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiTest.cs" />
     <Compile Include="BasicType.cs" />
     <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />

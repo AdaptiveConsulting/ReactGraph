@@ -41,6 +41,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DependencyEngine.cs" />
     <Compile Include="Edge.cs" />
     <Compile Include="DirectedGraph.cs" />
     <Compile Include="ExpressionParser.cs" />
