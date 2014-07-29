@@ -20,7 +20,8 @@ namespace ReactGraph
 
         public void ReevalValue()
         {
-            _reevaluateValue();
+            if (_reevaluateValue != null)
+                _reevaluateValue();
         }
 
         private bool Equals(NodeInfo other)

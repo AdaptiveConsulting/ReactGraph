@@ -10,15 +10,15 @@ namespace ReactGraph
         public void AddToGraph<TProp>(DirectedGraph<NodeInfo> graph, Expression<Func<TProp>> target, Expression<Func<TProp>> sourceFunction)
         {
             var targetVertex = GetNodeInfo(target, sourceFunction);
-            var dependentNodes = GetDependentNodeInfos(sourceFunction);
+            var sourceVertices = GetSourceVerticies(sourceFunction);
 
-            foreach (var dependentNode in dependentNodes)
+            foreach (var sourceVertex in sourceVertices)
             {
-                graph.AddEdge(targetVertex, dependentNode);
+                graph.AddEdge(sourceVertex, targetVertex);
             }
         }
 
-        private NodeInfo[] GetDependentNodeInfos<TProp>(Expression<Func<TProp>> formula)
+        private NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
         {
             var body = (MethodCallExpression)formula.Body;
             return body.Arguments.SelectMany(a =>

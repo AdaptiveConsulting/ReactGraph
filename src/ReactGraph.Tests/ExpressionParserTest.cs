@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Shouldly;
 using Xunit;
 
@@ -24,20 +25,16 @@ namespace ReactGraph.Tests
             graph.Verticies.ShouldContain(v => v.Data.PropertyInfo.Name == "Target" && v.Data.Instance == basicType);
             graph.Verticies.ShouldContain(v => v.Data.PropertyInfo.Name == "Source1" && v.Data.Instance == basicType);
             graph.Verticies.ShouldContain(v => v.Data.PropertyInfo.Name == "Source2" && v.Data.Instance == basicType);
-            graph.Verticies.Single(v => v.Data.PropertyInfo.Name == "Target" && v.Data.Instance == basicType).Data.ReevalValue();
+            var targetVertex = graph.Verticies.Single(v => v.Data.PropertyInfo.Name == "Target" && v.Data.Instance == basicType);
+            targetVertex.Data.ReevalValue();
             basicType.Target.ShouldBe("3");
+            targetVertex.Predecessors.Count().ShouldBe(2);
+            targetVertex.Successors.Count().ShouldBe(0);
         }
 
         private string TargetFormula(int source1, int source2)
         {
             return (source1 + source2).ToString();
-        }
-
-        public class BasicType
-        {
-            public string Target { get; set; }
-            public int Source1 { get; set; }
-            public int Source2 { get; set; }
         }
     }
 }
