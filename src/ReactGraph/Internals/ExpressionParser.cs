@@ -3,22 +3,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ReactGraph
+namespace ReactGraph.Internals
 {
-    public class ExpressionParser
+    internal class ExpressionParser
     {
-        public void AddToGraph<TProp>(DirectedGraph<NodeInfo> graph, Expression<Func<TProp>> target, Expression<Func<TProp>> sourceFunction)
-        {
-            var targetVertex = GetNodeInfo(target, sourceFunction);
-            var sourceVertices = GetSourceVerticies(sourceFunction);
-
-            foreach (var sourceVertex in sourceVertices)
-            {
-                graph.AddEdge(sourceVertex, targetVertex);
-            }
-        }
-
-        private NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
+        public NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
         {
             var body = (MethodCallExpression)formula.Body;
             return body.Arguments.SelectMany(a =>
@@ -37,7 +26,7 @@ namespace ReactGraph
             }).ToArray();
         }
 
-        private NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
+        public NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
         {
             var propertyExpression = target.Body as MemberExpression;
             if (propertyExpression != null)

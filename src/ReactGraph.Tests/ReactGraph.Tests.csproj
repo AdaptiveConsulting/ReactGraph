@@ -49,11 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiTest.cs" />
-    <Compile Include="BasicType.cs" />
-    <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReactEngineTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactGraph\ReactGraph.csproj">

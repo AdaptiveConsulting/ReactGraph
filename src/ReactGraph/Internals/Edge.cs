@@ -1,6 +1,6 @@
-namespace ReactGraph
+namespace ReactGraph.Internals
 {
-    public class Edge<T>
+    internal class Edge<T>
     {
         public Vertex<T> Target { get; set; }
         public Vertex<T> Source { get; set; }

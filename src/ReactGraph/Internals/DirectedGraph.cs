@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ReactGraph
+namespace ReactGraph.Internals
 {
-    public class DirectedGraph<T>
+    internal class DirectedGraph<T>
     {
         private readonly Dictionary<T, Vertex<T>> _verticies = new Dictionary<T, Vertex<T>>();
 

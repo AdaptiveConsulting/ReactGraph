@@ -58,7 +58,7 @@ namespace ReactGraph.Tests
             engine.Bind(() => vertex8.Value, () => Addition(vertex2.Value));
 
             var changes = new StringBuilder();
-            engine.ReactEngine.SettingValue += (o, s) =>
+            engine.SettingValue += (o, s) =>
             {
                 var s1 = lookup[o];
                 if (s1.EndsWith("1") || s1.EndsWith("2") || s1.EndsWith("3"))
@@ -67,7 +67,7 @@ namespace ReactGraph.Tests
 
             // We set the value to 2, then tell the engine the value has changed
             vertex0.Value = 2;
-            engine.ReactEngine.PropertyChanged(vertex0, "Value");
+            engine.PropertyChanged(vertex0, "Value");
             vertex1.Value.ShouldBe(2);
             vertex2.Value.ShouldBe(4);
             vertex3.Value.ShouldBe(6);

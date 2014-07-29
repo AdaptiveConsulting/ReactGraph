@@ -1,5 +1,7 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
+using ReactGraph.Internals;
 
 namespace ReactGraph
 {
@@ -7,28 +9,35 @@ namespace ReactGraph
     {
         private readonly DirectedGraph<NodeInfo> _graph;
         private readonly ExpressionParser _expressionParser;
-        private readonly ReactEngine _reactEngine;
 
         public DependencyEngine()
         {
             _graph = new DirectedGraph<NodeInfo>();
             _expressionParser = new ExpressionParser();
-            _reactEngine = new ReactEngine(Graph);
         }
 
-        public ReactEngine ReactEngine
-        {
-            get { return _reactEngine; }
-        }
+        public event Action<object, string> SettingValue = (o, s) => { };
 
-        public DirectedGraph<NodeInfo> Graph
+        public void PropertyChanged(object instance, string property)
         {
-            get { return _graph; }
+            var sourceVertex = _graph.Verticies.Single(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
+            var orderToReeval = _graph.TopologicalSort(sourceVertex.Data);
+            foreach (var vertex in orderToReeval.Skip(1))
+            {
+                SettingValue(vertex.Data.Instance, vertex.Data.PropertyInfo.Name);
+                vertex.Data.ReevalValue();
+            }
         }
 
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
-            _expressionParser.AddToGraph(Graph, targetProperty, sourceFunction);
+            var targetVertex = _expressionParser.GetNodeInfo(targetProperty, sourceFunction);
+            var sourceVertices = _expressionParser.GetSourceVerticies(sourceFunction);
+
+            foreach (var sourceVertex in sourceVertices)
+            {
+                _graph.AddEdge(sourceVertex, targetVertex);
+            }
         }
     }
 }

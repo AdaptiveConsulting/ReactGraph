@@ -42,13 +42,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyEngine.cs" />
-    <Compile Include="Edge.cs" />
-    <Compile Include="DirectedGraph.cs" />
-    <Compile Include="ExpressionParser.cs" />
-    <Compile Include="NodeInfo.cs" />
+    <Compile Include="Internals\Edge.cs" />
+    <Compile Include="Internals\DirectedGraph.cs" />
+    <Compile Include="Internals\ExpressionParser.cs" />
+    <Compile Include="Internals\NodeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReactEngine.cs" />
-    <Compile Include="Vertex.cs" />
+    <Compile Include="Internals\Vertex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
