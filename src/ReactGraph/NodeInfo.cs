@@ -50,6 +50,11 @@ namespace ReactGraph
             return !Equals(left, right);
         }
 
+        public override string ToString()
+        {
+            return PropertyInfo.Name;
+        }
+
         /*
          * target: 
          *  - instance,
