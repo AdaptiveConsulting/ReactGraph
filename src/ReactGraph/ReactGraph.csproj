@@ -46,6 +46,7 @@
     <Compile Include="ExpressionParser.cs" />
     <Compile Include="NodeInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReactEngine.cs" />
     <Compile Include="Vertex.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
