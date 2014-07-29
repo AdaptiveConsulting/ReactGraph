@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -10,40 +12,64 @@ namespace ReactGraph.Internals
         public NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
         {
             var body = (MethodCallExpression)formula.Body;
-            return body.Arguments.SelectMany(a =>
-            {
-                var propertyExpression = a as MemberExpression;
-                if (propertyExpression != null)
-                {
-                    var expression = propertyExpression.Expression as MemberExpression;
-                    var constantExpression = (ConstantExpression)expression.Expression;
-                    var parentInstance = constantExpression.Value;
-                    var instance = ((FieldInfo)expression.Member).GetValue(parentInstance);
-                    return new[] { new NodeInfo(instance, propertyExpression.Member as PropertyInfo, null) };
-                }
-
-                throw new NotSupportedException("Cannot deal with expression");
-            }).ToArray();
+            return body.Arguments.Select(a => new GetNodeVisitor().GetNode(a)).ToArray();
         }
 
         public NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
         {
-            var propertyExpression = target.Body as MemberExpression;
-            if (propertyExpression != null)
+            var getVal2 = formula.Compile();
+            var visit = new GetNodeVisitor();
+            return visit.GetNode(target, () => getVal2());
+        }
+
+        class GetNodeVisitor : ExpressionVisitor
+        {
+            readonly Stack<Func<object, object>> _path = new Stack<Func<object, object>>();
+            private PropertyInfo _propertyInfo;
+            private object _instance;
+
+            public NodeInfo GetNode(Expression target)
             {
-                var expression = propertyExpression.Expression as MemberExpression;
-                var constantExpression = (ConstantExpression)expression.Expression;
-                var parentInstance = constantExpression.Value;
-                var instance = ((FieldInfo)expression.Member).GetValue(parentInstance);
-                var propertyInfo = propertyExpression.Member as PropertyInfo;
-                var getVal = formula.Compile();
-                return new NodeInfo(instance, propertyInfo, () =>
-                {
-                    propertyInfo.SetValue(instance, getVal(), null);
-                });
+                Visit(target);
+                return new NodeInfo(_instance, _propertyInfo, null);
             }
 
-            throw new NotSupportedException("Cannot deal with expression");
+            public NodeInfo GetNode(Expression target, Func<object> getValue)
+            {
+                Visit(target);
+                return new NodeInfo(_instance, _propertyInfo, () => _propertyInfo.SetValue(_instance, getValue(), null));
+            }
+
+            protected override Expression VisitMember(MemberExpression node)
+            {
+                var property = node.Member as PropertyInfo;
+                if (_propertyInfo == null)
+                    _propertyInfo = property;
+                else
+                {
+                    var fieldInfo = node.Member as FieldInfo;
+                    if (property != null)
+                    {
+                        _path.Push(o => property.GetValue(o, null));
+                    }
+                    else if (fieldInfo != null)
+                    {
+                        _path.Push(fieldInfo.GetValue);
+                    }
+                }
+                return base.VisitMember(node);
+            }
+
+            protected override Expression VisitConstant(ConstantExpression node)
+            {
+                var localInstance = node.Value;
+                while (_path.Count > 0)
+                {
+                    localInstance = _path.Pop()(localInstance);
+                }
+                _instance = localInstance;
+                return base.VisitConstant(node);
+            }
         }
     }
 }
