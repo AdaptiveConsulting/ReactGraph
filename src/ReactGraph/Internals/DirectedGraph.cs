@@ -168,5 +168,68 @@ namespace ReactGraph.Internals
 
             return sb.ToString();
         }
+
+        /// <summary>
+        /// <see cref="http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm"/>
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<IEnumerable<Vertex<T>>> DetectCyles()
+        {
+            var index = 0;
+            var stack = new Stack<Vertex<T>>();
+            var indexes = new Dictionary<Vertex<T>, int>();
+            var lowlinks = new Dictionary<Vertex<T>, int>();
+            var result = new List<List<Vertex<T>>>();
+
+            foreach (var vertex in _verticies.Values)
+            {
+                if (!indexes.ContainsKey(vertex))
+                {
+                    StrongConnect(vertex, ref index, stack, indexes, lowlinks, result);
+                }
+            }
+            return result;
+        }
+
+        private static void StrongConnect(Vertex<T> v, ref int index, Stack<Vertex<T>> stack, Dictionary<Vertex<T>, int> indexes, Dictionary<Vertex<T>, int> lowlinks, List<List<Vertex<T>>> result)
+        {
+            // Set the depth index for vertex to the smallest unused index
+            indexes[v] = index;
+            lowlinks[v] = index;
+            index++;
+            stack.Push(v);
+
+            // Consider successors of vertex
+            foreach (var successor in v.Successors)
+            {
+                var w = successor.Target;
+                if (!indexes.ContainsKey(w))
+                {
+                    // Successor w has not yet been visited; recurse on it
+                    StrongConnect(w, ref index, stack, indexes, lowlinks, result);
+                    lowlinks[v] = Math.Min(lowlinks[v], lowlinks[w]);
+                }
+                else if (stack.Contains(w))
+                {
+                    // Successor w is in stack S and hence in the current SCC
+                    lowlinks[v] = Math.Min(lowlinks[v], indexes[w]);
+                }
+            }
+
+            // If v is a root node, pop the stack and generate an SCC
+            if (lowlinks[v] == indexes[v])
+            {
+                var scc = new List<Vertex<T>>();
+                Vertex<T> w;
+                do
+                {
+                    w = stack.Pop();
+                    scc.Add(w);
+                } 
+                while (w != v);
+                
+                if (scc.Count > 1) result.Add(scc);
+            }
+        }
     }
 }
