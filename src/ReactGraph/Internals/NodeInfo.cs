@@ -1,4 +1,5 @@
 using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace ReactGraph.Internals
@@ -7,16 +8,19 @@ namespace ReactGraph.Internals
     {
         private readonly Action reevaluateValue;
 
-        public NodeInfo(object instance, PropertyInfo propertyInfo, Action reevaluateValue)
+        public NodeInfo(object instance, PropertyInfo propertyInfo, MemberExpression localPropertyExpression, Action reevaluateValue)
         {
             this.reevaluateValue = reevaluateValue;
             PropertyInfo = propertyInfo;
+            LocalPropertyExpression = localPropertyExpression;
             Instance = instance;
         }
 
         public object Instance { get; private set; }
 
         public PropertyInfo PropertyInfo { get; private set; }
+
+        public MemberExpression LocalPropertyExpression { get; private set; }
 
         public void ReevalValue()
         {

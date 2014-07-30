@@ -49,11 +49,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiTest.cs" />
+    <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
-    <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="TestObjects\Notifies.cs" />
+    <Compile Include="TestObjects\NotifiesViewModel.cs" />
+    <Compile Include="TestObjects\NotifyPropertyChanged.cs" />
     <Compile Include="NotifyPropertyChangedTests.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestObjects\ScheduleViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactGraph\ReactGraph.csproj">

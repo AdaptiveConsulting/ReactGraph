@@ -1,62 +1,44 @@
-﻿using Shouldly;
+﻿using ReactGraph.Tests.TestObjects;
+using Shouldly;
 using Xunit;
 
 namespace ReactGraph.Tests
 {
     public class NotifyPropertyChangedTests
     {
+        private readonly DependencyEngine engine;
+
+        public NotifyPropertyChangedTests()
+        {
+            engine = new DependencyEngine();
+        }
+
         [Fact]
         public void TriggersOnPropertyChanged()
         {
-            var engine = new DependencyEngine();
             var notifies = new Notifies
             {
                 TaxPercentage = 20
             };
-            engine.Bind(() => notifies.Total, () => (int) (notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))));
+
+            engine.Bind(() => notifies.Total, () => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))));
 
             notifies.SubTotal = 100;
             notifies.Total.ShouldBe(120);
         }
 
-        class Notifies : NotifyPropertyChanged
+        [Fact]
+        public void ListensToNestedProperties()
         {
-            private int total;
-            private int taxPercentage;
-            private int subTotal;
+            var viewModel = new MortgateCalculatorViewModel();
 
-            public int SubTotal
-            {
-                get { return subTotal; }
-                set
-                {
-                    if (value == subTotal) return;
-                    subTotal = value;
-                    OnPropertyChanged("SubTotal");
-                }
-            }
+            engine.Bind(() => viewModel.CanApply, () => !viewModel.PaymentSchedule.HasValidationError);
 
-            public int TaxPercentage
-            {
-                get { return taxPercentage; }
-                set
-                {
-                    if (value == taxPercentage) return;
-                    taxPercentage = value;
-                    OnPropertyChanged("TaxPercentage");
-                }
-            }
+            viewModel.RegeneratePaymentSchedule(hasValidationError: true);
+            viewModel.CanApply.ShouldBe(false);
 
-            public int Total
-            {
-                get { return total; }
-                set
-                {
-                    if (value == total) return;
-                    total = value;
-                    OnPropertyChanged("Total");
-                }
-            }
+            viewModel.RegeneratePaymentSchedule(hasValidationError: false);
+            viewModel.CanApply.ShouldBe(true);
         }
     }
 }

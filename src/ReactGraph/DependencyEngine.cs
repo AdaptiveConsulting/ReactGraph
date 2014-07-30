@@ -27,7 +27,11 @@ namespace ReactGraph
 
         public void PropertyChanged(object instance, string property)
         {
-            var sourceVertex = graph.Verticies.Single(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
+            var sourceVertex = graph.Verticies.SingleOrDefault(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
+            if (sourceVertex == null)
+            {
+                return;
+            }
             var orderToReeval = graph.TopologicalSort(sourceVertex.Data);
             foreach (var vertex in orderToReeval.Skip(1))
             {
@@ -42,10 +46,23 @@ namespace ReactGraph
             TrackInstanceIfNeeded(targetVertex.Instance);
             var sourceVertices = expressionParser.GetSourceVerticies(sourceFunction);
 
+            AddNodesToGraph(sourceVertices, targetVertex);
+        }
+
+        private void AddNodesToGraph(NodeInfo[] sourceVertices, NodeInfo targetVertex)
+        {
             foreach (var sourceVertex in sourceVertices)
             {
                 TrackInstanceIfNeeded(sourceVertex.Instance);
                 graph.AddEdge(sourceVertex, targetVertex);
+                //TODO Need to cleanup all these nodes when they are no longer needed...
+                if (sourceVertex.LocalPropertyExpression != null)
+                {
+                    var parent = sourceVertex.LocalPropertyExpression.Expression;
+                    var subNodes = expressionParser.GetSourceVerticies(parent);
+
+                    AddNodesToGraph(subNodes, sourceVertex);
+                }
             }
         }
 

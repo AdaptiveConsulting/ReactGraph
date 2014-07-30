@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using ReactGraph.Tests.Annotations;
 
-namespace ReactGraph.Tests
+namespace ReactGraph.Tests.TestObjects
 {
     class NotifyPropertyChanged : INotifyPropertyChanged
     {

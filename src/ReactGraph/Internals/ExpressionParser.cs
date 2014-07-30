@@ -8,12 +8,12 @@ namespace ReactGraph.Internals
 {
     internal class ExpressionParser
     {
-        public NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
+        public NodeInfo[] GetSourceVerticies(Expression formula)
         {
             return new GetNodeVisitor().GetNodes(formula);
         }
 
-        public NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
+        public NodeInfo GetNodeInfo<TProp>(Expression target, Expression<Func<TProp>> formula)
         {
             var getVal2 = formula.Compile();
             var visit = new GetNodeVisitor();
@@ -24,6 +24,7 @@ namespace ReactGraph.Internals
         {
             readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
             private PropertyInfo propertyInfo;
+            private MemberExpression propertyExpression;
             private readonly List<NodeInfo> nodes = new List<NodeInfo>();
             private Func<object> val;
 
@@ -44,7 +45,10 @@ namespace ReactGraph.Internals
             {
                 var property = node.Member as PropertyInfo;
                 if (propertyInfo == null)
+                {
                     propertyInfo = property;
+                    propertyExpression = node;
+                }
                 else
                 {
                     var fieldInfo = node.Member as FieldInfo;
@@ -68,11 +72,13 @@ namespace ReactGraph.Internals
                     localInstance = path.Pop()(localInstance);
                 }
                 var localPropertyInfo = propertyInfo;
+                var localPropertyExpression = propertyExpression;
                 var reevaluateValue = val == null ? 
                     (Action)null : 
                     () => localPropertyInfo.SetValue(localInstance, val(), null);
-                nodes.Add(new NodeInfo(localInstance, localPropertyInfo, reevaluateValue));
+                nodes.Add(new NodeInfo(localInstance, localPropertyInfo, localPropertyExpression, reevaluateValue));
                 propertyInfo = null;
+                propertyExpression = null;
                 return base.VisitConstant(node);
             }
         }
