@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -11,8 +10,7 @@ namespace ReactGraph.Internals
     {
         public NodeInfo[] GetSourceVerticies<TProp>(Expression<Func<TProp>> formula)
         {
-            var body = (MethodCallExpression)formula.Body;
-            return body.Arguments.Select(a => new GetNodeVisitor().GetNode(a)).ToArray();
+            return new GetNodeVisitor().GetNodes(formula);
         }
 
         public NodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target, Expression<Func<TProp>> formula)
@@ -24,37 +22,39 @@ namespace ReactGraph.Internals
 
         class GetNodeVisitor : ExpressionVisitor
         {
-            readonly Stack<Func<object, object>> _path = new Stack<Func<object, object>>();
-            private PropertyInfo _propertyInfo;
-            private object _instance;
+            readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
+            private PropertyInfo propertyInfo;
+            private readonly List<NodeInfo> nodes = new List<NodeInfo>();
+            private Func<object> val;
 
-            public NodeInfo GetNode(Expression target)
+            public NodeInfo GetNode(Expression target, Func<object> getValue = null)
             {
+                val = getValue;
                 Visit(target);
-                return new NodeInfo(_instance, _propertyInfo, null);
+                return nodes.Single();
             }
 
-            public NodeInfo GetNode(Expression target, Func<object> getValue)
+            public NodeInfo[] GetNodes(Expression formula)
             {
-                Visit(target);
-                return new NodeInfo(_instance, _propertyInfo, () => _propertyInfo.SetValue(_instance, getValue(), null));
+                Visit(formula);
+                return nodes.ToArray();
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
                 var property = node.Member as PropertyInfo;
-                if (_propertyInfo == null)
-                    _propertyInfo = property;
+                if (propertyInfo == null)
+                    propertyInfo = property;
                 else
                 {
                     var fieldInfo = node.Member as FieldInfo;
                     if (property != null)
                     {
-                        _path.Push(o => property.GetValue(o, null));
+                        path.Push(o => property.GetValue(o, null));
                     }
                     else if (fieldInfo != null)
                     {
-                        _path.Push(fieldInfo.GetValue);
+                        path.Push(fieldInfo.GetValue);
                     }
                 }
                 return base.VisitMember(node);
@@ -63,11 +63,16 @@ namespace ReactGraph.Internals
             protected override Expression VisitConstant(ConstantExpression node)
             {
                 var localInstance = node.Value;
-                while (_path.Count > 0)
+                while (path.Count > 0)
                 {
-                    localInstance = _path.Pop()(localInstance);
+                    localInstance = path.Pop()(localInstance);
                 }
-                _instance = localInstance;
+                var localPropertyInfo = propertyInfo;
+                var reevaluateValue = val == null ? 
+                    (Action)null : 
+                    () => localPropertyInfo.SetValue(localInstance, val(), null);
+                nodes.Add(new NodeInfo(localInstance, localPropertyInfo, reevaluateValue));
+                propertyInfo = null;
                 return base.VisitConstant(node);
             }
         }
