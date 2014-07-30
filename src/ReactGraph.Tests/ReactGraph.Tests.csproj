@@ -50,6 +50,9 @@
   <ItemGroup>
     <Compile Include="ApiTest.cs" />
     <Compile Include="GraphTests.cs" />
+    <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="NotifyPropertyChangedTests.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ReactGraph.Internals;
@@ -7,11 +8,17 @@ namespace ReactGraph
 {
     public class DependencyEngine
     {
+        private readonly List<INotificationStrategy> notificationStrategies;
+        private readonly List<object> instancesBeingTracked = new List<object>();
         private readonly DirectedGraph<NodeInfo> graph;
         private readonly ExpressionParser expressionParser;
 
         public DependencyEngine()
         {
+            notificationStrategies = new List<INotificationStrategy>
+            {
+                new NotifyPropertyChangedStrategy(this)
+            };
             graph = new DirectedGraph<NodeInfo>();
             expressionParser = new ExpressionParser();
         }
@@ -32,11 +39,25 @@ namespace ReactGraph
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
             var targetVertex = expressionParser.GetNodeInfo(targetProperty, sourceFunction);
+            TrackInstanceIfNeeded(targetVertex.Instance);
             var sourceVertices = expressionParser.GetSourceVerticies(sourceFunction);
 
             foreach (var sourceVertex in sourceVertices)
             {
+                TrackInstanceIfNeeded(sourceVertex.Instance);
                 graph.AddEdge(sourceVertex, targetVertex);
+            }
+        }
+
+        private void TrackInstanceIfNeeded(object instance)
+        {
+            if (!instancesBeingTracked.Contains(instance))
+            {
+                instancesBeingTracked.Add(instance);
+                foreach (var notificationStrategy in notificationStrategies)
+                {
+                    notificationStrategy.Track(instance);
+                }
             }
         }
     }

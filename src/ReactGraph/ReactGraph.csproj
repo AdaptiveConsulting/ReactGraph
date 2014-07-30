@@ -42,10 +42,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyEngine.cs" />
+    <Compile Include="INotificationStrategy.cs" />
     <Compile Include="Internals\Edge.cs" />
     <Compile Include="Internals\DirectedGraph.cs" />
     <Compile Include="Internals\ExpressionParser.cs" />
     <Compile Include="Internals\NodeInfo.cs" />
+    <Compile Include="NotifyPropertyChangedStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internals\Vertex.cs" />
   </ItemGroup>
