@@ -7,21 +7,21 @@ namespace ReactGraph
 {
     public class DependencyEngine
     {
-        private readonly DirectedGraph<NodeInfo> _graph;
-        private readonly ExpressionParser _expressionParser;
+        private readonly DirectedGraph<NodeInfo> graph;
+        private readonly ExpressionParser expressionParser;
 
         public DependencyEngine()
         {
-            _graph = new DirectedGraph<NodeInfo>();
-            _expressionParser = new ExpressionParser();
+            graph = new DirectedGraph<NodeInfo>();
+            expressionParser = new ExpressionParser();
         }
 
         public event Action<object, string> SettingValue = (o, s) => { };
 
         public void PropertyChanged(object instance, string property)
         {
-            var sourceVertex = _graph.Verticies.Single(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
-            var orderToReeval = _graph.TopologicalSort(sourceVertex.Data);
+            var sourceVertex = graph.Verticies.Single(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
+            var orderToReeval = graph.TopologicalSort(sourceVertex.Data);
             foreach (var vertex in orderToReeval.Skip(1))
             {
                 SettingValue(vertex.Data.Instance, vertex.Data.PropertyInfo.Name);
@@ -31,12 +31,12 @@ namespace ReactGraph
 
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
-            var targetVertex = _expressionParser.GetNodeInfo(targetProperty, sourceFunction);
-            var sourceVertices = _expressionParser.GetSourceVerticies(sourceFunction);
+            var targetVertex = expressionParser.GetNodeInfo(targetProperty, sourceFunction);
+            var sourceVertices = expressionParser.GetSourceVerticies(sourceFunction);
 
             foreach (var sourceVertex in sourceVertices)
             {
-                _graph.AddEdge(sourceVertex, targetVertex);
+                graph.AddEdge(sourceVertex, targetVertex);
             }
         }
     }

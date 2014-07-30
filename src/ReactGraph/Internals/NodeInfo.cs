@@ -5,11 +5,11 @@ namespace ReactGraph.Internals
 {
     public class NodeInfo
     {
-        private readonly Action _reevaluateValue;
+        private readonly Action reevaluateValue;
 
         public NodeInfo(object instance, PropertyInfo propertyInfo, Action reevaluateValue)
         {
-            _reevaluateValue = reevaluateValue;
+            this.reevaluateValue = reevaluateValue;
             PropertyInfo = propertyInfo;
             Instance = instance;
         }
@@ -20,8 +20,8 @@ namespace ReactGraph.Internals
 
         public void ReevalValue()
         {
-            if (_reevaluateValue != null)
-                _reevaluateValue();
+            if (reevaluateValue != null)
+                reevaluateValue();
         }
 
         private bool Equals(NodeInfo other)
