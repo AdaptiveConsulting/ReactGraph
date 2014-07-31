@@ -42,6 +42,7 @@ namespace ReactGraph.Tests
             viewModel.RegeneratePaymentSchedule(hasValidationError: false);
             Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(true);
+
             viewModel.PaymentSchedule.HasValidationError = true;
             Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(false);
