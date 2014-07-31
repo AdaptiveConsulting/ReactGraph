@@ -9,8 +9,10 @@ namespace ReactGraph
     public class DependencyEngine
     {
         private readonly List<INotificationStrategy> notificationStrategies;
+        private readonly Dictionary<Tuple<object, string>, DependencyInfo> nodeLookup = new Dictionary<Tuple<object, string>, DependencyInfo>();  
+        private readonly Dictionary<DependencyInfo, object> instancesToSwitch = new Dictionary<DependencyInfo, object>();
         private readonly List<object> instancesBeingTracked = new List<object>();
-        private readonly DirectedGraph<NodeInfo> graph;
+        private readonly DirectedGraph<DependencyInfo> graph;
         private readonly ExpressionParser expressionParser;
 
         public DependencyEngine()
@@ -19,7 +21,7 @@ namespace ReactGraph
             {
                 new NotifyPropertyChangedStrategy(this)
             };
-            graph = new DirectedGraph<NodeInfo>();
+            graph = new DirectedGraph<DependencyInfo>();
             expressionParser = new ExpressionParser();
         }
 
@@ -27,15 +29,32 @@ namespace ReactGraph
 
         public void PropertyChanged(object instance, string property)
         {
-            var sourceVertex = graph.Verticies.SingleOrDefault(v => v.Data.Instance == instance && v.Data.PropertyInfo.Name == property);
-            if (sourceVertex == null)
+            var key = Tuple.Create(instance, property);
+            if (!nodeLookup.ContainsKey(key)) return;
+            var node = nodeLookup[key];
+
+            if (instancesToSwitch.ContainsKey(node))
             {
-                return;
+                var oldInstance = instancesToSwitch[node];
+                ForgetInstance(oldInstance);
+                var newInstance = node.GetValue();
+                instancesToSwitch[node] = newInstance;
+                TrackInstanceIfNeeded(newInstance);
+                node.ParentInstance = newInstance;
+                var lookupsToUpdate = nodeLookup.Keys.Where(k => k.Item1 == oldInstance).ToArray();
+                foreach (var tuple in lookupsToUpdate)
+                {
+                    var newKey = Tuple.Create(newInstance, tuple.Item2);
+                    if (!nodeLookup.ContainsKey(newKey))
+                        nodeLookup.Add(newKey, node);
+                    nodeLookup.Remove(tuple);
+                }
             }
-            var orderToReeval = graph.TopologicalSort(sourceVertex.Data);
+
+            var orderToReeval = graph.TopologicalSort(node);
             foreach (var vertex in orderToReeval.Skip(1))
             {
-                SettingValue(vertex.Data.Instance, vertex.Data.PropertyInfo.Name);
+                SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
                 vertex.Data.ReevalValue();
             }
         }
@@ -43,27 +62,56 @@ namespace ReactGraph
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
             var targetVertex = expressionParser.GetNodeInfo(targetProperty, sourceFunction);
-            TrackInstanceIfNeeded(targetVertex.Instance);
+            TrackInstanceIfNeeded(targetVertex.RootInstance);
             var sourceVertices = expressionParser.GetSourceVerticies(sourceFunction);
 
-            AddNodesToGraph(sourceVertices, targetVertex);
+            ProcessNodes(sourceVertices, targetVertex, targetVertex);
         }
 
-        private void AddNodesToGraph(NodeInfo[] sourceVertices, NodeInfo targetVertex)
+        public override string ToString()
+        {
+            return graph.ToDotLanguage("Dependency Graph");
+        }
+
+        private void ProcessNodes(DependencyInfo[] sourceVertices, DependencyInfo targetVertex, DependencyInfo originalTarget)
         {
             foreach (var sourceVertex in sourceVertices)
             {
-                TrackInstanceIfNeeded(sourceVertex.Instance);
-                graph.AddEdge(sourceVertex, targetVertex);
-                //TODO Need to cleanup all these nodes when they are no longer needed...
-                if (sourceVertex.LocalPropertyExpression != null)
+                TrackInstanceIfNeeded(sourceVertex.RootInstance);
+                AddNodes(targetVertex, sourceVertex);
+                if (targetVertex != originalTarget)
                 {
-                    var parent = sourceVertex.LocalPropertyExpression.Expression;
-                    var subNodes = expressionParser.GetSourceVerticies(parent);
+                    AddNodes(originalTarget, sourceVertex);
+                    SwitchInstanceWhenChanged(sourceVertex);
+                }
 
-                    AddNodesToGraph(subNodes, sourceVertex);
+                if (sourceVertex.PropertyExpression != null)
+                {
+                    var parent = sourceVertex.PropertyExpression.Expression;
+                    if (parent is MemberExpression)
+                    {
+                        var subNodes = expressionParser.GetSourceVerticies(parent);
+
+                        ProcessNodes(subNodes, sourceVertex, originalTarget);
+                    }
                 }
             }
+        }
+
+        private void AddNodes(DependencyInfo targetVertex, DependencyInfo sourceVertex)
+        {
+            var sourceKey = Tuple.Create(sourceVertex.ParentInstance, sourceVertex.PropertyInfo.Name);
+            var targetKey = Tuple.Create(targetVertex.ParentInstance, targetVertex.PropertyInfo.Name);
+            if (!nodeLookup.ContainsKey(sourceKey))
+                nodeLookup.Add(sourceKey, sourceVertex);
+            if (!nodeLookup.ContainsKey(targetKey))
+                nodeLookup.Add(Tuple.Create(targetVertex.ParentInstance, targetVertex.PropertyInfo.Name), targetVertex);
+            graph.AddEdge(nodeLookup[sourceKey], nodeLookup[targetKey]);
+        }
+
+        private void SwitchInstanceWhenChanged(DependencyInfo sourceVertex)
+        {
+            instancesToSwitch.Add(sourceVertex, sourceVertex.GetValue());
         }
 
         private void TrackInstanceIfNeeded(object instance)
@@ -74,6 +122,18 @@ namespace ReactGraph
                 foreach (var notificationStrategy in notificationStrategies)
                 {
                     notificationStrategy.Track(instance);
+                }
+            }
+        }
+
+        private void ForgetInstance(object instance)
+        {
+            if (!instancesBeingTracked.Contains(instance))
+            {
+                instancesBeingTracked.Add(instance);
+                foreach (var notificationStrategy in notificationStrategies)
+                {
+                    notificationStrategy.Untrack(instance);
                 }
             }
         }

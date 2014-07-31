@@ -20,6 +20,15 @@ namespace ReactGraph
             }
         }
 
+        public void Untrack(object instance)
+        {
+            var notifyPropertyChanged = instance as INotifyPropertyChanged;
+            if (notifyPropertyChanged != null)
+            {
+                notifyPropertyChanged.PropertyChanged -= NotifyPropertyChangedOnPropertyChanged;
+            }
+        }
+
         private void NotifyPropertyChangedOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
             dependencyEngine.PropertyChanged(sender, propertyChangedEventArgs.PropertyName);

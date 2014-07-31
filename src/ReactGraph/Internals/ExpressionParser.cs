@@ -8,12 +8,12 @@ namespace ReactGraph.Internals
 {
     internal class ExpressionParser
     {
-        public NodeInfo[] GetSourceVerticies(Expression formula)
+        public DependencyInfo[] GetSourceVerticies(Expression formula)
         {
             return new GetNodeVisitor().GetNodes(formula);
         }
 
-        public NodeInfo GetNodeInfo<TProp>(Expression target, Expression<Func<TProp>> formula)
+        public DependencyInfo GetNodeInfo<TProp>(Expression target, Expression<Func<TProp>> formula)
         {
             var getVal2 = formula.Compile();
             var visit = new GetNodeVisitor();
@@ -25,17 +25,17 @@ namespace ReactGraph.Internals
             readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
             private PropertyInfo propertyInfo;
             private MemberExpression propertyExpression;
-            private readonly List<NodeInfo> nodes = new List<NodeInfo>();
+            private readonly List<DependencyInfo> nodes = new List<DependencyInfo>();
             private Func<object> val;
 
-            public NodeInfo GetNode(Expression target, Func<object> getValue = null)
+            public DependencyInfo GetNode(Expression target, Func<object> getValue = null)
             {
                 val = getValue;
                 Visit(target);
                 return nodes.Single();
             }
 
-            public NodeInfo[] GetNodes(Expression formula)
+            public DependencyInfo[] GetNodes(Expression formula)
             {
                 Visit(formula);
                 return nodes.ToArray();
@@ -66,19 +66,23 @@ namespace ReactGraph.Internals
 
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                var localInstance = node.Value;
-                while (path.Count > 0)
+                if (propertyInfo != null)
                 {
-                    localInstance = path.Pop()(localInstance);
+                    var localInstance = node.Value;
+                    var rootValueResolver = path.Peek();
+                    var rootValue = rootValueResolver == null ? node.Value : rootValueResolver(node.Value);
+                    while (path.Count > 0)
+                    {
+                        localInstance = path.Pop()(localInstance);
+                    }
+                    var localPropertyInfo = propertyInfo;
+                    var localPropertyExpression = propertyExpression;
+                    var reevaluateValue = val == null ? (Action)null : () => localPropertyInfo.SetValue(localInstance, val(), null);
+                    nodes.Add(new DependencyInfo(rootValue, localInstance, localPropertyInfo, localPropertyExpression, reevaluateValue));
+                    propertyInfo = null;
+                    propertyExpression = null;
                 }
-                var localPropertyInfo = propertyInfo;
-                var localPropertyExpression = propertyExpression;
-                var reevaluateValue = val == null ? 
-                    (Action)null : 
-                    () => localPropertyInfo.SetValue(localInstance, val(), null);
-                nodes.Add(new NodeInfo(localInstance, localPropertyInfo, localPropertyExpression, reevaluateValue));
-                propertyInfo = null;
-                propertyExpression = null;
+                
                 return base.VisitConstant(node);
             }
         }

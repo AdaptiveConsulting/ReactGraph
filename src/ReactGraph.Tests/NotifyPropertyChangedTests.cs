@@ -1,4 +1,5 @@
-﻿using ReactGraph.Tests.TestObjects;
+﻿using System;
+using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;
 
@@ -35,10 +36,17 @@ namespace ReactGraph.Tests
             engine.Bind(() => viewModel.CanApply, () => !viewModel.PaymentSchedule.HasValidationError);
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
+            Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(false);
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: false);
+            Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(true);
+            viewModel.PaymentSchedule.HasValidationError = true;
+            Console.WriteLine(engine.ToString());
+            viewModel.CanApply.ShouldBe(false);
+
+            Console.WriteLine(engine.ToString());
         }
     }
 }
