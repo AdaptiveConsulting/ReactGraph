@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;
@@ -17,7 +18,7 @@ namespace ReactGraph.Tests
         [Fact]
         public void TriggersOnPropertyChanged()
         {
-            var notifies = new Notifies
+            var notifies = new Totals
             {
                 TaxPercentage = 20
             };
@@ -48,6 +49,52 @@ namespace ReactGraph.Tests
             viewModel.CanApply.ShouldBe(false);
 
             Console.WriteLine(engine.ToString());
+        }
+
+        [Fact]
+        public void PreventsReentrancy()
+        {
+            var one = new SimpleWithNotification();
+            var two = new SimpleWithNotification();
+            var three = new SimpleWithNotification();
+            var four = new SimpleWithNotification();
+
+            /*     +--3<--+
+             *     ▼      |
+             *     4      1
+             *     ^      |
+             *     +--2<--+
+             */
+            engine.Bind(() => four.Value, () => two.Value + three.Value);
+            engine.Bind(() => two.Value, () => one.Value);
+            engine.Bind(() => three.Value, () => one.Value);
+
+            var updatedObjects = new List<SimpleWithNotification>();
+            engine.SettingValue += (o, s) => updatedObjects.Add((SimpleWithNotification) o);
+
+            one.Value = 1;
+
+            four.Value.ShouldBe(2);
+            updatedObjects.Count.ShouldBe(3);
+            updatedObjects.ShouldContain(two);
+            updatedObjects.ShouldContain(three);
+            updatedObjects.ShouldContain(four);
+        }
+    }
+
+    class SimpleWithNotification : NotifyPropertyChanged
+    {
+        private int value;
+
+        public int Value
+        {
+            get { return value; }
+            set
+            {
+                if (value == this.value) return;
+                this.value = value;
+                OnPropertyChanged("Value");
+            }
         }
     }
 }

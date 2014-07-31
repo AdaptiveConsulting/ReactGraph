@@ -6,7 +6,7 @@ namespace ReactGraph.Internals
 {
     public class DependencyInfo
     {
-        private readonly Action reevaluateValue;
+        private Action reevaluateValue;
         private readonly Func<object> getValue;
         private readonly string path;
 
@@ -91,6 +91,12 @@ namespace ReactGraph.Internals
             if (getValue == null)
                 return null;
             return getValue();
+        }
+
+        public void Merge(DependencyInfo sourceVertex)
+        {
+            if (reevaluateValue == null)
+                reevaluateValue = sourceVertex.reevaluateValue;
         }
     }
 }

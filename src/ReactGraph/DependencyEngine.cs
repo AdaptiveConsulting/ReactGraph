@@ -9,11 +9,12 @@ namespace ReactGraph
     public class DependencyEngine
     {
         private readonly List<INotificationStrategy> notificationStrategies;
-        private readonly Dictionary<Tuple<object, string>, DependencyInfo> nodeLookup = new Dictionary<Tuple<object, string>, DependencyInfo>();  
+        private readonly Dictionary<Tuple<object, string>, DependencyInfo> nodeLookup = new Dictionary<Tuple<object, string>, DependencyInfo>();
         private readonly Dictionary<DependencyInfo, object> instancesToSwitch = new Dictionary<DependencyInfo, object>();
         private readonly List<object> instancesBeingTracked = new List<object>();
         private readonly DirectedGraph<DependencyInfo> graph;
         private readonly ExpressionParser expressionParser;
+        private bool isExecuting;
 
         public DependencyEngine()
         {
@@ -51,11 +52,21 @@ namespace ReactGraph
                 }
             }
 
-            var orderToReeval = graph.TopologicalSort(node);
-            foreach (var vertex in orderToReeval.Skip(1))
+
+            if (isExecuting) return;
+            try
             {
-                SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
-                vertex.Data.ReevalValue();
+                isExecuting = true;
+                var orderToReeval = graph.TopologicalSort(node);
+                foreach (var vertex in orderToReeval.Skip(1))
+                {
+                    SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
+                    vertex.Data.ReevalValue();
+                }
+            }
+            finally
+            {
+                isExecuting = false;
             }
         }
 
@@ -104,8 +115,14 @@ namespace ReactGraph
             var targetKey = Tuple.Create(targetVertex.ParentInstance, targetVertex.PropertyInfo.Name);
             if (!nodeLookup.ContainsKey(sourceKey))
                 nodeLookup.Add(sourceKey, sourceVertex);
+            else
+                nodeLookup[sourceKey].Merge(sourceVertex);
+
             if (!nodeLookup.ContainsKey(targetKey))
-                nodeLookup.Add(Tuple.Create(targetVertex.ParentInstance, targetVertex.PropertyInfo.Name), targetVertex);
+                nodeLookup.Add(targetKey, targetVertex);
+            else
+                nodeLookup[targetKey].Merge(targetVertex);
+
             graph.AddEdge(nodeLookup[sourceKey], nodeLookup[targetKey]);
         }
 

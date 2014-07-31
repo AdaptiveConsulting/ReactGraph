@@ -14,11 +14,11 @@ namespace ReactGraph.Tests
         public void GetSimpleNode()
         {
             var expressionParser = new ExpressionParser();
-            var notifies = new Notifies();
+            var notifies = new Totals();
             Expression<Func<int>> expr = () => notifies.Total;
             var node = expressionParser.GetSourceVerticies(expr);
             node.Single().RootInstance.ShouldBeSameAs(notifies);
-            node.Single().PropertyInfo.ShouldBe(typeof(Notifies).GetProperty("Total"));
+            node.Single().PropertyInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
         }
 
         [Fact]

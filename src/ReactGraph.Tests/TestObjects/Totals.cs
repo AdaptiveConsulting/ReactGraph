@@ -1,6 +1,6 @@
 namespace ReactGraph.Tests.TestObjects
 {
-    class Notifies : NotifyPropertyChanged
+    class Totals : NotifyPropertyChanged
     {
         private int total;
         private int taxPercentage;
