@@ -69,7 +69,7 @@ namespace ReactGraph.Internals
                 if (propertyInfo != null)
                 {
                     var localInstance = node.Value;
-                    var rootValueResolver = path.Peek();
+                    var rootValueResolver = path.Count > 0 ? path.Peek() : null;
                     var rootValue = rootValueResolver == null ? node.Value : rootValueResolver(node.Value);
                     while (path.Count > 0)
                     {

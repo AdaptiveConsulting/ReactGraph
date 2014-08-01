@@ -80,5 +80,25 @@ namespace ReactGraph.Tests
             updatedObjects.ShouldContain(three);
             updatedObjects.ShouldContain(four);
         }
+
+        [Fact]
+        public void LeafPropertiesShouldBeListenedTo()
+        {
+            var viewModel = new MortgateCalculatorViewModel();
+            viewModel.RegeneratePaymentSchedule(true);
+
+            engine.Bind(() => Foo, () => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule));
+
+            Foo.ShouldNotBe(42);
+            viewModel.PaymentSchedule.HasValidationError = false;
+            Foo.ShouldBe(42);
+        }
+
+        private int CalcSomethingToDoWithSchedule(ScheduleViewModel paymentSchedule)
+        {
+            return 42;
+        }
+
+        public int Foo { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace ReactGraph
         private readonly List<INotificationStrategy> notificationStrategies;
         private readonly Dictionary<Tuple<object, string>, DependencyInfo> nodeLookup = new Dictionary<Tuple<object, string>, DependencyInfo>();
         private readonly Dictionary<DependencyInfo, object> instancesToSwitch = new Dictionary<DependencyInfo, object>();
+        private readonly Dictionary<DependencyInfo, object> leafDependencies = new Dictionary<DependencyInfo, object>();
         private readonly List<object> instancesBeingTracked = new List<object>();
         private readonly DirectedGraph<DependencyInfo> graph;
         private readonly ExpressionParser expressionParser;
@@ -34,23 +35,8 @@ namespace ReactGraph
             if (!nodeLookup.ContainsKey(key)) return;
             var node = nodeLookup[key];
 
-            if (instancesToSwitch.ContainsKey(node))
-            {
-                var oldInstance = instancesToSwitch[node];
-                ForgetInstance(oldInstance);
-                var newInstance = node.GetValue();
-                instancesToSwitch[node] = newInstance;
-                TrackInstanceIfNeeded(newInstance);
-                node.ParentInstance = newInstance;
-                var lookupsToUpdate = nodeLookup.Keys.Where(k => k.Item1 == oldInstance).ToArray();
-                foreach (var tuple in lookupsToUpdate)
-                {
-                    var newKey = Tuple.Create(newInstance, tuple.Item2);
-                    if (!nodeLookup.ContainsKey(newKey))
-                        nodeLookup.Add(newKey, node);
-                    nodeLookup.Remove(tuple);
-                }
-            }
+            SwitchTransientInstances(node);
+            UpdateLeafDependencies(node);
 
 
             if (isExecuting) return;
@@ -70,6 +56,39 @@ namespace ReactGraph
             }
         }
 
+        private void UpdateLeafDependencies(DependencyInfo node)
+        {
+            if (leafDependencies.ContainsKey(node))
+            {
+                var currentLeaf = leafDependencies[node];
+                ForgetInstance(currentLeaf);
+                var instance = node.GetValue();
+                TrackInstanceIfNeeded(instance);
+                leafDependencies[node] = instance;
+            }
+        }
+
+        private void SwitchTransientInstances(DependencyInfo node)
+        {
+            if (instancesToSwitch.ContainsKey(node))
+            {
+                var oldInstance = instancesToSwitch[node];
+                ForgetInstance(oldInstance);
+                var newInstance = node.GetValue();
+                instancesToSwitch[node] = newInstance;
+                TrackInstanceIfNeeded(newInstance);
+                node.ParentInstance = newInstance;
+                var lookupsToUpdate = nodeLookup.Keys.Where(k => k.Item1 == oldInstance).ToArray();
+                foreach (var tuple in lookupsToUpdate)
+                {
+                    var newKey = Tuple.Create(newInstance, tuple.Item2);
+                    if (!nodeLookup.ContainsKey(newKey))
+                        nodeLookup.Add(newKey, node);
+                    nodeLookup.Remove(tuple);
+                }
+            }
+        }
+
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
             var targetVertex = expressionParser.GetNodeInfo(targetProperty, sourceFunction);
@@ -81,7 +100,7 @@ namespace ReactGraph
 
         public override string ToString()
         {
-            return graph.ToDotLanguage("Dependency Graph");
+            return graph.ToDotLanguage("DependencyGraph");
         }
 
         private void ProcessNodes(DependencyInfo[] sourceVertices, DependencyInfo targetVertex, DependencyInfo originalTarget)
@@ -90,10 +109,16 @@ namespace ReactGraph
             {
                 TrackInstanceIfNeeded(sourceVertex.RootInstance);
                 AddNodes(targetVertex, sourceVertex);
+                // When different the target vertex is a transient property, i.e Foo in viewModel.Foo.Bar 
                 if (targetVertex != originalTarget)
                 {
                     AddNodes(originalTarget, sourceVertex);
                     SwitchInstanceWhenChanged(sourceVertex);
+                }
+                else
+                {
+                    // If we are at the top level we want to listen to the values
+                    TrackLeafDependency(sourceVertex);
                 }
 
                 if (sourceVertex.PropertyExpression != null)
@@ -128,7 +153,20 @@ namespace ReactGraph
 
         private void SwitchInstanceWhenChanged(DependencyInfo sourceVertex)
         {
+            // TODO I think we also need to track here
             instancesToSwitch.Add(sourceVertex, sourceVertex.GetValue());
+        }
+
+        private void TrackLeafDependency(DependencyInfo sourceVertex)
+        {
+            var value = sourceVertex.GetValue();
+            if (!leafDependencies.ContainsKey(sourceVertex))
+                leafDependencies.Add(sourceVertex, value);
+            var sourceKey = Tuple.Create<object, string>(value, null);
+            if (!nodeLookup.ContainsKey(sourceKey))
+                nodeLookup.Add(sourceKey, sourceVertex);
+
+            TrackInstanceIfNeeded(value);
         }
 
         private void TrackInstanceIfNeeded(object instance)

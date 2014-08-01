@@ -27,7 +27,12 @@ namespace ReactGraph.Internals
         {
             //TODO Could maybe use reevaluateValue to switch instances?
             this.reevaluateValue = reevaluateValue;
-            getValue = () => propertyInfo.GetValue(parentInstance, null);
+            getValue = () =>
+            {
+                if (parentInstance == null)
+                    return null;
+                return propertyInfo.GetValue(parentInstance, null);
+            };
             RootInstance = rootInstance;
             PropertyInfo = propertyInfo;
             PropertyExpression = propertyExpression;
