@@ -16,7 +16,7 @@ namespace ReactGraph.Tests
             var expressionParser = new ExpressionParser();
             var notifies = new Totals();
             Expression<Func<int>> expr = () => notifies.Total;
-            var node = expressionParser.GetSourceVerticies(expr);
+            var node = expressionParser.GetFormulaExpressionInfo(expr);
             node.Single().RootInstance.ShouldBeSameAs(notifies);
             node.Single().PropertyInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
         }
@@ -28,12 +28,12 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetSourceVerticies(expr).Single();
+            var node = expressionParser.GetFormulaExpressionInfo(expr).Single();
             node.RootInstance.ShouldBeSameAs(viewModel);
             node.PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
             var parent = node.PropertyExpression.Expression;
 
-            var parentNode = expressionParser.GetSourceVerticies(parent).Single();
+            var parentNode = expressionParser.GetFormulaExpressionInfo(parent).Single();
             parentNode.RootInstance.ShouldBeSameAs(viewModel);
             parentNode.PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
         }
@@ -45,12 +45,12 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             var expr = GetExpression(() => !viewModel.PaymentSchedule.HasValidationError);
-            var node = expressionParser.GetSourceVerticies(expr).Single();
+            var node = expressionParser.GetFormulaExpressionInfo(expr).Single();
             node.RootInstance.ShouldBeSameAs(viewModel);
             node.PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
             var parent = node.PropertyExpression.Expression;
 
-            var parentNode = expressionParser.GetSourceVerticies(parent).Single();
+            var parentNode = expressionParser.GetFormulaExpressionInfo(parent).Single();
             parentNode.RootInstance.ShouldBeSameAs(viewModel);
             parentNode.PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
         }

@@ -9,21 +9,14 @@ namespace ReactGraph
     public class DependencyEngine
     {
         private readonly List<INotificationStrategy> notificationStrategies;
-        private readonly Dictionary<Tuple<object, string>, DependencyInfo> nodeLookup = new Dictionary<Tuple<object, string>, DependencyInfo>();
-        private readonly Dictionary<DependencyInfo, object> instancesToSwitch = new Dictionary<DependencyInfo, object>();
-        private readonly Dictionary<DependencyInfo, object> leafDependencies = new Dictionary<DependencyInfo, object>();
-        private readonly List<object> instancesBeingTracked = new List<object>();
-        private readonly DirectedGraph<DependencyInfo> graph;
+        private readonly Dictionary<Tuple<object, string>, INodeInfo> nodeLookup = new Dictionary<Tuple<object, string>, INodeInfo>();
+        private readonly DirectedGraph<INodeInfo> graph;
         private readonly ExpressionParser expressionParser;
         private bool isExecuting;
 
         public DependencyEngine()
         {
-            notificationStrategies = new List<INotificationStrategy>
-            {
-                new NotifyPropertyChangedStrategy(this)
-            };
-            graph = new DirectedGraph<DependencyInfo>();
+            graph = new DirectedGraph<INodeInfo>();
             expressionParser = new ExpressionParser();
         }
 
@@ -34,20 +27,17 @@ namespace ReactGraph
             var key = Tuple.Create(instance, property);
             if (!nodeLookup.ContainsKey(key)) return;
             var node = nodeLookup[key];
-
-            SwitchTransientInstances(node);
-            UpdateLeafDependencies(node);
-
-
+            
             if (isExecuting) return;
             try
             {
                 isExecuting = true;
-                var orderToReeval = graph.TopologicalSort(node);
+                var orderToReeval = graph.TopologicalSort(node).ToArray();
+                orderToReeval.First().Data.ValueChanged();
                 foreach (var vertex in orderToReeval.Skip(1))
                 {
-                    SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
-                    vertex.Data.ReevalValue();
+                    //SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
+                    vertex.Data.Reevaluate();
                 }
             }
             finally
@@ -56,7 +46,12 @@ namespace ReactGraph
             }
         }
 
-        private void UpdateLeafDependencies(DependencyInfo node)
+        internal void ValueChanged(object instance, object newInstance)
+        {
+            
+        }
+
+        private void UpdateLeafDependencies(PropertyNodeInfo<> node)
         {
             if (leafDependencies.ContainsKey(node))
             {
@@ -68,7 +63,7 @@ namespace ReactGraph
             }
         }
 
-        private void SwitchTransientInstances(DependencyInfo node)
+        private void SwitchTransientInstances(PropertyNodeInfo<> node)
         {
             if (instancesToSwitch.ContainsKey(node))
             {
@@ -91,11 +86,13 @@ namespace ReactGraph
 
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)
         {
-            var targetVertex = expressionParser.GetNodeInfo(targetProperty, sourceFunction);
+            var targetVertex = expressionParser.GetNodeInfo(targetProperty);
             TrackInstanceIfNeeded(targetVertex.RootInstance);
-            var sourceVertices = expressionParser.GetSourceVerticies(sourceFunction);
+            var formulaNode = expressionParser.GetFormulaExpressionInfo(sourceFunction);
 
-            ProcessNodes(sourceVertices, targetVertex, targetVertex);
+            targetVertex.SetPropertySource(formulaNode);
+
+            ProcessNodes(formulaNode.Dependencies, targetVertex, targetVertex);
         }
 
         public override string ToString()
@@ -103,94 +100,45 @@ namespace ReactGraph
             return graph.ToDotLanguage("DependencyGraph");
         }
 
-        private void ProcessNodes(DependencyInfo[] sourceVertices, DependencyInfo targetVertex, DependencyInfo originalTarget)
+        private void ProcessNodes<T>(INodeInfo[] sourceVertices, PropertyNodeInfo<T> targetVertex, PropertyNodeInfo<T> originalTarget)
         {
             foreach (var sourceVertex in sourceVertices)
             {
-                TrackInstanceIfNeeded(sourceVertex.RootInstance);
                 AddNodes(targetVertex, sourceVertex);
                 // When different the target vertex is a transient property, i.e Foo in viewModel.Foo.Bar 
                 if (targetVertex != originalTarget)
                 {
                     AddNodes(originalTarget, sourceVertex);
-                    SwitchInstanceWhenChanged(sourceVertex);
-                }
-                else
-                {
-                    // If we are at the top level we want to listen to the values
-                    TrackLeafDependency(sourceVertex);
                 }
 
-                if (sourceVertex.PropertyExpression != null)
+                var propertyInfo = sourceVertex as PropertyNodeInfo<T>;
+                if (propertyInfo != null)
                 {
-                    var parent = sourceVertex.PropertyExpression.Expression;
-                    if (parent is MemberExpression)
+                    if (propertyInfo.PropertyExpression != null)
                     {
-                        var subNodes = expressionParser.GetSourceVerticies(parent);
+                        var parent = propertyInfo.PropertyExpression.Expression;
+                        if (parent is MemberExpression)
+                        {
+                            var subNodes = expressionParser.GetFormulaExpressionInfo(parent);
 
-                        ProcessNodes(subNodes, sourceVertex, originalTarget);
+                            ProcessNodes(subNodes.Dependencies, sourceVertex, originalTarget);
+                        }
                     }
                 }
             }
         }
 
-        private void AddNodes(DependencyInfo targetVertex, DependencyInfo sourceVertex)
+        private void AddNodes(INodeInfo targetVertex, INodeInfo sourceVertex)
         {
-            var sourceKey = Tuple.Create(sourceVertex.ParentInstance, sourceVertex.PropertyInfo.Name);
-            var targetKey = Tuple.Create(targetVertex.ParentInstance, targetVertex.PropertyInfo.Name);
+            var sourceKey = Tuple.Create(sourceVertex.ParentInstance, sourceVertex.Key);
+            var targetKey = Tuple.Create(targetVertex.ParentInstance, targetVertex.Key);
             if (!nodeLookup.ContainsKey(sourceKey))
                 nodeLookup.Add(sourceKey, sourceVertex);
-            else
-                nodeLookup[sourceKey].Merge(sourceVertex);
 
             if (!nodeLookup.ContainsKey(targetKey))
                 nodeLookup.Add(targetKey, targetVertex);
-            else
-                nodeLookup[targetKey].Merge(targetVertex);
 
             graph.AddEdge(nodeLookup[sourceKey], nodeLookup[targetKey]);
-        }
-
-        private void SwitchInstanceWhenChanged(DependencyInfo sourceVertex)
-        {
-            // TODO I think we also need to track here
-            instancesToSwitch.Add(sourceVertex, sourceVertex.GetValue());
-        }
-
-        private void TrackLeafDependency(DependencyInfo sourceVertex)
-        {
-            var value = sourceVertex.GetValue();
-            if (!leafDependencies.ContainsKey(sourceVertex))
-                leafDependencies.Add(sourceVertex, value);
-            var sourceKey = Tuple.Create<object, string>(value, null);
-            if (!nodeLookup.ContainsKey(sourceKey))
-                nodeLookup.Add(sourceKey, sourceVertex);
-
-            TrackInstanceIfNeeded(value);
-        }
-
-        private void TrackInstanceIfNeeded(object instance)
-        {
-            if (!instancesBeingTracked.Contains(instance))
-            {
-                instancesBeingTracked.Add(instance);
-                foreach (var notificationStrategy in notificationStrategies)
-                {
-                    notificationStrategy.Track(instance);
-                }
-            }
-        }
-
-        private void ForgetInstance(object instance)
-        {
-            if (!instancesBeingTracked.Contains(instance))
-            {
-                instancesBeingTracked.Add(instance);
-                foreach (var notificationStrategy in notificationStrategies)
-                {
-                    notificationStrategy.Untrack(instance);
-                }
-            }
         }
     }
 }

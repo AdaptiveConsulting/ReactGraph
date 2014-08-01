@@ -8,37 +8,47 @@ namespace ReactGraph.Internals
 {
     internal class ExpressionParser
     {
-        public DependencyInfo[] GetSourceVerticies(Expression formula)
+        private readonly Notifications notificationStrategies;
+
+        public ExpressionParser(Notifications notificationStrategies)
         {
-            return new GetNodeVisitor().GetNodes(formula);
+            this.notificationStrategies = notificationStrategies;
         }
 
-        public DependencyInfo GetNodeInfo<TProp>(Expression target, Expression<Func<TProp>> formula)
+        public FormulaExpressionInfo<T> GetFormulaExpressionInfo<T>(Expression<Func<T>> formula)
         {
-            var getVal2 = formula.Compile();
-            var visit = new GetNodeVisitor();
-            return visit.GetNode(target, () => getVal2());
+            return new GetNodeVisitor<T>(notificationStrategies).GetFormulaNode(formula);
         }
 
-        class GetNodeVisitor : ExpressionVisitor
+        public PropertyNodeInfo<TProp> GetNodeInfo<TProp>(Expression<Func<TProp>> target)
+        {
+            var visit = new GetNodeVisitor<TProp>(notificationStrategies);
+            return visit.GetNode(target);
+        }
+
+        class GetNodeVisitor<T> : ExpressionVisitor
         {
             readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
             private PropertyInfo propertyInfo;
             private MemberExpression propertyExpression;
-            private readonly List<DependencyInfo> nodes = new List<DependencyInfo>();
-            private Func<object> val;
+            private readonly List<PropertyNodeInfo<T>> nodes = new List<PropertyNodeInfo<T>>();
+            private readonly Notifications notificationStrategies;
 
-            public DependencyInfo GetNode(Expression target, Func<object> getValue = null)
+            public GetNodeVisitor(Notifications notificationStrategies)
             {
-                val = getValue;
+                this.notificationStrategies = notificationStrategies;
+            }
+
+            public PropertyNodeInfo<T> GetNode(Expression target)
+            {
                 Visit(target);
                 return nodes.Single();
             }
 
-            public DependencyInfo[] GetNodes(Expression formula)
+            public FormulaExpressionInfo<T> GetFormulaNode(Expression<Func<T>> formula)
             {
                 Visit(formula);
-                return nodes.ToArray();
+                return new FormulaExpressionInfo<T>(formula, nodes.ToArray());
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -77,8 +87,7 @@ namespace ReactGraph.Internals
                     }
                     var localPropertyInfo = propertyInfo;
                     var localPropertyExpression = propertyExpression;
-                    var reevaluateValue = val == null ? (Action)null : () => localPropertyInfo.SetValue(localInstance, val(), null);
-                    nodes.Add(new DependencyInfo(rootValue, localInstance, localPropertyInfo, localPropertyExpression, reevaluateValue));
+                    nodes.Add(new PropertyNodeInfo<T>(rootValue, (T)localInstance, localPropertyInfo, localPropertyExpression, notificationStrategies));
                     propertyInfo = null;
                     propertyExpression = null;
                 }

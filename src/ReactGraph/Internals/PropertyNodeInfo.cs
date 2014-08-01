@@ -4,11 +4,13 @@ using System.Reflection;
 
 namespace ReactGraph.Internals
 {
-    public class DependencyInfo
+    public class PropertyNodeInfo<T> : INodeInfo
     {
-        private Action reevaluateValue;
-        private readonly Func<object> getValue;
+        private readonly Notifications notificationStrategies;
+        private readonly Func<T> getValue;
         private readonly string path;
+        private FormulaExpressionInfo<T> formula;
+        private T currentValue;
 
         /// <summary>
         /// Represents a dependency
@@ -17,27 +19,25 @@ namespace ReactGraph.Internals
         /// <param name="parentInstance">The current parent instance of the expression, i.e Foo in viewModel.Foo.Bar</param>
         /// <param name="propertyInfo">Property info for Bar in foo.Bar</param>
         /// <param name="propertyExpression"></param>
-        /// <param name="reevaluateValue">If part of a Bind expression, causes that expression to reevaluate</param>
-        public DependencyInfo(
+        public PropertyNodeInfo(
             object rootInstance, 
             object parentInstance, 
             PropertyInfo propertyInfo, 
-            MemberExpression propertyExpression, 
-            Action reevaluateValue)
+            MemberExpression propertyExpression,
+            Notifications notificationStrategies)
         {
-            //TODO Could maybe use reevaluateValue to switch instances?
-            this.reevaluateValue = reevaluateValue;
+            this.notificationStrategies = notificationStrategies;
             getValue = () =>
             {
                 if (parentInstance == null)
-                    return null;
-                return propertyInfo.GetValue(parentInstance, null);
+                    return default(T);
+                return (T) propertyInfo.GetValue(parentInstance, null);
             };
             RootInstance = rootInstance;
             PropertyInfo = propertyInfo;
             PropertyExpression = propertyExpression;
             path = propertyExpression.ToString();
-            this.ParentInstance = parentInstance;
+            ParentInstance = parentInstance;
         }
 
         public object RootInstance { get; private set; }
@@ -48,18 +48,12 @@ namespace ReactGraph.Internals
 
         public object ParentInstance { get; set; }
 
-        public void ReevalValue()
-        {
-            if (reevaluateValue != null)
-                reevaluateValue();
-        }
-
         public override string ToString()
         {
             return path;
         }
 
-        protected bool Equals(DependencyInfo other)
+        protected bool Equals(PropertyNodeInfo<T> other)
         {
             return string.Equals(path, other.path) && Equals(RootInstance, other.RootInstance);
         }
@@ -69,7 +63,7 @@ namespace ReactGraph.Internals
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((DependencyInfo) obj);
+            return Equals((PropertyNodeInfo<T>) obj);
         }
 
         public override int GetHashCode()
@@ -80,28 +74,36 @@ namespace ReactGraph.Internals
             }
         }
 
-        public static bool operator ==(DependencyInfo left, DependencyInfo right)
+        public static bool operator ==(PropertyNodeInfo<T> left, PropertyNodeInfo<T> right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(DependencyInfo left, DependencyInfo right)
+        public static bool operator !=(PropertyNodeInfo<T> left, PropertyNodeInfo<T> right)
         {
             return !Equals(left, right);
         }
 
-        // TODO Should cache last value
-        public object GetValue()
+        public void SetPropertySource(FormulaExpressionInfo<T> formulaNode)
         {
-            if (getValue == null)
-                return null;
-            return getValue();
+            formula = formulaNode;
         }
 
-        public void Merge(DependencyInfo sourceVertex)
+        public void Reevaluate()
         {
-            if (reevaluateValue == null)
-                reevaluateValue = sourceVertex.reevaluateValue;
+            if (formula != null)
+            {
+                currentValue = formula.GetValue();
+                PropertyInfo.SetValue(ParentInstance, currentValue, null);
+            }
+        }
+
+        public void ValueChanged()
+        {
+            // TODO Move this to pass the notification strategy into the node at construction time
+            notificationStrategies.ForgetInstance(currentValue);
+            currentValue = getValue();
+            notificationStrategies.TrackInstanceIfNeeded(currentValue);
         }
     }
 }
