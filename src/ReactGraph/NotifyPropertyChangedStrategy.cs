@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel;
 
 namespace ReactGraph
@@ -29,10 +30,15 @@ namespace ReactGraph
             }
         }
 
+        public bool AppliesTo(Type type)
+        {
+            return typeof(INotifyPropertyChanged).IsAssignableFrom(type);
+        }
+
         private void NotifyPropertyChangedOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            dependencyEngine.PropertyChanged(sender, propertyChangedEventArgs.PropertyName);
-            dependencyEngine.PropertyChanged(sender, null);
+            if (!dependencyEngine.ValueHasChanged(sender, propertyChangedEventArgs.PropertyName))
+                dependencyEngine.ValueHasChanged(sender, null);
         }
     }
 }

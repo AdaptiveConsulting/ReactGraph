@@ -23,8 +23,8 @@ namespace ReactGraph.Internals
         {
             var sourceVertex = AddVertex(source);
             var targetVertex = AddVertex(target);
-
-            sourceVertex.AddSuccessorEdge(targetVertex);
+            if (sourceVertex.Successors.All(e => e.Target != targetVertex))
+                sourceVertex.AddSuccessorEdge(targetVertex);
         }
 
         private void RemoveEdge(Edge<T> edge)
@@ -150,18 +150,23 @@ namespace ReactGraph.Internals
 
         public string ToDotLanguage(string title)
         {
-            var sb = new StringBuilder();
+            var labels = new StringBuilder();
+            var graph = new StringBuilder();
 
-            sb.AppendFormat("digraph {0} {{", title).AppendLine();
-
+            foreach (var vertex in verticies)
+            {
+                labels.AppendFormat("     {0} [label=\"{1}\"];", vertex.Value.Data.GetHashCode(), vertex.Value.Data).AppendLine();
+            }
             foreach (var edge in Edges)
             {
-                sb.AppendFormat("     {0} -> {1};", edge.Source.Data, edge.Target.Data).AppendLine();
+                graph.AppendFormat("     {0} -> {1};", 
+                    edge.Source.Data.GetHashCode(), edge.Target.Data.GetHashCode())
+                    .AppendLine();
             }
 
-            sb.Append("}");
-
-            return sb.ToString();
+            return string.Format(@"digraph {0} {{
+{1}
+{2}}})", title, labels, graph);
         }
 
         /// <summary>

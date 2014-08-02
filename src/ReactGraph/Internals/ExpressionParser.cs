@@ -1,88 +1,78 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace ReactGraph.Internals
 {
-    internal class ExpressionParser
+    class ExpressionParser
     {
-        public DependencyInfo[] GetSourceVerticies(Expression formula)
+        readonly NodeRepository nodeRepository;
+
+        public ExpressionParser(NodeRepository nodeRepository)
         {
-            return new GetNodeVisitor().GetNodes(formula);
+            this.nodeRepository = nodeRepository;
         }
 
-        public DependencyInfo GetNodeInfo<TProp>(Expression target, Expression<Func<TProp>> formula)
+        public INodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target)
         {
-            var getVal2 = formula.Compile();
-            var visit = new GetNodeVisitor();
-            return visit.GetNode(target, () => getVal2());
+            return new GetNodeVisitor<TProp>(nodeRepository).GetNode(target);
         }
 
-        class GetNodeVisitor : ExpressionVisitor
+        class GetNodeVisitor<T> : ExpressionVisitor
         {
-            readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
-            private PropertyInfo propertyInfo;
-            private MemberExpression propertyExpression;
-            private readonly List<DependencyInfo> nodes = new List<DependencyInfo>();
-            private Func<object> val;
+            readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
+            readonly NodeRepository nodeRepository;
+            INodeInfo formulaNode;
 
-            public DependencyInfo GetNode(Expression target, Func<object> getValue = null)
+            public GetNodeVisitor(NodeRepository nodeRepository)
             {
-                val = getValue;
-                Visit(target);
-                return nodes.Single();
+                this.nodeRepository = nodeRepository;
             }
 
-            public DependencyInfo[] GetNodes(Expression formula)
+            public INodeInfo GetNode(Expression target)
             {
-                Visit(formula);
-                return nodes.ToArray();
+                Visit(target);
+                return formulaNode.ReduceIfPossible();
+            }
+
+            protected override Expression VisitLambda<T1>(Expression<T1> node)
+            {
+                formulaNode = nodeRepository.GetOrCreate<T>(node);
+                return base.VisitLambda(node);
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                var property = node.Member as PropertyInfo;
-                if (propertyInfo == null)
-                {
-                    propertyInfo = property;
-                    propertyExpression = node;
-                }
-                else
-                {
-                    var fieldInfo = node.Member as FieldInfo;
-                    if (property != null)
-                    {
-                        path.Push(o => property.GetValue(o, null));
-                    }
-                    else if (fieldInfo != null)
-                    {
-                        path.Push(fieldInfo.GetValue);
-                    }
-                }
+                path.Push(node);
                 return base.VisitMember(node);
             }
 
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                if (propertyInfo != null)
+                var currentValue = node.Value;
+                var rootValue = node.Value;
+                INodeInfo currentNode = null;
+                while (path.Count > 0)
                 {
-                    var localInstance = node.Value;
-                    var rootValueResolver = path.Count > 0 ? path.Peek() : null;
-                    var rootValue = rootValueResolver == null ? node.Value : rootValueResolver(node.Value);
-                    while (path.Count > 0)
+                    var expression = path.Pop();
+                    var nodeInfo = nodeRepository.GetOrCreate(rootValue, currentValue, expression.Member, expression);
+                    var nodeValue = ((IValueSource) nodeInfo).GetValue();
+                    if (currentNode == null)
                     {
-                        localInstance = path.Pop()(localInstance);
+                        rootValue = nodeValue;
+                        nodeInfo.RootInstance = rootValue;
                     }
-                    var localPropertyInfo = propertyInfo;
-                    var localPropertyExpression = propertyExpression;
-                    var reevaluateValue = val == null ? (Action)null : () => localPropertyInfo.SetValue(localInstance, val(), null);
-                    nodes.Add(new DependencyInfo(rootValue, localInstance, localPropertyInfo, localPropertyExpression, reevaluateValue));
-                    propertyInfo = null;
-                    propertyExpression = null;
+                    else if (node.Value != currentNode.ParentInstance && !nodeInfo.Dependencies.Contains(currentNode))
+                    {
+                        nodeInfo.Dependencies.Add(currentNode);
+                    }
+                    currentNode = nodeInfo;
+                    currentValue = nodeValue;
                 }
-                
+
+                if (currentNode != null && !formulaNode.Dependencies.Contains(currentNode))
+                    formulaNode.Dependencies.Add(currentNode);
+
                 return base.VisitConstant(node);
             }
         }

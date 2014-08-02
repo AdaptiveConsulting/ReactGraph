@@ -1,6 +1,4 @@
-using ReactGraph.Tests.TestObjects;
-
-namespace ReactGraph.Tests
+namespace ReactGraph.Tests.TestObjects
 {
     class SimpleWithNotification : NotifyPropertyChanged
     {

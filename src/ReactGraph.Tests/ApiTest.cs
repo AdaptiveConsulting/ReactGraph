@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using Shouldly;
 using Xunit;
 
@@ -45,19 +44,14 @@ namespace ReactGraph.Tests
             engine.Bind(() => vertex7.Value, () => Addition(vertex2.Value));
             engine.Bind(() => vertex8.Value, () => Addition(vertex2.Value));
 
-            var updatedObjects = new List<SinglePropertyType>();
-            engine.SettingValue += (o, s) => updatedObjects.Add((SinglePropertyType) o);
+            Console.WriteLine(engine.ToString());
 
             // We set the value to 2, then tell the engine the value has changed
             vertex0.Value = 2;
-            engine.PropertyChanged(vertex0, "Value");
+            engine.ValueHasChanged(vertex0, "Value");
             vertex1.Value.ShouldBe(2);
             vertex2.Value.ShouldBe(4);
             vertex3.Value.ShouldBe(6);
-            updatedObjects.ElementAt(0).ShouldBe(vertex1);
-            updatedObjects.ElementAt(1).ShouldBe(vertex2);
-            updatedObjects.ShouldContain(vertex3);
-            updatedObjects.Distinct().Count().ShouldBe(updatedObjects.Count);
         }
 
         private int Addition(int i1, int i2, int i3)

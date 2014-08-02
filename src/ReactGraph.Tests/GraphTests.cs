@@ -38,7 +38,7 @@ namespace ReactGraph.Tests
 
             var result = sut.DepthFirstSearch(2).Select(v => v.Data);
 
-            result.ShouldBe(new []{2, 3, 4});
+            result.ShouldBe(new[] { 2, 3, 4 });
         }
 
         [Fact]
@@ -68,9 +68,9 @@ namespace ReactGraph.Tests
 
             var result = sut.FindSources();
 
-            result.Select(v => v.Data).ShouldBe(new []{1, 5});
+            result.Select(v => v.Data).ShouldBe(new[] { 1, 5 });
         }
-        
+
         [Fact]
         public void TopologicalSort()
         {
@@ -86,7 +86,7 @@ namespace ReactGraph.Tests
 
             result.Select(v => v.Data).ShouldBe(new[] { 1, 2, 3, 4 });
         }
-        
+
         [Fact]
         public void TopologicalSort2()
         {
@@ -104,7 +104,7 @@ namespace ReactGraph.Tests
 
             var result = sut.TopologicalSort(1);
 
-            result.Select(v => v.Data).ShouldBe(new[] {1, 3, 2, 4, 5});
+            result.Select(v => v.Data).ShouldBe(new[] { 1, 3, 2, 4, 5 });
         }
 
         [Fact]
@@ -134,6 +134,13 @@ namespace ReactGraph.Tests
             PrintGraphToConsole("ToDotLanguage");
 
             const string expected = @"digraph Foo {
+     0 [label=""0""];
+     1 [label=""1""];
+     3 [label=""3""];
+     4 [label=""4""];
+     2 [label=""2""];
+     5 [label=""5""];
+
      0 -> 1;
      0 -> 3;
      0 -> 4;
@@ -144,9 +151,10 @@ namespace ReactGraph.Tests
      4 -> 5;
      2 -> 4;
      2 -> 5;
-}";
+})";
 
-            sut.ToDotLanguage("Foo").ShouldBe(expected);
+            var dotLanguage = sut.ToDotLanguage("Foo");
+            dotLanguage.ShouldBe(expected);
         }
 
         [Fact]

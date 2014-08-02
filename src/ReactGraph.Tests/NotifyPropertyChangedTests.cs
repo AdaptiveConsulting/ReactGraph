@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;
@@ -69,16 +68,11 @@ namespace ReactGraph.Tests
             engine.Bind(() => two.Value, () => one.Value);
             engine.Bind(() => three.Value, () => one.Value);
 
-            var updatedObjects = new List<SimpleWithNotification>();
-            engine.SettingValue += (o, s) => updatedObjects.Add((SimpleWithNotification) o);
+            Console.WriteLine(engine.ToString());
 
             one.Value = 1;
 
             four.Value.ShouldBe(2);
-            updatedObjects.Count.ShouldBe(3);
-            updatedObjects.ShouldContain(two);
-            updatedObjects.ShouldContain(three);
-            updatedObjects.ShouldContain(four);
         }
 
         [Fact]
