@@ -4,5 +4,6 @@ namespace ReactGraph
     {
         void Track(object instance);
         void Untrack(object instance);
+        bool AppliesTo(object instance);
     }
 }

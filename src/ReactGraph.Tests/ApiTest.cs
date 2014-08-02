@@ -50,7 +50,7 @@ namespace ReactGraph.Tests
 
             // We set the value to 2, then tell the engine the value has changed
             vertex0.Value = 2;
-            engine.PropertyChanged(vertex0, "Value");
+            engine.ValueHasChanged(vertex0, "Value");
             vertex1.Value.ShouldBe(2);
             vertex2.Value.ShouldBe(4);
             vertex3.Value.ShouldBe(6);

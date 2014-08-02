@@ -29,10 +29,15 @@ namespace ReactGraph
             }
         }
 
+        public bool AppliesTo(object instance)
+        {
+            return instance is INotifyPropertyChanged;
+        }
+
         private void NotifyPropertyChangedOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            dependencyEngine.PropertyChanged(sender, propertyChangedEventArgs.PropertyName);
-            dependencyEngine.PropertyChanged(sender, null);
+            dependencyEngine.ValueHasChanged(sender, propertyChangedEventArgs.PropertyName);
+            dependencyEngine.ValueHasChanged(sender, null);
         }
     }
 }

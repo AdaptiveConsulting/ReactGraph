@@ -6,49 +6,42 @@ using System.Reflection;
 
 namespace ReactGraph.Internals
 {
-    internal class ExpressionParser
+    class ExpressionParser
     {
-        private readonly Notifications notificationStrategies;
+        readonly NodeRepository nodeRepository;
 
-        public ExpressionParser(Notifications notificationStrategies)
+        public ExpressionParser(NodeRepository nodeRepository)
         {
-            this.notificationStrategies = notificationStrategies;
+            this.nodeRepository = nodeRepository;
         }
 
-        public FormulaExpressionInfo<T> GetFormulaExpressionInfo<T>(Expression<Func<T>> formula)
+        public INodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target)
         {
-            return new GetNodeVisitor<T>(notificationStrategies).GetFormulaNode(formula);
-        }
-
-        public PropertyNodeInfo<TProp> GetNodeInfo<TProp>(Expression<Func<TProp>> target)
-        {
-            var visit = new GetNodeVisitor<TProp>(notificationStrategies);
-            return visit.GetNode(target);
+            return new GetNodeVisitor<TProp>(nodeRepository).GetNode(target);
         }
 
         class GetNodeVisitor<T> : ExpressionVisitor
         {
             readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
-            private PropertyInfo propertyInfo;
-            private MemberExpression propertyExpression;
-            private readonly List<PropertyNodeInfo<T>> nodes = new List<PropertyNodeInfo<T>>();
-            private readonly Notifications notificationStrategies;
+            readonly List<PropertyNodeInfo<T>> nodes = new List<PropertyNodeInfo<T>>();
+            readonly NodeRepository nodeRepository;
+            MemberExpression propertyExpression;
+            PropertyInfo propertyInfo;
 
-            public GetNodeVisitor(Notifications notificationStrategies)
+            public GetNodeVisitor(NodeRepository nodeRepository)
             {
-                this.notificationStrategies = notificationStrategies;
+                this.nodeRepository = nodeRepository;
             }
 
-            public PropertyNodeInfo<T> GetNode(Expression target)
+            public INodeInfo GetNode(Expression target)
             {
                 Visit(target);
                 return nodes.Single();
             }
 
-            public FormulaExpressionInfo<T> GetFormulaNode(Expression<Func<T>> formula)
+            protected override Expression VisitMethodCall(MethodCallExpression node)
             {
-                Visit(formula);
-                return new FormulaExpressionInfo<T>(formula, nodes.ToArray());
+                return base.VisitMethodCall(node);
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -85,9 +78,10 @@ namespace ReactGraph.Internals
                     {
                         localInstance = path.Pop()(localInstance);
                     }
-                    var localPropertyInfo = propertyInfo;
-                    var localPropertyExpression = propertyExpression;
-                    nodes.Add(new PropertyNodeInfo<T>(rootValue, (T)localInstance, localPropertyInfo, localPropertyExpression, notificationStrategies));
+
+                    var propertyNodeInfo = nodeRepository.GetOrCreate(rootValue, (T)localInstance, propertyInfo, propertyExpression);
+
+                    nodes.Add(propertyNodeInfo);
                     propertyInfo = null;
                     propertyExpression = null;
                 }

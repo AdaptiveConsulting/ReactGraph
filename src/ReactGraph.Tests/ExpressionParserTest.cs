@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Linq.Expressions;
 using ReactGraph.Internals;
 using ReactGraph.Tests.TestObjects;
@@ -10,54 +9,64 @@ namespace ReactGraph.Tests
 {
     public class ExpressionParserTest
     {
+        readonly ExpressionParser expressionParser;
+
+        public ExpressionParserTest()
+        {
+            expressionParser = new ExpressionParser(new NodeRepository(new DependencyEngine()));
+        }
+
         [Fact]
         public void GetSimpleNode()
         {
-            var expressionParser = new ExpressionParser();
             var notifies = new Totals();
             Expression<Func<int>> expr = () => notifies.Total;
-            var node = expressionParser.GetFormulaExpressionInfo(expr);
-            node.Single().RootInstance.ShouldBeSameAs(notifies);
-            node.Single().PropertyInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
+            var node = expressionParser.GetNodeInfo(expr);
+            node.RootInstance.ShouldBeSameAs(notifies);
+            node.ShouldBeOfType<PropertyNodeInfo<int>>()
+                .PropertyInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
         }
 
         [Fact]
         public void GetHarderNode()
         {
-            var expressionParser = new ExpressionParser();
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetFormulaExpressionInfo(expr).Single();
+            var node = expressionParser.GetNodeInfo(expr);
             node.RootInstance.ShouldBeSameAs(viewModel);
-            node.PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-            var parent = node.PropertyExpression.Expression;
-
-            var parentNode = expressionParser.GetFormulaExpressionInfo(parent).Single();
-            parentNode.RootInstance.ShouldBeSameAs(viewModel);
-            parentNode.PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
+            node.ShouldBeOfType<PropertyNodeInfo<bool>>()
+                .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
+            node.Dependencies.Length.ShouldBe(1);
+            var paymentScheduleNode = node.Dependencies[0];
+            paymentScheduleNode
+                .ShouldBeOfType<PropertyNodeInfo<object>>()
+                .PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
+            paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
 
         [Fact]
         public void GetInvertedHarderNode()
         {
-            var expressionParser = new ExpressionParser();
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
-            var expr = GetExpression(() => !viewModel.PaymentSchedule.HasValidationError);
-            var node = expressionParser.GetFormulaExpressionInfo(expr).Single();
+            Expression<Func<bool>> expr = () => !viewModel.PaymentSchedule.HasValidationError;
+            var node = expressionParser.GetNodeInfo(expr);
             node.RootInstance.ShouldBeSameAs(viewModel);
-            node.PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-            var parent = node.PropertyExpression.Expression;
+            node.ShouldBeOfType<FormulaExpressionInfo<bool>>();
+            node.Dependencies.Length.ShouldBe(1);
+            var validationErrorNode = node.Dependencies[0];
+            validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
+            validationErrorNode.Dependencies.Length.ShouldBe(1);
+            validationErrorNode.ShouldBeOfType<PropertyNodeInfo<object>>()
+                .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
 
-            var parentNode = expressionParser.GetFormulaExpressionInfo(parent).Single();
-            parentNode.RootInstance.ShouldBeSameAs(viewModel);
-            parentNode.PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
-        }
 
-        private Expression GetExpression<TProp>(Expression<Func<TProp>> func)
-        {
-            return func;
+            var paymentScheduleNode = validationErrorNode.Dependencies[0];
+            paymentScheduleNode
+                .ShouldBeOfType<PropertyNodeInfo<object>>()
+                .PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
+            paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
     }
 }

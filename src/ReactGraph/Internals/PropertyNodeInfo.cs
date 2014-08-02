@@ -4,12 +4,12 @@ using System.Reflection;
 
 namespace ReactGraph.Internals
 {
-    public class PropertyNodeInfo<T> : INodeInfo
+    class PropertyNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
     {
-        private readonly Notifications notificationStrategies;
+        private readonly INotificationStrategy[] notificationStrategies;
         private readonly Func<T> getValue;
         private readonly string path;
-        private FormulaExpressionInfo<T> formula;
+        private IValueSource<T> formula;
         private T currentValue;
 
         /// <summary>
@@ -19,12 +19,13 @@ namespace ReactGraph.Internals
         /// <param name="parentInstance">The current parent instance of the expression, i.e Foo in viewModel.Foo.Bar</param>
         /// <param name="propertyInfo">Property info for Bar in foo.Bar</param>
         /// <param name="propertyExpression"></param>
+        /// <param name="notificationStrategies"></param>
         public PropertyNodeInfo(
             object rootInstance, 
             object parentInstance, 
             PropertyInfo propertyInfo, 
             MemberExpression propertyExpression,
-            Notifications notificationStrategies)
+            INotificationStrategy[] notificationStrategies)
         {
             this.notificationStrategies = notificationStrategies;
             getValue = () =>
@@ -48,12 +49,26 @@ namespace ReactGraph.Internals
 
         public object ParentInstance { get; set; }
 
+        public string Key { get; private set; }
+
+        public INodeInfo[] Dependencies { get; private set; }
+
+        public void SetSource(IValueSource<T> formulaNode)
+        {
+            formula = formulaNode;
+        }
+
+        public T GetValue()
+        {
+            return currentValue;
+        }
+
         public override string ToString()
         {
             return path;
         }
 
-        protected bool Equals(PropertyNodeInfo<T> other)
+        bool Equals(PropertyNodeInfo<T> other)
         {
             return string.Equals(path, other.path) && Equals(RootInstance, other.RootInstance);
         }
@@ -84,26 +99,26 @@ namespace ReactGraph.Internals
             return !Equals(left, right);
         }
 
-        public void SetPropertySource(FormulaExpressionInfo<T> formulaNode)
-        {
-            formula = formulaNode;
-        }
-
         public void Reevaluate()
         {
             if (formula != null)
             {
-                currentValue = formula.GetValue();
+                ValueChanged();
                 PropertyInfo.SetValue(ParentInstance, currentValue, null);
             }
         }
 
         public void ValueChanged()
         {
-            // TODO Move this to pass the notification strategy into the node at construction time
-            notificationStrategies.ForgetInstance(currentValue);
+            foreach (var notificationStrategy in notificationStrategies)
+                notificationStrategy.Untrack(currentValue);
             currentValue = getValue();
-            notificationStrategies.TrackInstanceIfNeeded(currentValue);
+            foreach (var dependency in Dependencies)
+            {
+                dependency.ParentInstance = currentValue;
+            }
+            foreach (var notificationStrategy in notificationStrategies)
+                notificationStrategy.Track(currentValue);
         }
     }
 }
