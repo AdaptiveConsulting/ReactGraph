@@ -42,7 +42,7 @@ namespace ReactGraph.Internals.Construction
             edge.Source.Color = color;
             edge.Source.Label = label;
             AddDependenciesToGraph(expressionNode);
-            return new MemberDefinition(targetPropertyNode, edge.Target);
+            return new MemberDefinition(edge.Target);
         }
 
         private void AddDependenciesToGraph(INodeInfo formulaNode)
