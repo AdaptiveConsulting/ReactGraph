@@ -8,35 +8,35 @@ namespace ReactGraph.Tests
 {
     public class GraphTests
     {
-        private readonly DirectedGraph<int> _sut;
+        private readonly DirectedGraph<int> sut;
 
         public GraphTests()
         {
-            _sut = new DirectedGraph<int>();
+            sut = new DirectedGraph<int>();
         }
 
         [Fact]
         public void PopulateGraph()
         {
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(2, 3);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(2, 3);
             PrintGraphToConsole("PopulateGraph");
 
-            _sut.VerticiesCount.ShouldBe(3);
-            _sut.EdgesCount.ShouldBe(3);
+            sut.VerticiesCount.ShouldBe(3);
+            sut.EdgesCount.ShouldBe(3);
         }
 
         [Fact]
         public void DeapthFirstSeach()
         {
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(2, 3);
-            _sut.AddEdge(3, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(2, 3);
+            sut.AddEdge(3, 4);
             PrintGraphToConsole("DeapthFirstSeach");
 
-            var result = _sut.DepthFirstSearch(2).Select(v => v.Data);
+            var result = sut.DepthFirstSearch(2).Select(v => v.Data);
 
             result.ShouldBe(new []{2, 3, 4});
         }
@@ -44,13 +44,13 @@ namespace ReactGraph.Tests
         [Fact]
         public void Subgraph()
         {
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(2, 3);
-            _sut.AddEdge(3, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(2, 3);
+            sut.AddEdge(3, 4);
             PrintGraphToConsole("graph");
 
-            var result = _sut.SubGraph(2);
+            var result = sut.SubGraph(2);
 
             result.VerticiesCount.ShouldBe(3);
             result.EdgesCount.ShouldBe(2);
@@ -59,14 +59,14 @@ namespace ReactGraph.Tests
         [Fact]
         public void Sources()
         {
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(2, 3);
-            _sut.AddEdge(3, 4);
-            _sut.AddEdge(5, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(2, 3);
+            sut.AddEdge(3, 4);
+            sut.AddEdge(5, 4);
             PrintGraphToConsole("Sources");
 
-            var result = _sut.FindSources();
+            var result = sut.FindSources();
 
             result.Select(v => v.Data).ShouldBe(new []{1, 5});
         }
@@ -74,14 +74,14 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSort()
         {
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(2, 3);
-            _sut.AddEdge(3, 4);
-            _sut.AddEdge(5, 4);
-            _sut.AddEdge(5, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(2, 3);
+            sut.AddEdge(3, 4);
+            sut.AddEdge(5, 4);
+            sut.AddEdge(5, 4);
 
-            var result = _sut.TopologicalSort(1);
+            var result = sut.TopologicalSort(1);
             PrintGraphToConsole("TopologicalSort");
 
             result.Select(v => v.Data).ShouldBe(new[] { 1, 2, 3, 4 });
@@ -90,19 +90,19 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSort2()
         {
-            _sut.AddEdge(0, 1);
-            _sut.AddEdge(0, 3);
-            _sut.AddEdge(0, 4);
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(3, 2);
-            _sut.AddEdge(3, 4);
-            _sut.AddEdge(2, 4);
-            _sut.AddEdge(2, 5);
-            _sut.AddEdge(4, 5);
+            sut.AddEdge(0, 1);
+            sut.AddEdge(0, 3);
+            sut.AddEdge(0, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(3, 2);
+            sut.AddEdge(3, 4);
+            sut.AddEdge(2, 4);
+            sut.AddEdge(2, 5);
+            sut.AddEdge(4, 5);
             PrintGraphToConsole("TopologicalSort2");
 
-            var result = _sut.TopologicalSort(1);
+            var result = sut.TopologicalSort(1);
 
             result.Select(v => v.Data).ShouldBe(new[] {1, 3, 2, 4, 5});
         }
@@ -110,27 +110,27 @@ namespace ReactGraph.Tests
         [Fact]
         public void TopologicalSortThrowsOnCycle()
         {
-            _sut.AddEdge(0, 1);
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(2, 0);
+            sut.AddEdge(0, 1);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(2, 0);
             PrintGraphToConsole("TopologicalSortThrowsOnCycle");
 
-            Assert.Throws<InvalidOperationException>(() => _sut.TopologicalSort(0));
+            Assert.Throws<InvalidOperationException>(() => sut.TopologicalSort(0));
         }
 
         [Fact]
         public void ToDotLanguage()
         {
-            _sut.AddEdge(0, 1);
-            _sut.AddEdge(0, 3);
-            _sut.AddEdge(0, 4);
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(1, 3);
-            _sut.AddEdge(3, 2);
-            _sut.AddEdge(3, 4);
-            _sut.AddEdge(2, 4);
-            _sut.AddEdge(2, 5);
-            _sut.AddEdge(4, 5);
+            sut.AddEdge(0, 1);
+            sut.AddEdge(0, 3);
+            sut.AddEdge(0, 4);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(1, 3);
+            sut.AddEdge(3, 2);
+            sut.AddEdge(3, 4);
+            sut.AddEdge(2, 4);
+            sut.AddEdge(2, 5);
+            sut.AddEdge(4, 5);
             PrintGraphToConsole("ToDotLanguage");
 
             const string expected = @"digraph Foo {
@@ -146,26 +146,26 @@ namespace ReactGraph.Tests
      2 -> 5;
 }";
 
-            _sut.ToDotLanguage("Foo").ShouldBe(expected);
+            sut.ToDotLanguage("Foo").ShouldBe(expected);
         }
 
         [Fact]
         public void CycleDetection()
         {
             // cycle 1
-            _sut.AddEdge(0, 1);
-            _sut.AddEdge(1, 2);
-            _sut.AddEdge(2, 0);
+            sut.AddEdge(0, 1);
+            sut.AddEdge(1, 2);
+            sut.AddEdge(2, 0);
 
-            _sut.AddEdge(2, 3);
+            sut.AddEdge(2, 3);
 
             // cycle 2
-            _sut.AddEdge(3, 4);
-            _sut.AddEdge(4, 3);
+            sut.AddEdge(3, 4);
+            sut.AddEdge(4, 3);
 
             PrintGraphToConsole("CycleDetection");
 
-            var detectedCyles = _sut.DetectCyles().ToList();
+            var detectedCyles = sut.DetectCyles().ToList();
 
             foreach (var cyle in detectedCyles)
             {
@@ -177,7 +177,7 @@ namespace ReactGraph.Tests
 
         private void PrintGraphToConsole(string name)
         {
-            Console.WriteLine(_sut.ToDotLanguage(name));
+            Console.WriteLine(sut.ToDotLanguage(name));
         }
     }
 }

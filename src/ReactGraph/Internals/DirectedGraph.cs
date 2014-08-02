@@ -7,16 +7,16 @@ namespace ReactGraph.Internals
 {
     internal class DirectedGraph<T>
     {
-        private readonly Dictionary<T, Vertex<T>> _verticies = new Dictionary<T, Vertex<T>>();
+        private readonly Dictionary<T, Vertex<T>> verticies = new Dictionary<T, Vertex<T>>();
 
         public int VerticiesCount
         {
-            get { return _verticies.Count; }
+            get { return verticies.Count; }
         }
 
         public int EdgesCount
         {
-            get { return _verticies.Values.Sum(v => v.Successors.Count()); }
+            get { return verticies.Values.Sum(v => v.Successors.Count()); }
         }
 
         public void AddEdge(T source, T target)
@@ -34,7 +34,7 @@ namespace ReactGraph.Internals
 
         private IEnumerable<Edge<T>> Edges
         {
-            get { return _verticies.Values.SelectMany(vertex => vertex.Successors); }
+            get { return verticies.Values.SelectMany(vertex => vertex.Successors); }
         } 
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace ReactGraph.Internals
         public IList<Vertex<T>> DepthFirstSearch(T origin)
         {
             var stack = new Stack<Vertex<T>>();
-            stack.Push(_verticies[origin]);
+            stack.Push(verticies[origin]);
             var result = new List<Vertex<T>>();
 
             while (stack.Count > 0)
@@ -65,11 +65,6 @@ namespace ReactGraph.Internals
             return result;
         }
 
-        public IEnumerable<Vertex<T>> Verticies
-        {
-            get { return _verticies.Values; }
-        }
-
         /// <summary>
         /// Search for source verticies (roots, ie. vertex which have no incoming edges)
         /// </summary>
@@ -77,7 +72,7 @@ namespace ReactGraph.Internals
         public IEnumerable<Vertex<T>> FindSources()
         {
             var perVertexCount = new Dictionary<Vertex<T>, int>();
-            foreach (var vertex in _verticies.Values)
+            foreach (var vertex in verticies.Values)
             {
                 perVertexCount[vertex] = 0;
             }
@@ -145,12 +140,12 @@ namespace ReactGraph.Internals
 
         private Vertex<T> AddVertex(T data)
         {
-            if (!_verticies.ContainsKey(data))
+            if (!verticies.ContainsKey(data))
             {
                 var vertex = new Vertex<T>(data);
-                _verticies[data] = vertex;
+                verticies[data] = vertex;
             }
-            return _verticies[data];
+            return verticies[data];
         }
 
         public string ToDotLanguage(string title)
@@ -181,7 +176,7 @@ namespace ReactGraph.Internals
             var lowlinks = new Dictionary<Vertex<T>, int>();
             var result = new List<List<Vertex<T>>>();
 
-            foreach (var vertex in _verticies.Values)
+            foreach (var vertex in verticies.Values)
             {
                 if (!indexes.ContainsKey(vertex))
                 {
