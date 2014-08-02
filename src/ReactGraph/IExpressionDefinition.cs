@@ -5,6 +5,7 @@ namespace ReactGraph
 {
     public interface IExpressionDefinition
     {
-        void Bind<TProp>(Expression<Func<TProp>> targetProperty);
+        IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty);
+        IExpressionDefinition Metadata(string label = null, string color = null);
     }
 }

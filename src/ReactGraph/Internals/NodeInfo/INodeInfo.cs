@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.NodeInfo
 {
     interface INodeInfo
     {
@@ -15,8 +15,6 @@ namespace ReactGraph.Internals
         object RootInstance { get; set; }
 
         object ParentInstance { get; set; }
-
-        string Key { get; }
 
         List<INodeInfo> Dependencies { get; }
 

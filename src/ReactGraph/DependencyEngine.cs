@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ReactGraph.Internals;
+using ReactGraph.Internals.Construction;
+using ReactGraph.Internals.Graph;
+using ReactGraph.Internals.NodeInfo;
 
 namespace ReactGraph
 {

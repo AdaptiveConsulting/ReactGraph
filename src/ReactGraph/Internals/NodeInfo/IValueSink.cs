@@ -1,4 +1,4 @@
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.NodeInfo
 {
     interface IValueSink<in T>
     {

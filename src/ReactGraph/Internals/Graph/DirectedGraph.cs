@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.Graph
 {
     internal class DirectedGraph<T>
     {
@@ -19,12 +19,18 @@ namespace ReactGraph.Internals
             get { return verticies.Values.Sum(v => v.Successors.Count()); }
         }
 
-        public void AddEdge(T source, T target)
+        public Edge<T> AddEdge(T source, T target)
         {
             var sourceVertex = AddVertex(source);
             var targetVertex = AddVertex(target);
-            if (sourceVertex.Successors.All(e => e.Target != targetVertex))
-                sourceVertex.AddSuccessorEdge(targetVertex);
+
+            var edge = sourceVertex.Successors.FirstOrDefault(e => e.Target == targetVertex);
+
+            if (edge != null)
+            {
+                return edge;
+            }
+            return sourceVertex.AddSuccessorEdge(targetVertex);
         }
 
         private void RemoveEdge(Edge<T> edge)
@@ -155,7 +161,9 @@ namespace ReactGraph.Internals
 
             foreach (var vertex in verticies)
             {
-                labels.AppendFormat("     {0} [label=\"{1}\"];", vertex.Value.Data.GetHashCode(), vertex.Value.Data).AppendLine();
+                var label = string.IsNullOrEmpty(vertex.Value.Label) ? vertex.Value.Data.ToString() : vertex.Value.Label;
+                var color = string.IsNullOrEmpty(vertex.Value.Color) ? string.Empty : string.Format(", fillcolor=\"{0}\"", vertex.Value.Color);
+                labels.AppendFormat("     {0} [label=\"{1}\"{2}];", vertex.Value.Data.GetHashCode(), label, color).AppendLine();
             }
             foreach (var edge in Edges)
             {

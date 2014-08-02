@@ -54,6 +54,42 @@ namespace ReactGraph.Tests
             vertex3.Value.ShouldBe(6);
         }
 
+
+        [Fact]
+        public void AddMetadataToNodesTest()
+        {
+            /*
+             * A -> A + B ----> C
+             *      ^
+             *     /
+             *    /
+             *   B
+             */
+
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+            var c = new SinglePropertyType();
+            b.Value = 3;
+            var engine = new DependencyEngine();
+
+            engine.Expr(() => Addition(a.Value, b.Value)).Metadata(label: "+", color: ".7 .3 1.0")
+                  .Bind(() => c.Value).Metadata(color: ".7 .3 .5");
+
+            var dotFormat = engine.ToString();
+            Console.WriteLine(dotFormat);
+
+            // We set the value to 2, then tell the engine the value has changed
+            a.Value = 2;
+            engine.ValueHasChanged(a, "Value");
+            c.Value.ShouldBe(5);
+
+            var lines = dotFormat.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+            lines[1].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\"]");
+            lines[2].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\"]");
+            lines[3].ShouldContain("[label=\"a.Value\"]");
+        }
+
+
         private int Addition(int i1, int i2, int i3)
         {
             return i1 + i2 + i3;

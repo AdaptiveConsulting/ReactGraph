@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.Graph
 {
     internal class Vertex<T>
     {
@@ -12,17 +12,22 @@ namespace ReactGraph.Internals
             Data = data;
         }
 
-        public T Data { get; set; }
+        public string Color { get; set; }
+
+        public string Label { get; set; }
+
+        public T Data { get; private set; }
 
         public IEnumerable<Edge<T>> Predecessors { get { return predecessors; } } 
 
         public IEnumerable<Edge<T>> Successors { get { return successors; } }
 
-        public void AddSuccessorEdge(Vertex<T> targetVertex)
+        public Edge<T> AddSuccessorEdge(Vertex<T> targetVertex)
         {
             var edge = new Edge<T>(this, targetVertex);
             successors.Add(edge);
             targetVertex.AddPredecessor(edge);
+            return edge;
         }
 
         public void RemoveSuccessorEdge(Edge<T> edge)

@@ -1,13 +1,17 @@
 using System;
 using System.Linq.Expressions;
+using ReactGraph.Internals.Graph;
+using ReactGraph.Internals.NodeInfo;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.Construction
 {
     internal class ExpressionDefinition : IExpressionDefinition
     {
         readonly INodeInfo expressionNode;
         readonly ExpressionParser expressionParser;
         readonly DirectedGraph<INodeInfo> graph;
+        string label;
+        string color;
 
         public ExpressionDefinition(INodeInfo expressionNode, ExpressionParser expressionParser, DirectedGraph<INodeInfo> graph)
         {
@@ -16,10 +20,17 @@ namespace ReactGraph.Internals
             this.graph = graph;
         }
 
-        public void Bind<TProp>(Expression<Func<TProp>> targetProperty)
+        public IExpressionDefinition Metadata(string label = null, string color = null)
         {
-            var targetVertex = expressionParser.GetNodeInfo(targetProperty);
-            var valueSink = targetVertex as IValueSink<TProp>;
+            this.label = label;
+            this.color = color;
+            return this;
+        }
+
+        public IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty)
+        {
+            var targetPropertyNode = expressionParser.GetNodeInfo(targetProperty);
+            var valueSink = targetPropertyNode as IValueSink<TProp>;
 
             if (valueSink == null)
                 throw new Exception("Target expression cannot be written to");
@@ -27,8 +38,11 @@ namespace ReactGraph.Internals
             // TODO We probably need another interface or a base type here to remove cast
             valueSink.SetSource((IValueSource<TProp>)expressionNode);
 
-            graph.AddEdge(expressionNode, targetVertex);
+            var edge = graph.AddEdge(expressionNode, targetPropertyNode);
+            edge.Source.Color = color;
+            edge.Source.Label = label;
             AddDependenciesToGraph(expressionNode);
+            return new MemberDefinition(targetPropertyNode, edge.Target);
         }
 
         private void AddDependenciesToGraph(INodeInfo formulaNode)
