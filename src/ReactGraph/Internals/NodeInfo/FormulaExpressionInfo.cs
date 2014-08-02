@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T>
+    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T> // TODO override gethashcode and equal
     {
         readonly Expression<Func<T>> formula;
         private readonly Func<T> getValue;

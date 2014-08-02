@@ -5,12 +5,10 @@ namespace ReactGraph.Internals.Construction
 {
     class MemberDefinition : IMemberDefinition
     {
-        readonly INodeInfo targetPropertyNode;
         readonly Vertex<INodeInfo> propertyVertex;
 
-        public MemberDefinition(INodeInfo targetPropertyNode, Vertex<INodeInfo> propertyVertex)
+        public MemberDefinition(Vertex<INodeInfo> propertyVertex)
         {
-            this.targetPropertyNode = targetPropertyNode;
             this.propertyVertex = propertyVertex;
         }
 

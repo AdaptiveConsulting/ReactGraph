@@ -20,10 +20,10 @@ namespace ReactGraph.Internals.Construction
             this.graph = graph;
         }
 
-        public IExpressionDefinition Metadata(string label = null, string color = null)
+        public IExpressionDefinition Metadata(string lbl = null, string clr = null)
         {
-            this.label = label;
-            this.color = color;
+            label = lbl;
+            color = clr;
             return this;
         }
 

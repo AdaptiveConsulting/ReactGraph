@@ -147,7 +147,6 @@ namespace ReactGraph.Internals
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            int argindex = 0;
             Visit(node.Object);
 
             IEnumerable<Expression> arguments = node.Arguments;
@@ -155,7 +154,6 @@ namespace ReactGraph.Internals
             {
                 Visit(arguments.First());
                 arguments = arguments.Skip(1);
-                argindex++;
             }
 
             Out("." + node.Method.Name + "(");
