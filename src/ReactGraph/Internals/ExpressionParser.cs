@@ -23,7 +23,7 @@ namespace ReactGraph.Internals
         class GetNodeVisitor<T> : ExpressionVisitor
         {
             readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
-            readonly List<PropertyNodeInfo<T>> nodes = new List<PropertyNodeInfo<T>>();
+            readonly List<INodeInfo> nodes = new List<INodeInfo>();
             readonly NodeRepository nodeRepository;
             MemberExpression propertyExpression;
             PropertyInfo propertyInfo;
@@ -79,7 +79,7 @@ namespace ReactGraph.Internals
                         localInstance = path.Pop()(localInstance);
                     }
 
-                    var propertyNodeInfo = nodeRepository.GetOrCreate(rootValue, (T)localInstance, propertyInfo, propertyExpression);
+                    var propertyNodeInfo = nodeRepository.GetOrCreate<T>(rootValue, localInstance, propertyInfo, propertyExpression);
 
                     nodes.Add(propertyNodeInfo);
                     propertyInfo = null;

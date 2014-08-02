@@ -21,9 +21,9 @@ namespace ReactGraph
             };
         }
 
-        public PropertyNodeInfo<T> GetOrCreate<T>(object rootValue, T parentInstance, PropertyInfo propertyInfo, MemberExpression propertyExpression)
+        public PropertyNodeInfo<T> GetOrCreate<T>(object rootValue, object parentInstance, PropertyInfo propertyInfo, MemberExpression propertyExpression)
         {
-            var sourceKey = Tuple.Create<object, string>(parentInstance, propertyInfo.Name);
+            var sourceKey = Tuple.Create(parentInstance, propertyInfo.Name);
             if (!nodeLookup.ContainsKey(sourceKey))
             {
                 var propertyNodeInfo = new PropertyNodeInfo<T>(rootValue, parentInstance, propertyInfo, propertyExpression, GetStrategies(parentInstance));

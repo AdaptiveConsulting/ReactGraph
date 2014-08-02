@@ -37,7 +37,7 @@ namespace ReactGraph.Tests
             node.RootInstance.ShouldBeSameAs(viewModel);
             node.ShouldBeOfType<PropertyNodeInfo<bool>>()
                 .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-            node.Dependencies.Length.ShouldBe(1);
+            node.Dependencies.Count.ShouldBe(1);
             var paymentScheduleNode = node.Dependencies[0];
             paymentScheduleNode
                 .ShouldBeOfType<PropertyNodeInfo<object>>()
@@ -54,10 +54,10 @@ namespace ReactGraph.Tests
             var node = expressionParser.GetNodeInfo(expr);
             node.RootInstance.ShouldBeSameAs(viewModel);
             node.ShouldBeOfType<FormulaExpressionInfo<bool>>();
-            node.Dependencies.Length.ShouldBe(1);
+            node.Dependencies.Count.ShouldBe(1);
             var validationErrorNode = node.Dependencies[0];
             validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
-            validationErrorNode.Dependencies.Length.ShouldBe(1);
+            validationErrorNode.Dependencies.Count.ShouldBe(1);
             validationErrorNode.ShouldBeOfType<PropertyNodeInfo<object>>()
                 .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
 

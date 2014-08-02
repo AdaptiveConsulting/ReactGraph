@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -21,10 +22,8 @@ namespace ReactGraph.Internals
         /// <param name="propertyExpression"></param>
         /// <param name="notificationStrategies"></param>
         public PropertyNodeInfo(
-            object rootInstance, 
-            object parentInstance, 
-            PropertyInfo propertyInfo, 
-            MemberExpression propertyExpression,
+            object rootInstance, object parentInstance, 
+            PropertyInfo propertyInfo, MemberExpression propertyExpression, 
             INotificationStrategy[] notificationStrategies)
         {
             this.notificationStrategies = notificationStrategies;
@@ -32,13 +31,14 @@ namespace ReactGraph.Internals
             {
                 if (parentInstance == null)
                     return default(T);
-                return (T) propertyInfo.GetValue(parentInstance, null);
+                return (T)propertyInfo.GetValue(parentInstance, null);
             };
             RootInstance = rootInstance;
             PropertyInfo = propertyInfo;
             PropertyExpression = propertyExpression;
             path = propertyExpression.ToString();
             ParentInstance = parentInstance;
+            Dependencies = new List<INodeInfo>();
         }
 
         public object RootInstance { get; private set; }
@@ -51,7 +51,7 @@ namespace ReactGraph.Internals
 
         public string Key { get; private set; }
 
-        public INodeInfo[] Dependencies { get; private set; }
+        public List<INodeInfo> Dependencies { get; private set; }
 
         public void SetSource(IValueSource<T> formulaNode)
         {
@@ -78,14 +78,14 @@ namespace ReactGraph.Internals
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((PropertyNodeInfo<T>) obj);
+            return Equals((PropertyNodeInfo<T>)obj);
         }
 
         public override int GetHashCode()
         {
             unchecked
             {
-                return ((path != null ? path.GetHashCode() : 0)*397) ^ (RootInstance != null ? RootInstance.GetHashCode() : 0);
+                return ((path != null ? path.GetHashCode() : 0) * 397) ^ (RootInstance != null ? RootInstance.GetHashCode() : 0);
             }
         }
 

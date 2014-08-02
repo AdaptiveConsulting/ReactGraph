@@ -1,28 +1,25 @@
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 
 namespace ReactGraph.Internals
 {
     class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T>
     {
-        private readonly PropertyNodeInfo<T>[] dependencies;
         private readonly Func<T> getValue;
         private T currentValue;
 
         public FormulaExpressionInfo(Expression<Func<T>> formula, PropertyNodeInfo<T>[] dependencies, object rootInstance)
         {
-            this.dependencies = dependencies;
             Key = formula.Name;
             RootInstance = rootInstance;
             getValue = formula.Compile();
+            Dependencies = new List<INodeInfo>();
         }
 
         public string Key { get; private set; }
 
-        public INodeInfo[] Dependencies
-        {
-            get { return dependencies; }
-        }
+        public List<INodeInfo> Dependencies { get; private set; }
 
         public T GetValue()
         {
