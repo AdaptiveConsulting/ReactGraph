@@ -7,7 +7,7 @@ namespace ReactGraph.Tests
     public class ApiTest
     {
         [Fact]
-        public void BasicApiTest()
+        public void FluentApiTest()
         {
             /* Each vertex is a node in this graph
              * 
@@ -36,14 +36,14 @@ namespace ReactGraph.Tests
             var vertex8 = new SinglePropertyType();
             var engine = new DependencyEngine();
 
-            engine.Bind(() => vertex0.Value, () => Addition(vertex6.Value));
-            engine.Bind(() => vertex1.Value, () => Addition(vertex0.Value, vertex5.Value, vertex4.Value));
-            engine.Bind(() => vertex2.Value, () => Addition(vertex0.Value, vertex1.Value));
-            engine.Bind(() => vertex3.Value, () => Addition(vertex1.Value, vertex2.Value));
-            engine.Bind(() => vertex5.Value, () => Addition(vertex4.Value));
-            engine.Bind(() => vertex7.Value, () => Addition(vertex2.Value));
-            engine.Bind(() => vertex8.Value, () => Addition(vertex2.Value));
-
+            engine.Expr(() => Addition(vertex6.Value)).Bind(() => vertex0.Value);
+            engine.Expr(() => Addition(vertex0.Value, vertex5.Value, vertex4.Value)).Bind(() => vertex1.Value);
+            engine.Expr(() => Addition(vertex0.Value, vertex1.Value)).Bind(() => vertex2.Value);
+            engine.Expr(() => Addition(vertex1.Value, vertex2.Value)).Bind(() => vertex3.Value);
+            engine.Expr(() => Addition(vertex4.Value)).Bind(() => vertex5.Value);
+            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex7.Value);
+            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex8.Value);
+                
             Console.WriteLine(engine.ToString());
 
             // We set the value to 2, then tell the engine the value has changed
