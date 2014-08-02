@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyEngine.cs" />
+    <Compile Include="Internals\ExpressionDefinition.cs" />
+    <Compile Include="IExpressionDefinition.cs" />
     <Compile Include="INotificationStrategy.cs" />
     <Compile Include="Internals\ExpressionStringBuilder.cs" />
     <Compile Include="Internals\Edge.cs" />

@@ -22,7 +22,8 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
 
-            engine.Bind(() => notifies.Total, () => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))));
+            engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
+                  .Bind(() => notifies.Total);
 
             notifies.SubTotal = 100;
             notifies.Total.ShouldBe(120);
@@ -33,7 +34,8 @@ namespace ReactGraph.Tests
         {
             var viewModel = new MortgateCalculatorViewModel();
 
-            engine.Bind(() => viewModel.CanApply, () => !viewModel.PaymentSchedule.HasValidationError);
+            engine.Expr(() => !viewModel.PaymentSchedule.HasValidationError)
+                  .Bind(() => viewModel.CanApply);
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
             Console.WriteLine(engine.ToString());
@@ -64,9 +66,11 @@ namespace ReactGraph.Tests
              *     ^      |
              *     +--2<--+
              */
-            engine.Bind(() => four.Value, () => two.Value + three.Value);
-            engine.Bind(() => two.Value, () => one.Value);
-            engine.Bind(() => three.Value, () => one.Value);
+            engine.Expr(() => two.Value + three.Value)
+                  .Bind(() => four.Value);
+            engine.Expr(() => one.Value)
+                  .Bind(() => two.Value);
+            engine.Expr(() => one.Value).Bind(() => three.Value);
 
             Console.WriteLine(engine.ToString());
 
@@ -81,7 +85,8 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(true);
 
-            engine.Bind(() => Foo, () => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule));
+            engine.Expr(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule))
+                  .Bind(() => Foo);
 
             Foo.ShouldNotBe(42);
             viewModel.PaymentSchedule.HasValidationError = false;
