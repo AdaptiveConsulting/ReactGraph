@@ -48,7 +48,7 @@
     <Compile Include="Internals\ExpressionParser.cs" />
     <Compile Include="Internals\IValueSink.cs" />
     <Compile Include="Internals\IValueSource.cs" />
-    <Compile Include="Internals\PropertyNodeInfo.cs" />
+    <Compile Include="Internals\MemberNodeInfo.cs" />
     <Compile Include="Internals\FormulaExpressionInfo.cs" />
     <Compile Include="Internals\INodeInfo.cs" />
     <Compile Include="NodeRepository.cs" />

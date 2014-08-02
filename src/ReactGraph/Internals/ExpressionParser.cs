@@ -22,11 +22,10 @@ namespace ReactGraph.Internals
 
         class GetNodeVisitor<T> : ExpressionVisitor
         {
-            readonly Stack<Func<object, object>> path = new Stack<Func<object, object>>();
-            readonly List<INodeInfo> nodes = new List<INodeInfo>();
+            readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
             readonly NodeRepository nodeRepository;
-            MemberExpression propertyExpression;
-            PropertyInfo propertyInfo;
+            INodeInfo formulaNode;
+            INodeInfo currentLevelNodeInfo;
 
             public GetNodeVisitor(NodeRepository nodeRepository)
             {
@@ -36,56 +35,58 @@ namespace ReactGraph.Internals
             public INodeInfo GetNode(Expression target)
             {
                 Visit(target);
-                return nodes.Single();
+                return formulaNode.ReduceIfPossible();
             }
 
-            protected override Expression VisitMethodCall(MethodCallExpression node)
+            protected override Expression VisitLambda<T1>(Expression<T1> node)
             {
-                return base.VisitMethodCall(node);
+                formulaNode = currentLevelNodeInfo = nodeRepository.GetOrCreate<T>(node);
+                return base.VisitLambda(node);
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                var property = node.Member as PropertyInfo;
-                if (propertyInfo == null)
-                {
-                    propertyInfo = property;
-                    propertyExpression = node;
-                }
-                else
-                {
-                    var fieldInfo = node.Member as FieldInfo;
-                    if (property != null)
-                    {
-                        path.Push(o => property.GetValue(o, null));
-                    }
-                    else if (fieldInfo != null)
-                    {
-                        path.Push(fieldInfo.GetValue);
-                    }
-                }
+                path.Push(node);
+                //var property = node.Member as PropertyInfo;
+                //if (propertyExpression == null)
+                //{
+                //    propertyInfo = property;
+                //    propertyExpression = node;
+                //}
+                //else
+                //{
+                //    var fieldInfo = node.Member as FieldInfo;
+                //    if (property != null)
+                //    {
+                //    }
+                //    else if (fieldInfo != null)
+                //    {
+                //        path.Push(fieldInfo.GetValue);
+                //    }
+                //}
                 return base.VisitMember(node);
             }
 
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                if (propertyInfo != null)
+                var currentValue = node.Value;
+                var rootValue = node.Value;
+                INodeInfo rootNode = null;
+                INodeInfo currentNode = null;
+                while (path.Count > 0)
                 {
-                    var localInstance = node.Value;
-                    var rootValueResolver = path.Count > 0 ? path.Peek() : null;
-                    var rootValue = rootValueResolver == null ? node.Value : rootValueResolver(node.Value);
-                    while (path.Count > 0)
-                    {
-                        localInstance = path.Pop()(localInstance);
-                    }
-
-                    var propertyNodeInfo = nodeRepository.GetOrCreate<T>(rootValue, localInstance, propertyInfo, propertyExpression);
-
-                    nodes.Add(propertyNodeInfo);
-                    propertyInfo = null;
-                    propertyExpression = null;
+                    var expression = path.Pop();
+                    var nodeInfo = nodeRepository.GetOrCreate<T>(rootValue, currentValue, expression.Member, expression);
+                    if (currentNode != null)
+                        currentNode.Dependencies.Add(nodeInfo);
+                    else
+                        rootNode = nodeInfo;
+                    currentNode = nodeInfo;
+                    currentValue = ((IValueSource)nodeInfo).GetValue();
                 }
                 
+                currentLevelNodeInfo.Dependencies.Add(rootNode.Dependencies.Single());
+
                 return base.VisitConstant(node);
             }
         }

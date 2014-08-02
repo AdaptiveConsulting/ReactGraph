@@ -21,17 +21,30 @@ namespace ReactGraph
             };
         }
 
-        public PropertyNodeInfo<T> GetOrCreate<T>(object rootValue, object parentInstance, PropertyInfo propertyInfo, MemberExpression propertyExpression)
+        public INodeInfo GetOrCreate<T>(object rootValue, object parentInstance, MemberInfo memberInfo, MemberExpression propertyExpression)
         {
-            var sourceKey = Tuple.Create(parentInstance, propertyInfo.Name);
+            var sourceKey = Tuple.Create(parentInstance, memberInfo.Name);
             if (!nodeLookup.ContainsKey(sourceKey))
             {
-                var propertyNodeInfo = new PropertyNodeInfo<T>(rootValue, parentInstance, propertyInfo, propertyExpression, GetStrategies(parentInstance));
+                var propertyNodeInfo = new MemberNodeInfo<T>(rootValue, parentInstance, memberInfo, propertyExpression, GetStrategies(parentInstance));
                 nodeLookup.Add(sourceKey, propertyNodeInfo);
                 return propertyNodeInfo;
             }
 
-            return (PropertyNodeInfo<T>) nodeLookup[sourceKey];
+            return nodeLookup[sourceKey];
+        }
+
+        public INodeInfo GetOrCreate<T>(LambdaExpression methodExpression)
+        {
+            var sourceKey = Tuple.Create<object, string>(null, methodExpression.ToString());
+            if (!nodeLookup.ContainsKey(sourceKey))
+            {
+                var propertyNodeInfo = new FormulaExpressionInfo<T>((Expression<Func<T>>) methodExpression);
+                nodeLookup.Add(sourceKey, propertyNodeInfo);
+                return propertyNodeInfo;
+            }
+
+            return nodeLookup[sourceKey];
         }
 
         private INotificationStrategy[] GetStrategies(object parentInstance)

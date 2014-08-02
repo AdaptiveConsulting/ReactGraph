@@ -1,7 +1,11 @@
 namespace ReactGraph.Internals
 {
-    interface IValueSource<out T>
+    interface IValueSource
     {
-        T GetValue();
+        object GetValue();
+    }
+    interface IValueSource<out T> : IValueSource
+    {
+        new T GetValue();
     }
 }

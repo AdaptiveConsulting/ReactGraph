@@ -23,8 +23,8 @@ namespace ReactGraph.Tests
             Expression<Func<int>> expr = () => notifies.Total;
             var node = expressionParser.GetNodeInfo(expr);
             node.RootInstance.ShouldBeSameAs(notifies);
-            node.ShouldBeOfType<PropertyNodeInfo<int>>()
-                .PropertyInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
+            node.ShouldBeOfType<MemberNodeInfo<int>>()
+                .MemberInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
         }
 
         [Fact]
@@ -35,13 +35,13 @@ namespace ReactGraph.Tests
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
             var node = expressionParser.GetNodeInfo(expr);
             node.RootInstance.ShouldBeSameAs(viewModel);
-            node.ShouldBeOfType<PropertyNodeInfo<bool>>()
-                .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
+            node.ShouldBeOfType<MemberNodeInfo<bool>>()
+                .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
             node.Dependencies.Count.ShouldBe(1);
             var paymentScheduleNode = node.Dependencies[0];
             paymentScheduleNode
-                .ShouldBeOfType<PropertyNodeInfo<object>>()
-                .PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
+                .ShouldBeOfType<MemberNodeInfo<object>>()
+                .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
 
@@ -58,14 +58,13 @@ namespace ReactGraph.Tests
             var validationErrorNode = node.Dependencies[0];
             validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
             validationErrorNode.Dependencies.Count.ShouldBe(1);
-            validationErrorNode.ShouldBeOfType<PropertyNodeInfo<object>>()
-                .PropertyInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-
+            validationErrorNode.ShouldBeOfType<MemberNodeInfo<object>>()
+                .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
 
             var paymentScheduleNode = validationErrorNode.Dependencies[0];
             paymentScheduleNode
-                .ShouldBeOfType<PropertyNodeInfo<object>>()
-                .PropertyInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
+                .ShouldBeOfType<MemberNodeInfo<object>>()
+                .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
     }

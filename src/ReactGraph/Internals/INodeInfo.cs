@@ -19,5 +19,7 @@ namespace ReactGraph.Internals
         string Key { get; }
 
         List<INodeInfo> Dependencies { get; }
+
+        INodeInfo ReduceIfPossible();
     }
 }

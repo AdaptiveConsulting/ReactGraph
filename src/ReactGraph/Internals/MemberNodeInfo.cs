@@ -5,13 +5,14 @@ using System.Reflection;
 
 namespace ReactGraph.Internals
 {
-    class PropertyNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
+    class MemberNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
     {
         private readonly INotificationStrategy[] notificationStrategies;
         private readonly Func<T> getValue;
         private readonly string path;
         private IValueSource<T> formula;
         private T currentValue;
+        Action<object> setValue;
 
         /// <summary>
         /// Represents a dependency
@@ -21,9 +22,9 @@ namespace ReactGraph.Internals
         /// <param name="propertyInfo">Property info for Bar in foo.Bar</param>
         /// <param name="propertyExpression"></param>
         /// <param name="notificationStrategies"></param>
-        public PropertyNodeInfo(
+        public MemberNodeInfo(
             object rootInstance, object parentInstance, 
-            PropertyInfo propertyInfo, MemberExpression propertyExpression, 
+            MemberInfo memberInfo, MemberExpression propertyExpression, 
             INotificationStrategy[] notificationStrategies)
         {
             this.notificationStrategies = notificationStrategies;
@@ -31,10 +32,25 @@ namespace ReactGraph.Internals
             {
                 if (parentInstance == null)
                     return default(T);
-                return (T)propertyInfo.GetValue(parentInstance, null);
+                var info = memberInfo as PropertyInfo;
+                if (info != null)
+                    return (T)info.GetValue(parentInstance, null);
+                var fieldInfo = memberInfo as FieldInfo;
+                if (fieldInfo != null)
+                    return (T)fieldInfo.GetValue(parentInstance);
+                return default(T);
+            };
+            setValue = o =>
+            {
+                var info = memberInfo as PropertyInfo;
+                if (info != null)
+                    info.SetValue(parentInstance, o, null);
+                var fieldInfo = memberInfo as FieldInfo;
+                if (fieldInfo != null)
+                    fieldInfo.SetValue(parentInstance, o);
             };
             RootInstance = rootInstance;
-            PropertyInfo = propertyInfo;
+            MemberInfo = memberInfo;
             PropertyExpression = propertyExpression;
             path = propertyExpression.ToString();
             ParentInstance = parentInstance;
@@ -43,7 +59,7 @@ namespace ReactGraph.Internals
 
         public object RootInstance { get; private set; }
 
-        public PropertyInfo PropertyInfo { get; private set; }
+        public MemberInfo MemberInfo { get; private set; }
 
         public MemberExpression PropertyExpression { get; private set; }
 
@@ -52,6 +68,11 @@ namespace ReactGraph.Internals
         public string Key { get; private set; }
 
         public List<INodeInfo> Dependencies { get; private set; }
+
+        public INodeInfo ReduceIfPossible()
+        {
+            return this;
+        }
 
         public void SetSource(IValueSource<T> formulaNode)
         {
@@ -68,7 +89,7 @@ namespace ReactGraph.Internals
             return path;
         }
 
-        bool Equals(PropertyNodeInfo<T> other)
+        bool Equals(MemberNodeInfo<T> other)
         {
             return string.Equals(path, other.path) && Equals(RootInstance, other.RootInstance);
         }
@@ -78,7 +99,7 @@ namespace ReactGraph.Internals
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
             if (obj.GetType() != GetType()) return false;
-            return Equals((PropertyNodeInfo<T>)obj);
+            return Equals((MemberNodeInfo<T>)obj);
         }
 
         public override int GetHashCode()
@@ -89,12 +110,17 @@ namespace ReactGraph.Internals
             }
         }
 
-        public static bool operator ==(PropertyNodeInfo<T> left, PropertyNodeInfo<T> right)
+        object IValueSource.GetValue()
+        {
+            return GetValue();
+        }
+
+        public static bool operator ==(MemberNodeInfo<T> left, MemberNodeInfo<T> right)
         {
             return Equals(left, right);
         }
 
-        public static bool operator !=(PropertyNodeInfo<T> left, PropertyNodeInfo<T> right)
+        public static bool operator !=(MemberNodeInfo<T> left, MemberNodeInfo<T> right)
         {
             return !Equals(left, right);
         }
@@ -104,7 +130,7 @@ namespace ReactGraph.Internals
             if (formula != null)
             {
                 ValueChanged();
-                PropertyInfo.SetValue(ParentInstance, currentValue, null);
+                setValue(currentValue);
             }
         }
 
