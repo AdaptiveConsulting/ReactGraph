@@ -21,13 +21,37 @@ namespace ReactGraph
             };
         }
 
-        public INodeInfo GetOrCreate<T>(object rootValue, object parentInstance, MemberInfo memberInfo, MemberExpression propertyExpression)
+        public INodeInfo GetOrCreate(object rootValue, object parentInstance, MemberInfo memberInfo, MemberExpression propertyExpression)
         {
-            var sourceKey = Tuple.Create(parentInstance, memberInfo.Name);
+            var sourceKey = Tuple.Create(rootValue, memberInfo.Name);
             if (!nodeLookup.ContainsKey(sourceKey))
             {
-                var propertyNodeInfo = new MemberNodeInfo<T>(rootValue, parentInstance, memberInfo, propertyExpression, GetStrategies(parentInstance));
-                nodeLookup.Add(sourceKey, propertyNodeInfo);
+                var propertyInfo = memberInfo as PropertyInfo;
+                INodeInfo propertyNodeInfo;
+                if (propertyInfo != null)
+                {
+                    var type = typeof(MemberNodeInfo<>).MakeGenericType(propertyInfo.PropertyType);
+                    propertyNodeInfo = (INodeInfo) Activator.CreateInstance(
+                        type, rootValue, parentInstance, 
+                        propertyInfo, propertyExpression,
+                        GetStrategies(propertyInfo.PropertyType),
+                        this);
+                }
+                else
+                {
+                    var fieldInfo = ((FieldInfo)memberInfo);
+                    var type = typeof(MemberNodeInfo<>).MakeGenericType(fieldInfo.FieldType);
+                    propertyNodeInfo = (INodeInfo)Activator.CreateInstance(
+                        type, rootValue, parentInstance,
+                        fieldInfo, propertyExpression,
+                        GetStrategies(fieldInfo.FieldType),
+                        this);
+                }
+
+                foreach (var notificationStrategy in GetStrategies(rootValue.GetType()))
+                {
+                    notificationStrategy.Track(rootValue);
+                }
                 return propertyNodeInfo;
             }
 
@@ -47,10 +71,10 @@ namespace ReactGraph
             return nodeLookup[sourceKey];
         }
 
-        private INotificationStrategy[] GetStrategies(object parentInstance)
+        private INotificationStrategy[] GetStrategies(Type type)
         {
             return notificationStrategies
-                .Where(notificationStrategy => notificationStrategy.AppliesTo(parentInstance))
+                .Where(notificationStrategy => notificationStrategy.AppliesTo(type))
                 .ToArray();
         }
 
@@ -62,6 +86,20 @@ namespace ReactGraph
         public INodeInfo Get(object instance, string key)
         {
             return nodeLookup[Tuple.Create(instance, key)];
+        }
+
+        public void RemoveLookup(object instance, string key)
+        {
+            var tuple = Tuple.Create(instance, key);
+            if (nodeLookup.ContainsKey(tuple))
+                nodeLookup.Remove(tuple);
+        }
+
+        public void AddLookup(object instance, string key, INodeInfo nodeInfo)
+        {
+            var tuple = Tuple.Create(instance, key);
+            if (!nodeLookup.ContainsKey(tuple))
+                nodeLookup.Add(tuple, nodeInfo);
         }
     }
 }

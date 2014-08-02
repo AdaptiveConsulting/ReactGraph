@@ -40,7 +40,7 @@ namespace ReactGraph.Tests
             node.Dependencies.Count.ShouldBe(1);
             var paymentScheduleNode = node.Dependencies[0];
             paymentScheduleNode
-                .ShouldBeOfType<MemberNodeInfo<object>>()
+                .ShouldBeOfType<MemberNodeInfo<ScheduleViewModel>>()
                 .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
@@ -52,20 +52,34 @@ namespace ReactGraph.Tests
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => !viewModel.PaymentSchedule.HasValidationError;
             var node = expressionParser.GetNodeInfo(expr);
-            node.RootInstance.ShouldBeSameAs(viewModel);
             node.ShouldBeOfType<FormulaExpressionInfo<bool>>();
             node.Dependencies.Count.ShouldBe(1);
             var validationErrorNode = node.Dependencies[0];
             validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
             validationErrorNode.Dependencies.Count.ShouldBe(1);
-            validationErrorNode.ShouldBeOfType<MemberNodeInfo<object>>()
+            validationErrorNode.ShouldBeOfType<MemberNodeInfo<bool>>()
                 .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
 
             var paymentScheduleNode = validationErrorNode.Dependencies[0];
             paymentScheduleNode
-                .ShouldBeOfType<MemberNodeInfo<object>>()
+                .ShouldBeOfType<MemberNodeInfo<ScheduleViewModel>>()
                 .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
+        }
+
+        [Fact]
+        public void SimpleMethod()
+        {
+            var simple = new SimpleWithNotification();
+            Expression<Func<int>> expr = () => Negate(simple.Value);
+            var node = expressionParser.GetNodeInfo(expr);
+            node.ShouldBeOfType<FormulaExpressionInfo<int>>();
+            node.Dependencies.Count.ShouldBe(1);
+        }
+
+        int Negate(int value)
+        {
+            return -value;
         }
     }
 }

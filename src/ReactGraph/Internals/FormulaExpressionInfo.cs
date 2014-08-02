@@ -15,7 +15,19 @@ namespace ReactGraph.Internals
         {
             this.formula = formula;
             Key = formula.Name;
-            getValue = formula.Compile();
+            var compiledFormula = formula.Compile();
+            getValue = () =>
+            {
+                try
+                {
+                    return compiledFormula();
+                }
+                catch (NullReferenceException)
+                {
+                    return default(T);
+                }
+            };
+            currentValue = getValue();
             Dependencies = new List<INodeInfo>();
         }
 
@@ -25,7 +37,7 @@ namespace ReactGraph.Internals
 
         public INodeInfo ReduceIfPossible()
         {
-            if (Dependencies.Count == 1 && (formula.Body is MemberExpression || formula.Body is MethodCallExpression))
+            if (Dependencies.Count == 1 && (formula.Body is MemberExpression))
             {
                 return Dependencies.Single();
             }
@@ -48,30 +60,9 @@ namespace ReactGraph.Internals
             currentValue = getValue();
         }
 
-        public object RootInstance { get; private set; }
+        public object RootInstance { get; set; }
 
         public object ParentInstance { get; set; }
-
-        bool Equals(FormulaExpressionInfo<T> other)
-        {
-            return string.Equals(Key, other.Key) && Equals(RootInstance, other.RootInstance);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((FormulaExpressionInfo<T>) obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Key != null ? Key.GetHashCode() : 0)*397) ^ (RootInstance != null ? RootInstance.GetHashCode() : 0);
-            }
-        }
 
         object IValueSource.GetValue()
         {
@@ -86,6 +77,11 @@ namespace ReactGraph.Internals
         public static bool operator !=(FormulaExpressionInfo<T> left, FormulaExpressionInfo<T> right)
         {
             return !Equals(left, right);
+        }
+
+        public override string ToString()
+        {
+            return ExpressionStringBuilder.ToString(formula);
         }
     }
 }

@@ -51,7 +51,7 @@
     <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
-    <Compile Include="SimpleWithNotification.cs" />
+    <Compile Include="TestObjects\SimpleWithNotification.cs" />
     <Compile Include="TestObjects\Totals.cs" />
     <Compile Include="TestObjects\NotifiesViewModel.cs" />
     <Compile Include="TestObjects\NotifyPropertyChanged.cs" />

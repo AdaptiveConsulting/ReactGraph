@@ -2,68 +2,88 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using ReactGraph.Annotations;
 
 namespace ReactGraph.Internals
 {
     class MemberNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
     {
-        private readonly INotificationStrategy[] notificationStrategies;
-        private readonly Func<T> getValue;
-        private readonly string path;
-        private IValueSource<T> formula;
-        private T currentValue;
-        Action<object> setValue;
+        readonly INotificationStrategy[] notificationStrategies;
+        readonly Func<T> getValue;
+        readonly Action<object> setValue;
+        readonly string path;
+        IValueSource<T> formula;
+        T currentValue;
+        object parentInstance;
+        NodeRepository nodeRepository;
 
-        /// <summary>
-        /// Represents a dependency
-        /// </summary>
-        /// <param name="rootInstance">The root instance of the expression, i.e viewmodel in viewModel.Foo.Bar</param>
-        /// <param name="parentInstance">The current parent instance of the expression, i.e Foo in viewModel.Foo.Bar</param>
-        /// <param name="propertyInfo">Property info for Bar in foo.Bar</param>
-        /// <param name="propertyExpression"></param>
-        /// <param name="notificationStrategies"></param>
-        public MemberNodeInfo(
-            object rootInstance, object parentInstance, 
-            MemberInfo memberInfo, MemberExpression propertyExpression, 
-            INotificationStrategy[] notificationStrategies)
+        private MemberNodeInfo(object rootInstance, object parentInstance,
+            MemberExpression propertyExpression,
+            INotificationStrategy[] notificationStrategies,
+            MemberInfo memberInfo,
+            Func<T> getValue,
+            Action<object> setValue, NodeRepository nodeRepository)
         {
             this.notificationStrategies = notificationStrategies;
-            getValue = () =>
-            {
-                if (parentInstance == null)
-                    return default(T);
-                var info = memberInfo as PropertyInfo;
-                if (info != null)
-                    return (T)info.GetValue(parentInstance, null);
-                var fieldInfo = memberInfo as FieldInfo;
-                if (fieldInfo != null)
-                    return (T)fieldInfo.GetValue(parentInstance);
-                return default(T);
-            };
-            setValue = o =>
-            {
-                var info = memberInfo as PropertyInfo;
-                if (info != null)
-                    info.SetValue(parentInstance, o, null);
-                var fieldInfo = memberInfo as FieldInfo;
-                if (fieldInfo != null)
-                    fieldInfo.SetValue(parentInstance, o);
-            };
+            this.setValue = setValue;
+            this.nodeRepository = nodeRepository;
+            this.getValue = getValue;
             RootInstance = rootInstance;
             MemberInfo = memberInfo;
             PropertyExpression = propertyExpression;
             path = propertyExpression.ToString();
             ParentInstance = parentInstance;
             Dependencies = new List<INodeInfo>();
+            ValueChanged();
         }
 
-        public object RootInstance { get; private set; }
+        public MemberNodeInfo(
+            object rootInstance, object parentInstance,
+            PropertyInfo propertyInfo, MemberExpression propertyExpression,
+            INotificationStrategy[] notificationStrategies, NodeRepository nodeRepository) :
+            this(rootInstance, parentInstance, propertyExpression, notificationStrategies,
+            propertyInfo, () =>
+            {
+                if (parentInstance == null)
+                    return default(T);
+                return (T)propertyInfo.GetValue(parentInstance, null);
+            },
+            o => propertyInfo.SetValue(parentInstance, o, null), nodeRepository)
+        {
+        }
+
+        [UsedImplicitly]
+        public MemberNodeInfo(
+            object rootInstance, object parentInstance,
+            FieldInfo fieldInfo, MemberExpression propertyExpression,
+            INotificationStrategy[] notificationStrategies, NodeRepository nodeRepository) :
+            this(rootInstance, parentInstance, propertyExpression, notificationStrategies,
+            fieldInfo, () =>
+            {
+                if (parentInstance == null)
+                    return default(T);
+                return (T)fieldInfo.GetValue(parentInstance);
+            },
+            o => fieldInfo.SetValue(parentInstance, o), nodeRepository)
+        {
+        }
+
+        public object RootInstance { get; set; }
 
         public MemberInfo MemberInfo { get; private set; }
 
         public MemberExpression PropertyExpression { get; private set; }
 
-        public object ParentInstance { get; set; }
+        public object ParentInstance
+        {
+            get { return parentInstance; }
+            set
+            {
+                nodeRepository.RemoveLookup(parentInstance, MemberInfo.Name);
+                parentInstance = value;
+                nodeRepository.AddLookup(parentInstance, MemberInfo.Name, this);
+            }
+        }
 
         public string Key { get; private set; }
 
@@ -86,7 +106,7 @@ namespace ReactGraph.Internals
 
         public override string ToString()
         {
-            return path;
+            return ExpressionStringBuilder.ToString(PropertyExpression);
         }
 
         bool Equals(MemberNodeInfo<T> other)
@@ -130,7 +150,7 @@ namespace ReactGraph.Internals
             if (formula != null)
             {
                 ValueChanged();
-                setValue(currentValue);
+                setValue(formula.GetValue());
             }
         }
 
@@ -138,11 +158,15 @@ namespace ReactGraph.Internals
         {
             foreach (var notificationStrategy in notificationStrategies)
                 notificationStrategy.Untrack(currentValue);
+            nodeRepository.RemoveLookup(currentValue, null);
+
             currentValue = getValue();
             foreach (var dependency in Dependencies)
             {
                 dependency.ParentInstance = currentValue;
             }
+
+            nodeRepository.AddLookup(currentValue, null, this);
             foreach (var notificationStrategy in notificationStrategies)
                 notificationStrategy.Track(currentValue);
         }

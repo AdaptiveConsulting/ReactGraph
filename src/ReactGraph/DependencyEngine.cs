@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ReactGraph.Internals;
@@ -10,7 +9,7 @@ namespace ReactGraph
     {
         private readonly DirectedGraph<INodeInfo> graph;
         private readonly ExpressionParser expressionParser;
-        private NodeRepository nodeRepository;
+        private readonly NodeRepository nodeRepository;
         private bool isExecuting;
 
         public DependencyEngine()
@@ -20,14 +19,12 @@ namespace ReactGraph
             expressionParser = new ExpressionParser(nodeRepository);
         }
 
-        public event Action<object, string> SettingValue = (o, s) => { };
-
-        public void ValueHasChanged(object instance, string key)
+        public bool ValueHasChanged(object instance, string key)
         {
-            if (!nodeRepository.Contains(instance, key)) return;
+            if (!nodeRepository.Contains(instance, key)) return false;
             var node = nodeRepository.Get(instance, key);
             
-            if (isExecuting) return;
+            if (isExecuting) return false;
             try
             {
                 isExecuting = true;
@@ -35,7 +32,6 @@ namespace ReactGraph
                 orderToReeval.First().Data.ValueChanged();
                 foreach (var vertex in orderToReeval.Skip(1))
                 {
-                    //SettingValue(vertex.Data.RootInstance, vertex.Data.PropertyInfo.Name);
                     vertex.Data.Reevaluate();
                 }
             }
@@ -43,6 +39,8 @@ namespace ReactGraph
             {
                 isExecuting = false;
             }
+
+            return true;
         }
 
         public void Bind<TProp>(Expression<Func<TProp>> targetProperty, Expression<Func<TProp>> sourceFunction)

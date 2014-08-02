@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 
 namespace ReactGraph.Internals
 {
@@ -25,7 +23,6 @@ namespace ReactGraph.Internals
             readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
             readonly NodeRepository nodeRepository;
             INodeInfo formulaNode;
-            INodeInfo currentLevelNodeInfo;
 
             public GetNodeVisitor(NodeRepository nodeRepository)
             {
@@ -40,30 +37,13 @@ namespace ReactGraph.Internals
 
             protected override Expression VisitLambda<T1>(Expression<T1> node)
             {
-                formulaNode = currentLevelNodeInfo = nodeRepository.GetOrCreate<T>(node);
+                formulaNode = nodeRepository.GetOrCreate<T>(node);
                 return base.VisitLambda(node);
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
                 path.Push(node);
-                //var property = node.Member as PropertyInfo;
-                //if (propertyExpression == null)
-                //{
-                //    propertyInfo = property;
-                //    propertyExpression = node;
-                //}
-                //else
-                //{
-                //    var fieldInfo = node.Member as FieldInfo;
-                //    if (property != null)
-                //    {
-                //    }
-                //    else if (fieldInfo != null)
-                //    {
-                //        path.Push(fieldInfo.GetValue);
-                //    }
-                //}
                 return base.VisitMember(node);
             }
 
@@ -71,21 +51,27 @@ namespace ReactGraph.Internals
             {
                 var currentValue = node.Value;
                 var rootValue = node.Value;
-                INodeInfo rootNode = null;
                 INodeInfo currentNode = null;
                 while (path.Count > 0)
                 {
                     var expression = path.Pop();
-                    var nodeInfo = nodeRepository.GetOrCreate<T>(rootValue, currentValue, expression.Member, expression);
-                    if (currentNode != null)
-                        currentNode.Dependencies.Add(nodeInfo);
-                    else
-                        rootNode = nodeInfo;
+                    var nodeInfo = nodeRepository.GetOrCreate(rootValue, currentValue, expression.Member, expression);
+                    var nodeValue = ((IValueSource) nodeInfo).GetValue();
+                    if (currentNode == null)
+                    {
+                        rootValue = nodeValue;
+                        nodeInfo.RootInstance = rootValue;
+                    }
+                    else if (node.Value != currentNode.ParentInstance && !nodeInfo.Dependencies.Contains(currentNode))
+                    {
+                        nodeInfo.Dependencies.Add(currentNode);
+                    }
                     currentNode = nodeInfo;
-                    currentValue = ((IValueSource)nodeInfo).GetValue();
+                    currentValue = nodeValue;
                 }
-                
-                currentLevelNodeInfo.Dependencies.Add(rootNode.Dependencies.Single());
+
+                if (currentNode != null && !formulaNode.Dependencies.Contains(currentNode))
+                    formulaNode.Dependencies.Add(currentNode);
 
                 return base.VisitConstant(node);
             }
