@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    interface INodeInfo
+    interface INodeInfo : IValueSource
     {
         // runtime only
         void Reevaluate();
@@ -18,7 +18,7 @@ namespace ReactGraph.Internals.NodeInfo
 
         object ParentInstance { get; set; } // runtime
 
-        List<INodeInfo> Dependencies { get; } // TODO shouldn't we use graph instead?
+        List<INodeInfo> Dependencies { get; } // construction only
 
         INodeInfo ReduceIfPossible(); // construction only
     }

@@ -161,10 +161,6 @@ namespace ReactGraph.Internals.NodeInfo
             nodeRepository.RemoveLookup(currentValue, null);
 
             currentValue = getValue();
-            foreach (var dependency in Dependencies)
-            {
-                dependency.ParentInstance = currentValue;
-            }
 
             nodeRepository.AddLookup(currentValue, null, this);
             foreach (var notificationStrategy in notificationStrategies)

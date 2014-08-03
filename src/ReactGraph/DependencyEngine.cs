@@ -32,9 +32,12 @@ namespace ReactGraph
                 isExecuting = true;
                 var orderToReeval = graph.TopologicalSort(node).ToArray();
                 node.ValueChanged();
+                var firstVertex = orderToReeval[0];
+                PropagateParentValue(firstVertex);
                 foreach (var vertex in orderToReeval.Skip(1))
                 {
                     vertex.Data.Reevaluate();
+                    PropagateParentValue(vertex);
                 }
             }
             finally
@@ -43,6 +46,14 @@ namespace ReactGraph
             }
 
             return true;
+        }
+
+        static void PropagateParentValue(Vertex<INodeInfo> firstVertex)
+        {
+            foreach (var successor in firstVertex.Successors)
+            {
+                firstVertex.Data.ParentInstance = successor.Source.Data.GetValue();
+            }
         }
 
         public override string ToString()
