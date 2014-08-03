@@ -13,8 +13,9 @@ namespace ReactGraph.Internals.Construction
         public FormulaDescriptor(Expression<Func<T>> node)
         {
             this.node = node;
-            executeNode = node.Compile();
             key = this.node.ToString();
+            var expression = ((Expression<Func<T>>)new NullCheckRewriter().Visit(node));
+            executeNode = expression.Compile();
         }
 
         public override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)

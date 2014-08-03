@@ -1,6 +1,6 @@
 namespace ReactGraph.Internals.NodeInfo
 {
-    interface IValueSink<in T>
+    interface IValueSink<T>
     {
         void SetSource(IValueSource<T> formulaNode);
     }

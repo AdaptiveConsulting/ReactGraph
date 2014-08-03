@@ -6,6 +6,6 @@ namespace ReactGraph.Internals.NodeInfo
 
         void ValueChanged();
 
-        void UpdateSubscriptions(object newParent);
+        void UpdateSubscriptions(IMaybe newParent);
     }
 }

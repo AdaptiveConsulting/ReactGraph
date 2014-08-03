@@ -1,4 +1,5 @@
 using System;
+using ReactGraph.Internals.Construction;
 using ReactGraph.Internals.Notification;
 
 namespace ReactGraph.Internals.NodeInfo
@@ -9,10 +10,10 @@ namespace ReactGraph.Internals.NodeInfo
         readonly string label;
         readonly string key;
         readonly INotificationStrategy[] notificationStrategies;
+        readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly Action<T> setValue;
         IValueSource<T> formula;
-        T currentValue;
         object parentInstance;
 
         public WritableNodeInfo(
@@ -39,7 +40,7 @@ namespace ReactGraph.Internals.NodeInfo
             formula = formulaNode;
         }
 
-        public T GetValue()
+        public Maybe<T> GetValue()
         {
             return currentValue;
         }
@@ -49,7 +50,7 @@ namespace ReactGraph.Internals.NodeInfo
             return label;
         }
 
-        object IValueSource.GetValue()
+        IMaybe IValueSource.GetValue()
         {
             return GetValue();
         }
@@ -59,28 +60,46 @@ namespace ReactGraph.Internals.NodeInfo
             if (formula != null)
             {
                 ValueChanged();
-                setValue(formula.GetValue());
+                var value = formula.GetValue();
+                if (value.HasValue)
+                    setValue(value.Value);
             }
         }
 
         public void ValueChanged()
         {
-            foreach (var notificationStrategy in notificationStrategies)
-                notificationStrategy.Untrack(currentValue);
-            nodeRepository.RemoveLookup(currentValue, null);
+            if (currentValue.HasValue)
+            {
+                foreach (var notificationStrategy in notificationStrategies)
+                    notificationStrategy.Untrack(currentValue.Value);
+                nodeRepository.RemoveLookup(currentValue.Value, null);
+            }
 
-            currentValue = getValue();
+            try
+            {
+                currentValue.NewValue(getValue());
+            }
+            catch (FormulaNullReferenceException)
+            {
+                currentValue.ValueMissing();
+            }
 
-            nodeRepository.AddLookup(currentValue, null, this);
-            foreach (var notificationStrategy in notificationStrategies)
-                notificationStrategy.Track(currentValue);
+            if (currentValue.HasValue)
+            {
+                nodeRepository.AddLookup(currentValue.Value, null, this);
+                foreach (var notificationStrategy in notificationStrategies)
+                    notificationStrategy.Track(currentValue.Value);
+            }
         }
 
-        public void UpdateSubscriptions(object newParent)
+        public void UpdateSubscriptions(IMaybe newParent)
         {
             nodeRepository.RemoveLookup(parentInstance, key);
-            parentInstance = newParent;
-            nodeRepository.AddLookup(parentInstance, key, this);
+            if (newParent.HasValue)
+            {
+                parentInstance = newParent.Value;
+                nodeRepository.AddLookup(parentInstance, key, this);
+            }
         }
     }
 }
