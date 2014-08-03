@@ -52,7 +52,7 @@
     <Compile Include="Internals\Construction\ExpressionParser.cs" />
     <Compile Include="Internals\NodeInfo\IValueSink.cs" />
     <Compile Include="Internals\NodeInfo\IValueSource.cs" />
-    <Compile Include="Internals\NodeInfo\MemberNodeInfo.cs" />
+    <Compile Include="Internals\NodeInfo\WritableNodeInfo.cs" />
     <Compile Include="Internals\NodeInfo\FormulaExpressionInfo.cs" />
     <Compile Include="Internals\NodeInfo\INodeInfo.cs" />
     <Compile Include="IMemberDefinition.cs" />

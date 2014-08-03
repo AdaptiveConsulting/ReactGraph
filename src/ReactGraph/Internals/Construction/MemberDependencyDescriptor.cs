@@ -66,7 +66,7 @@ namespace ReactGraph.Internals.Construction
 
             var strategies = repo.GetStrategies(memberType);
             SubscribeToRootObject(repo);
-            var memberNodeInfo = new MemberNodeInfo<T>(
+            var memberNodeInfo = new WritableNodeInfo<T>(
                 ParentInstance, strategies, getValue, setValue, repo,
                 ExpressionStringBuilder.ToString(memberExpression), key);
             repo.AddLookup(ParentInstance, key, memberNodeInfo);

@@ -3,7 +3,7 @@ using ReactGraph.Internals.Notification;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    class MemberNodeInfo<T> : IWritableNodeInfo<T>
+    class WritableNodeInfo<T> : IWritableNodeInfo<T>
     {
         readonly NodeRepository nodeRepository;
         readonly string label;
@@ -15,7 +15,7 @@ namespace ReactGraph.Internals.NodeInfo
         T currentValue;
         object parentInstance;
 
-        public MemberNodeInfo(
+        public WritableNodeInfo(
             object parentInstance,
             INotificationStrategy[] notificationStrategies,
             Func<T> getValue,
