@@ -135,24 +135,32 @@ namespace ReactGraph.Tests
              *    B   Throws
              *    |   |
              *    C   Skipped
+             *   / \ /
+             *  E   D
              */
 
             var a = new SinglePropertyType();
             var b = new SinglePropertyType();
             var c = new SinglePropertyType();
+            var d = new SinglePropertyType();
+            var e = new SinglePropertyType();
             var throws = new SinglePropertyType();
             var skipped = new SinglePropertyType();
 
-            engine.Expr(() => a.Value).Bind(() => b.Value, e => { });
-            engine.Expr(() => b.Value).Bind(() => c.Value, e => { });
-            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, e => { });
-            engine.Expr(() => throws.Value).Bind(() => skipped.Value, e => { });
+            engine.Expr(() => a.Value).Bind(() => b.Value, ex => { });
+            engine.Expr(() => b.Value).Bind(() => c.Value, ex => { });
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, ex => { });
+            engine.Expr(() => throws.Value).Bind(() => skipped.Value, ex => { });
+            engine.Expr(() => c.Value + skipped.Value).Bind(() => d.Value, ex => { });
+            engine.Expr(() => c.Value).Bind(() => e.Value, ex => { });
 
             a.Value = 2;
             engine.ValueHasChanged(a, "Value");
 
             skipped.ValueSet.ShouldBe(0);
+            d.ValueSet.ShouldBe(0);
             c.Value.ShouldBe(2);
+            e.Value.ShouldBe(2);
         }
 
         int ThrowsInvalidOperationException(int value)
