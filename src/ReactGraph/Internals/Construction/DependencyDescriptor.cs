@@ -14,11 +14,9 @@ namespace ReactGraph.Internals.Construction
 
         public abstract INodeInfo GetOrCreateNodeInfo(NodeRepository repo);
 
-        public abstract bool IsReadOnly { get; }
-
         public object RootInstance { get; set; }
 
-        public object ParentInstance { get; set; }
+        public object ParentInstance { get; protected set; }
 
         public List<DependencyDescriptor> Dependencies { get; private set; }
     }

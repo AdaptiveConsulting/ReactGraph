@@ -27,11 +27,6 @@ namespace ReactGraph.Internals.Construction
             return executeNode();
         }
 
-        public override bool IsReadOnly
-        {
-            get { return true; }
-        }
-
         public override IWritableNodeInfo<T> GetOrCreateWritableNodeInfo(NodeRepository repo)
         {
             throw new NotSupportedException();

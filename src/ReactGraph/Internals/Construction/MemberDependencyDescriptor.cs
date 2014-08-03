@@ -58,7 +58,7 @@ namespace ReactGraph.Internals.Construction
 
         public override IWritableNodeInfo<T> GetOrCreateWritableNodeInfo(NodeRepository repo)
         {
-            if (IsReadOnly)
+            if (isReadOnly)
                 throw new InvalidOperationException("Target property should be writable");
 
             if (repo.Contains(ParentInstance, key))
@@ -90,11 +90,6 @@ namespace ReactGraph.Internals.Construction
         public override object GetValue()
         {
             return getValue();
-        }
-
-        public override bool IsReadOnly
-        {
-            get { return isReadOnly; }
         }
 
         public MemberInfo MemberInfo
