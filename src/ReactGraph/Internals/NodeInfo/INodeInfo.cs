@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace ReactGraph.Internals.NodeInfo
 {
     interface INodeInfo : IValueSource
@@ -16,10 +14,6 @@ namespace ReactGraph.Internals.NodeInfo
         /// </summary>
         object RootInstance { get; set; } // runtime
 
-        object ParentInstance { get; set; } // runtime
-
-        List<INodeInfo> Dependencies { get; } // construction only
-
-        INodeInfo ReduceIfPossible(); // construction only
+        object ParentInstance { get; set; }
     }
 }

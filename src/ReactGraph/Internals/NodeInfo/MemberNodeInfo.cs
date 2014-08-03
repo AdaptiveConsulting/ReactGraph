@@ -1,80 +1,48 @@
 using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 using ReactGraph.Internals.Notification;
-using ReactGraph.Properties;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    class MemberNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
+    class MemberNodeInfo<T> : IWritableNodeInfo<T>
     {
         readonly NodeRepository nodeRepository;
 
+        readonly MemberExpression propertyExpression;
         readonly INotificationStrategy[] notificationStrategies;
         readonly Func<T> getValue;
-        readonly Action<object> setValue;
+        readonly Action<T> setValue;
         readonly string path;
         IValueSource<T> formula;
         T currentValue;
         object parentInstance;
 
-        private MemberNodeInfo(object rootInstance, object parentInstance,
+        public MemberNodeInfo(
+            object rootInstance, 
+            object parentInstance,
             MemberExpression propertyExpression,
             INotificationStrategy[] notificationStrategies,
             MemberInfo memberInfo,
             Func<T> getValue,
-            Action<object> setValue, NodeRepository nodeRepository)
+            Action<T> setValue, 
+            NodeRepository nodeRepository)
         {
+            this.propertyExpression = propertyExpression;
             this.notificationStrategies = notificationStrategies;
             this.setValue = setValue;
             this.nodeRepository = nodeRepository;
             this.getValue = getValue;
             RootInstance = rootInstance;
             MemberInfo = memberInfo;
-            PropertyExpression = propertyExpression;
             path = propertyExpression.ToString();
             ParentInstance = parentInstance;
-            Dependencies = new List<INodeInfo>();
             ValueChanged();
-        }
-
-        public MemberNodeInfo(
-            object rootInstance, object parentInstance,
-            PropertyInfo propertyInfo, MemberExpression propertyExpression,
-            INotificationStrategy[] notificationStrategies, NodeRepository nodeRepository) :
-            this(rootInstance, parentInstance, propertyExpression, notificationStrategies,
-            propertyInfo, () =>
-            {
-                if (parentInstance == null)
-                    return default(T);
-                return (T)propertyInfo.GetValue(parentInstance, null);
-            },
-            o => propertyInfo.SetValue(parentInstance, o, null), nodeRepository)
-        {
-        }
-
-        [UsedImplicitly]
-        public MemberNodeInfo(
-            object rootInstance, object parentInstance,
-            FieldInfo fieldInfo, MemberExpression propertyExpression,
-            INotificationStrategy[] notificationStrategies, NodeRepository nodeRepository) :
-            this(rootInstance, parentInstance, propertyExpression, notificationStrategies,
-            fieldInfo, () =>
-            {
-                if (parentInstance == null)
-                    return default(T);
-                return (T)fieldInfo.GetValue(parentInstance);
-            },
-            o => fieldInfo.SetValue(parentInstance, o), nodeRepository)
-        {
         }
 
         public object RootInstance { get; set; }
 
         public MemberInfo MemberInfo { get; private set; }
-
-        MemberExpression PropertyExpression { get; set; }
 
         public object ParentInstance
         {
@@ -85,13 +53,6 @@ namespace ReactGraph.Internals.NodeInfo
                 parentInstance = value;
                 nodeRepository.AddLookup(parentInstance, MemberInfo.Name, this);
             }
-        }
-
-        public List<INodeInfo> Dependencies { get; private set; }
-
-        public INodeInfo ReduceIfPossible()
-        {
-            return this;
         }
 
         public void SetSource(IValueSource<T> formulaNode)
@@ -106,7 +67,7 @@ namespace ReactGraph.Internals.NodeInfo
 
         public override string ToString()
         {
-            return ExpressionStringBuilder.ToString(PropertyExpression);
+            return ExpressionStringBuilder.ToString(propertyExpression);
         }
 
         bool Equals(MemberNodeInfo<T> other)

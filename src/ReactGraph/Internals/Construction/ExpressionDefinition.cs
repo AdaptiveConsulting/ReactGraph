@@ -5,51 +5,63 @@ using ReactGraph.Internals.NodeInfo;
 
 namespace ReactGraph.Internals.Construction
 {
-    internal class ExpressionDefinition : IExpressionDefinition
+    internal class ExpressionDefinition<T> : IExpressionDefinition<T>
     {
-        readonly INodeInfo expressionNode;
         readonly ExpressionParser expressionParser;
         readonly DirectedGraph<INodeInfo> graph;
+        readonly NodeRepository repo;
+        readonly INodeInfo<T> formulaNode;
+        Edge<INodeInfo> edge;
         string label;
         string color;
 
-        public ExpressionDefinition(INodeInfo expressionNode, ExpressionParser expressionParser, DirectedGraph<INodeInfo> graph)
+        public ExpressionDefinition(
+            FormulaDescriptor<T> formulaDescriptor, ExpressionParser expressionParser, 
+            DirectedGraph<INodeInfo> graph, NodeRepository repo)
         {
-            this.expressionNode = expressionNode;
             this.expressionParser = expressionParser;
             this.graph = graph;
+            this.repo = repo;
+            formulaNode = (INodeInfo<T>) formulaDescriptor.GetOrCreateNodeInfo(repo);
+            AddDependenciesToGraph(formulaDescriptor);
         }
 
-        public IExpressionDefinition Metadata(string lbl = null, string clr = null)
+        public IExpressionDefinition<T> Metadata(string lbl = null, string clr = null)
         {
-            label = lbl;
-            color = clr;
+            if (edge == null)
+            {
+                label = lbl;
+                color = clr;
+            }
+            else
+            {
+                edge.Source.Color = color;
+                edge.Source.Label = label;
+            }
             return this;
         }
 
-        public IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty)
+        public IMemberDefinition Bind(Expression<Func<T>> targetProperty)
         {
-            var targetPropertyNode = expressionParser.GetNodeInfo(targetProperty);
-            var valueSink = targetPropertyNode as IValueSink<TProp>;
+            if (edge != null)
+                throw new InvalidOperationException("You can only bind a single expression to a property");
 
-            if (valueSink == null)
-                throw new Exception("Target expression cannot be written to");
+            var targetPropertyDescriptor = expressionParser.GetTargetInfo(targetProperty);
+            var targetNode = targetPropertyDescriptor.GetOrCreateWritableNodeInfo(repo);
 
-            // TODO We probably need another interface or a base type here to remove cast
-            valueSink.SetSource((IValueSource<TProp>)expressionNode);
+            targetNode.SetSource(formulaNode);
 
-            var edge = graph.AddEdge(expressionNode, targetPropertyNode);
+            edge = graph.AddEdge(formulaNode, targetNode);
             edge.Source.Color = color;
             edge.Source.Label = label;
-            AddDependenciesToGraph(expressionNode);
             return new MemberDefinition(edge.Target);
         }
 
-        private void AddDependenciesToGraph(INodeInfo formulaNode)
+        private void AddDependenciesToGraph(DependencyDescriptor descriptor)
         {
-            foreach (var dependency in formulaNode.Dependencies)
+            foreach (var dependency in descriptor.Dependencies)
             {
-                graph.AddEdge(dependency, formulaNode);
+                graph.AddEdge(dependency.GetOrCreateNodeInfo(repo), formulaNode);
                 AddDependenciesToGraph(dependency);
             }
         }

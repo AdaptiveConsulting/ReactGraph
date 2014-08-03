@@ -18,7 +18,7 @@ namespace ReactGraph
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
-            expressionParser = new ExpressionParser(nodeRepository);
+            expressionParser = new ExpressionParser();
         }
 
         public bool ValueHasChanged(object instance, string key)
@@ -61,10 +61,10 @@ namespace ReactGraph
             return graph.ToDotLanguage("DependencyGraph");
         }
 
-        public IExpressionDefinition Expr<TProp>(Expression<Func<TProp>> sourceFunction)
+        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction)
         {
-            var formulaNode = expressionParser.GetNodeInfo(sourceFunction);
-            return new ExpressionDefinition(formulaNode, expressionParser, graph);
+            var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
+            return new ExpressionDefinition<TProp>(formulaNode, expressionParser, graph, nodeRepository);
         }
     }
 }

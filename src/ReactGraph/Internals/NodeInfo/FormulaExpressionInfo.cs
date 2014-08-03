@@ -5,16 +5,16 @@ using System.Linq.Expressions;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T> // TODO override gethashcode and equal
+    class FormulaExpressionInfo<T> : INodeInfo<T> // TODO override gethashcode and equal
     {
         readonly Expression<Func<T>> formula;
         private readonly Func<T> getValue;
         private T currentValue;
 
-        public FormulaExpressionInfo(Expression<Func<T>> formula)
+        public FormulaExpressionInfo(Expression<Func<T>> formula, Func<T> execute)
         {
             this.formula = formula;
-            var compiledFormula = formula.Compile();
+            var compiledFormula = execute;
             getValue = () =>
             {
                 try

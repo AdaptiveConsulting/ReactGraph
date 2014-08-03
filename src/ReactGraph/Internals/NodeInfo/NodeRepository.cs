@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
 using ReactGraph.Internals.Notification;
 
 namespace ReactGraph.Internals.NodeInfo
@@ -21,57 +19,7 @@ namespace ReactGraph.Internals.NodeInfo
             };
         }
 
-        public INodeInfo GetOrCreate(object rootValue, object parentInstance, MemberInfo memberInfo, MemberExpression propertyExpression)
-        {
-            var sourceKey = Tuple.Create(rootValue, memberInfo.Name);
-            if (!nodeLookup.ContainsKey(sourceKey))
-            {
-                var propertyInfo = memberInfo as PropertyInfo;
-                INodeInfo propertyNodeInfo;
-                if (propertyInfo != null)
-                {
-                    var type = typeof(MemberNodeInfo<>).MakeGenericType(propertyInfo.PropertyType);
-                    propertyNodeInfo = (INodeInfo) Activator.CreateInstance(
-                        type, rootValue, parentInstance, 
-                        propertyInfo, propertyExpression,
-                        GetStrategies(propertyInfo.PropertyType),
-                        this);
-                }
-                else
-                {
-                    var fieldInfo = ((FieldInfo)memberInfo);
-                    var type = typeof(MemberNodeInfo<>).MakeGenericType(fieldInfo.FieldType);
-                    propertyNodeInfo = (INodeInfo)Activator.CreateInstance(
-                        type, rootValue, parentInstance,
-                        fieldInfo, propertyExpression,
-                        GetStrategies(fieldInfo.FieldType),
-                        this);
-                }
-
-                foreach (var notificationStrategy in GetStrategies(rootValue.GetType()))
-                {
-                    notificationStrategy.Track(rootValue);
-                }
-                return propertyNodeInfo;
-            }
-
-            return nodeLookup[sourceKey];
-        }
-
-        public INodeInfo GetOrCreate<T>(LambdaExpression methodExpression)
-        {
-            var sourceKey = Tuple.Create<object, string>(null, methodExpression.ToString());
-            if (!nodeLookup.ContainsKey(sourceKey))
-            {
-                var propertyNodeInfo = new FormulaExpressionInfo<T>((Expression<Func<T>>) methodExpression);
-                nodeLookup.Add(sourceKey, propertyNodeInfo);
-                return propertyNodeInfo;
-            }
-
-            return nodeLookup[sourceKey];
-        }
-
-        private INotificationStrategy[] GetStrategies(Type type)
+        public INotificationStrategy[] GetStrategies(Type type)
         {
             return notificationStrategies
                 .Where(notificationStrategy => notificationStrategy.AppliesTo(type))

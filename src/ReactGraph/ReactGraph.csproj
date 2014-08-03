@@ -37,8 +37,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyEngine.cs" />
+    <Compile Include="Internals\Construction\DependencyDescriptor`1.cs" />
     <Compile Include="Internals\Construction\ExpressionDefinition.cs" />
     <Compile Include="IExpressionDefinition.cs" />
+    <Compile Include="Internals\Construction\DependencyDescriptor.cs" />
+    <Compile Include="Internals\Construction\FormulaDescriptor.cs" />
+    <Compile Include="Internals\Construction\MemberDependencyDescriptor.cs" />
+    <Compile Include="Internals\NodeInfo\INodeInfo`1.cs" />
+    <Compile Include="Internals\NodeInfo\IWritableNodeInfo.cs" />
     <Compile Include="Internals\Notification\INotificationStrategy.cs" />
     <Compile Include="Internals\ExpressionStringBuilder.cs" />
     <Compile Include="Internals\Graph\Edge.cs" />

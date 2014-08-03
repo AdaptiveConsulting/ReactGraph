@@ -73,7 +73,8 @@ namespace ReactGraph.Tests
             var engine = new DependencyEngine();
 
             engine.Expr(() => Addition(a.Value, b.Value)).Metadata(label: "+", color: ".7 .3 1.0")
-                  .Bind(() => c.Value).Metadata(color: ".7 .3 .5");
+                  .Bind(() => c.Value)
+                  .Metadata(color: ".7 .3 .5");
 
             var dotFormat = engine.ToString();
             Console.WriteLine(dotFormat);
@@ -84,9 +85,9 @@ namespace ReactGraph.Tests
             c.Value.ShouldBe(5);
 
             var lines = dotFormat.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
-            lines[1].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\"]");
-            lines[2].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\"]");
-            lines[3].ShouldContain("[label=\"a.Value\"]");
+            lines[2].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\"]");
+            lines[4].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\"]");
+            lines[1].ShouldContain("[label=\"a.Value\"]");
         }
 
 
