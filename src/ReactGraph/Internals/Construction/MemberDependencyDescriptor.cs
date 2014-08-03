@@ -65,17 +65,21 @@ namespace ReactGraph.Internals.Construction
                 return (IWritableNodeInfo<T>) repo.Get(ParentInstance, key);
 
             var strategies = repo.GetStrategies(memberType);
-            //TODO need a better place for this..
+            SubscribeToRootObject(repo);
+            var memberNodeInfo = new MemberNodeInfo<T>(
+                ParentInstance, strategies, getValue, setValue, repo,
+                ExpressionStringBuilder.ToString(memberExpression), key);
+            repo.AddLookup(ParentInstance, key, memberNodeInfo);
+            return memberNodeInfo;
+        }
+
+        //TODO need a better place for this..
+        void SubscribeToRootObject(NodeRepository repo)
+        {
             foreach (var notificationStrategy in repo.GetStrategies(RootInstance.GetType()))
             {
                 notificationStrategy.Track(RootInstance);
             }
-            var memberNodeInfo = new MemberNodeInfo<T>(
-                RootInstance, ParentInstance, memberExpression,
-                strategies, MemberInfo, getValue,
-                setValue, repo);
-            repo.AddLookup(ParentInstance, key, memberNodeInfo);
-            return memberNodeInfo;
         }
 
         public override string Key

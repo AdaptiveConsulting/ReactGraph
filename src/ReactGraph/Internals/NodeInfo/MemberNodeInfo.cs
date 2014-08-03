@@ -1,6 +1,4 @@
 using System;
-using System.Linq.Expressions;
-using System.Reflection;
 using ReactGraph.Internals.Notification;
 
 namespace ReactGraph.Internals.NodeInfo
@@ -8,51 +6,32 @@ namespace ReactGraph.Internals.NodeInfo
     class MemberNodeInfo<T> : IWritableNodeInfo<T>
     {
         readonly NodeRepository nodeRepository;
-
-        readonly MemberExpression propertyExpression;
+        readonly string label;
+        readonly string key;
         readonly INotificationStrategy[] notificationStrategies;
         readonly Func<T> getValue;
         readonly Action<T> setValue;
-        readonly string path;
         IValueSource<T> formula;
         T currentValue;
         object parentInstance;
 
         public MemberNodeInfo(
-            object rootInstance, 
             object parentInstance,
-            MemberExpression propertyExpression,
             INotificationStrategy[] notificationStrategies,
-            MemberInfo memberInfo,
             Func<T> getValue,
             Action<T> setValue, 
-            NodeRepository nodeRepository)
+            NodeRepository nodeRepository,
+            string label,
+            string key)
         {
-            this.propertyExpression = propertyExpression;
             this.notificationStrategies = notificationStrategies;
             this.setValue = setValue;
             this.nodeRepository = nodeRepository;
+            this.label = label;
+            this.key = key;
             this.getValue = getValue;
-            RootInstance = rootInstance;
-            MemberInfo = memberInfo;
-            path = propertyExpression.ToString();
-            ParentInstance = parentInstance;
+            this.parentInstance = parentInstance;
             ValueChanged();
-        }
-
-        public object RootInstance { get; set; }
-
-        public MemberInfo MemberInfo { get; private set; }
-
-        public object ParentInstance
-        {
-            get { return parentInstance; }
-            set
-            {
-                nodeRepository.RemoveLookup(parentInstance, MemberInfo.Name);
-                parentInstance = value;
-                nodeRepository.AddLookup(parentInstance, MemberInfo.Name, this);
-            }
         }
 
         public void SetSource(IValueSource<T> formulaNode)
@@ -67,43 +46,12 @@ namespace ReactGraph.Internals.NodeInfo
 
         public override string ToString()
         {
-            return ExpressionStringBuilder.ToString(propertyExpression);
-        }
-
-        bool Equals(MemberNodeInfo<T> other)
-        {
-            return string.Equals(path, other.path) && Equals(RootInstance, other.RootInstance);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((MemberNodeInfo<T>)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((path != null ? path.GetHashCode() : 0) * 397) ^ (RootInstance != null ? RootInstance.GetHashCode() : 0);
-            }
+            return label;
         }
 
         object IValueSource.GetValue()
         {
             return GetValue();
-        }
-
-        public static bool operator ==(MemberNodeInfo<T> left, MemberNodeInfo<T> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(MemberNodeInfo<T> left, MemberNodeInfo<T> right)
-        {
-            return !Equals(left, right);
         }
 
         public void Reevaluate()
@@ -126,6 +74,13 @@ namespace ReactGraph.Internals.NodeInfo
             nodeRepository.AddLookup(currentValue, null, this);
             foreach (var notificationStrategy in notificationStrategies)
                 notificationStrategy.Track(currentValue);
+        }
+
+        public void UpdateSubscriptions(object newParent)
+        {
+            nodeRepository.RemoveLookup(parentInstance, key);
+            parentInstance = newParent;
+            nodeRepository.AddLookup(parentInstance, key, this);
         }
     }
 }

@@ -19,7 +19,7 @@ namespace ReactGraph.Internals.Construction
 
         public override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)
         {
-            return new FormulaExpressionInfo<T>(node, executeNode);
+            return new FormulaExpressionInfo<T>(executeNode, ExpressionStringBuilder.ToString(node));
         }
 
         public override object GetValue()

@@ -31,13 +31,13 @@ namespace ReactGraph
             {
                 isExecuting = true;
                 var orderToReeval = graph.TopologicalSort(node).ToArray();
-                node.ValueChanged();
                 var firstVertex = orderToReeval[0];
-                PropagateParentValue(firstVertex);
+                node.ValueChanged();
+                NotificationStratgegyValueUpdate(firstVertex);
                 foreach (var vertex in orderToReeval.Skip(1))
                 {
                     vertex.Data.Reevaluate();
-                    PropagateParentValue(vertex);
+                    NotificationStratgegyValueUpdate(vertex);
                 }
             }
             finally
@@ -48,11 +48,11 @@ namespace ReactGraph
             return true;
         }
 
-        static void PropagateParentValue(Vertex<INodeInfo> firstVertex)
+        static void NotificationStratgegyValueUpdate(Vertex<INodeInfo> firstVertex)
         {
             foreach (var successor in firstVertex.Successors)
             {
-                firstVertex.Data.ParentInstance = successor.Source.Data.GetValue();
+                firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
             }
         }
 
