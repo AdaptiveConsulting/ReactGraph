@@ -63,6 +63,7 @@
     <Compile Include="IMemberDefinition.cs" />
     <Compile Include="Internals\NodeInfo\NodeRepository.cs" />
     <Compile Include="Internals\Notification\NotifyPropertyChangedStrategy.cs" />
+    <Compile Include="Internals\Visualisation\DotVisualisation.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Internals\Graph\Vertex.cs" />

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ReactGraph.Internals.Graph
 {
@@ -38,10 +37,15 @@ namespace ReactGraph.Internals.Graph
             edge.Source.RemoveSuccessorEdge(edge);
         }
 
-        private IEnumerable<Edge<T>> Edges
+        public IEnumerable<Edge<T>> Edges
         {
             get { return verticies.Values.SelectMany(vertex => vertex.Successors); }
-        } 
+        }
+
+        public IEnumerable<Vertex<T>> Verticies
+        {
+            get { return verticies.Values; }
+        }
 
         /// <summary>
         /// Perform a depth first seach
@@ -152,29 +156,6 @@ namespace ReactGraph.Internals.Graph
                 verticies[data] = vertex;
             }
             return verticies[data];
-        }
-
-        public string ToDotLanguage(string title)
-        {
-            var labels = new StringBuilder();
-            var graph = new StringBuilder();
-
-            foreach (var vertex in verticies)
-            {
-                var label = string.IsNullOrEmpty(vertex.Value.Label) ? vertex.Value.Data.ToString() : vertex.Value.Label;
-                var color = string.IsNullOrEmpty(vertex.Value.Color) ? string.Empty : string.Format(", fillcolor=\"{0}\"", vertex.Value.Color);
-                labels.AppendFormat("     {0} [label=\"{1}\"{2}];", vertex.Value.Data.GetHashCode(), label, color).AppendLine();
-            }
-            foreach (var edge in Edges)
-            {
-                graph.AppendFormat("     {0} -> {1};", 
-                    edge.Source.Data.GetHashCode(), edge.Target.Data.GetHashCode())
-                    .AppendLine();
-            }
-
-            return string.Format(@"digraph {0} {{
-{1}
-{2}}})", title, labels, graph);
         }
 
         /// <summary>
