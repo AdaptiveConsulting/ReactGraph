@@ -57,7 +57,7 @@ namespace ReactGraph.Internals.Api
                 throw new ArgumentException(message);
             }
 
-            targetNode.SetSource(valueSource);
+            targetNode.SetSource(valueSource, onError);
 
             edge = graph.AddEdge(formulaNode, targetNode);
             edge.Source.Color = color;

@@ -145,7 +145,7 @@ namespace ReactGraph.Tests
 
             engine.Expr(() => a.Value).Bind(() => b.Value, e => { });
             engine.Expr(() => b.Value).Bind(() => c.Value, e => { });
-            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => c.Value, e => { });
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, e => { });
             engine.Expr(() => throws.Value).Bind(() => skipped.Value, e => { });
 
             a.Value = 2;

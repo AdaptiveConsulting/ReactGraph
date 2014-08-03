@@ -1,5 +1,4 @@
 using System;
-using ReactGraph.Internals.Construction;
 using ReactGraph.Internals.Notification;
 
 namespace ReactGraph.Internals.NodeInfo
@@ -15,6 +14,7 @@ namespace ReactGraph.Internals.NodeInfo
         readonly Action<T> setValue;
         IValueSource<T> formula;
         object parentInstance;
+        Action<Exception> exceptionHandler;
 
         public WritableNodeInfo(
             object parentInstance,
@@ -35,9 +35,13 @@ namespace ReactGraph.Internals.NodeInfo
             ValueChanged();
         }
 
-        public void SetSource(IValueSource<T> formulaNode)
+        public void SetSource(IValueSource<T> formulaNode, Action<Exception> errorHandler)
         {
+            if (formula != null)
+                throw new InvalidOperationException(string.Format("{0} already has a formula associated with it", label));
+
             formula = formulaNode;
+            exceptionHandler = errorHandler;
         }
 
         public Maybe<T> GetValue()
@@ -55,15 +59,24 @@ namespace ReactGraph.Internals.NodeInfo
             return GetValue();
         }
 
-        public void Reevaluate()
+        public ReevalResult Reevaluate()
         {
             if (formula != null)
             {
                 ValueChanged();
                 var value = formula.GetValue();
                 if (value.HasValue)
+                {
+                    // TODO Don't set and return NoChange when value has not changed
                     setValue(value.Value);
+                    return ReevalResult.Changed;
+                }
+
+                exceptionHandler(value.Exception);
+                return ReevalResult.Error;
             }
+
+            return ReevalResult.NoChange;
         }
 
         public void ValueChanged()
@@ -79,9 +92,9 @@ namespace ReactGraph.Internals.NodeInfo
             {
                 currentValue.NewValue(getValue());
             }
-            catch (FormulaNullReferenceException)
+            catch (Exception ex)
             {
-                currentValue.ValueMissing();
+                currentValue.CouldNotCalculate(ex);
             }
 
             if (currentValue.HasValue)
@@ -101,5 +114,12 @@ namespace ReactGraph.Internals.NodeInfo
                 nodeRepository.AddLookup(parentInstance, key, this);
             }
         }
+    }
+
+    enum ReevalResult
+    {
+        NoChange,
+        Error,
+        Changed
     }
 }

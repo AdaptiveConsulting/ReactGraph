@@ -1,5 +1,4 @@
 using System;
-using ReactGraph.Internals.Construction;
 
 namespace ReactGraph.Internals.NodeInfo
 {
@@ -21,9 +20,12 @@ namespace ReactGraph.Internals.NodeInfo
             return currentValue;
         }
 
-        public void Reevaluate()
+        public ReevalResult Reevaluate()
         {
             ValueChanged();
+            // Formulas do not report errors,
+            // anything that relies on this formula will report the error
+            return ReevalResult.Changed;
         }
 
         public void ValueChanged()
@@ -32,9 +34,9 @@ namespace ReactGraph.Internals.NodeInfo
             {
                 currentValue.NewValue(getValue());
             }
-            catch (FormulaNullReferenceException)
+            catch (Exception ex)
             {
-                currentValue.ValueMissing();
+                currentValue.CouldNotCalculate(ex);
             }
         }
 

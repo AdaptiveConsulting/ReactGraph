@@ -2,7 +2,7 @@ namespace ReactGraph.Internals.NodeInfo
 {
     interface INodeInfo : IValueSource
     {
-        void Reevaluate();
+        ReevalResult Reevaluate();
 
         void ValueChanged();
 
