@@ -1,20 +1,17 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 
 namespace ReactGraph.Internals.NodeInfo
 {
-    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T> // TODO override gethashcode and equal
+    class FormulaExpressionInfo<T> : INodeInfo<T>
     {
-        readonly Expression<Func<T>> formula;
         private readonly Func<T> getValue;
         private T currentValue;
+        readonly string label;
 
-        public FormulaExpressionInfo(Expression<Func<T>> formula)
+        public FormulaExpressionInfo(Func<T> execute, string label)
         {
-            this.formula = formula;
-            var compiledFormula = formula.Compile();
+            this.label = label;
+            var compiledFormula = execute;
             getValue = () =>
             {
                 try
@@ -27,19 +24,6 @@ namespace ReactGraph.Internals.NodeInfo
                 }
             };
             currentValue = getValue();
-            Dependencies = new List<INodeInfo>();
-        }
-
-        public List<INodeInfo> Dependencies { get; private set; }
-
-        public INodeInfo ReduceIfPossible()
-        {
-            if (Dependencies.Count == 1 && (formula.Body is MemberExpression))
-            {
-                return Dependencies.Single();
-            }
-
-            return this;
         }
 
         public T GetValue()
@@ -57,28 +41,18 @@ namespace ReactGraph.Internals.NodeInfo
             currentValue = getValue();
         }
 
-        public object RootInstance { get; set; }
-
-        public object ParentInstance { get; set; }
+        public void UpdateSubscriptions(object newParent)
+        {
+        }
 
         object IValueSource.GetValue()
         {
             return GetValue();
         }
 
-        public static bool operator ==(FormulaExpressionInfo<T> left, FormulaExpressionInfo<T> right)
-        {
-            return Equals(left, right);
-        }
-
-        public static bool operator !=(FormulaExpressionInfo<T> left, FormulaExpressionInfo<T> right)
-        {
-            return !Equals(left, right);
-        }
-
         public override string ToString()
         {
-            return ExpressionStringBuilder.ToString(formula);
+            return label;
         }
     }
 }

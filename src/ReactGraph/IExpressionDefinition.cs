@@ -3,9 +3,9 @@ using System.Linq.Expressions;
 
 namespace ReactGraph
 {
-    public interface IExpressionDefinition
+    public interface IExpressionDefinition<T>
     {
-        IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty);
-        IExpressionDefinition Metadata(string label = null, string color = null);
+        IMemberDefinition Bind(Expression<Func<T>> targetProperty);
+        IExpressionDefinition<T> Metadata(string label = null, string color = null);
     }
 }

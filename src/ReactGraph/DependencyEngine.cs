@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using ReactGraph.Internals.Api;
 using ReactGraph.Internals.Construction;
 using ReactGraph.Internals.Graph;
 using ReactGraph.Internals.NodeInfo;
@@ -18,7 +19,7 @@ namespace ReactGraph
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
-            expressionParser = new ExpressionParser(nodeRepository);
+            expressionParser = new ExpressionParser();
         }
 
         public bool ValueHasChanged(object instance, string key)
@@ -31,10 +32,13 @@ namespace ReactGraph
             {
                 isExecuting = true;
                 var orderToReeval = graph.TopologicalSort(node).ToArray();
+                var firstVertex = orderToReeval[0];
                 node.ValueChanged();
+                NotificationStratgegyValueUpdate(firstVertex);
                 foreach (var vertex in orderToReeval.Skip(1))
                 {
                     vertex.Data.Reevaluate();
+                    NotificationStratgegyValueUpdate(vertex);
                 }
             }
             finally
@@ -45,15 +49,23 @@ namespace ReactGraph
             return true;
         }
 
+        static void NotificationStratgegyValueUpdate(Vertex<INodeInfo> firstVertex)
+        {
+            foreach (var successor in firstVertex.Successors)
+            {
+                firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
+            }
+        }
+
         public override string ToString()
         {
             return graph.ToDotLanguage("DependencyGraph");
         }
 
-        public IExpressionDefinition Expr<TProp>(Expression<Func<TProp>> sourceFunction)
+        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction)
         {
-            var formulaNode = expressionParser.GetNodeInfo(sourceFunction);
-            return new ExpressionDefinition(formulaNode, expressionParser, graph);
+            var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
+            return new ExpressionDefinition<TProp>(formulaNode, expressionParser, graph, nodeRepository);
         }
     }
 }

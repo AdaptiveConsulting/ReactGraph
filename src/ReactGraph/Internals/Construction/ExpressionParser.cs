@@ -1,45 +1,39 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using ReactGraph.Internals.NodeInfo;
+using System.Reflection;
 
 namespace ReactGraph.Internals.Construction
 {
     class ExpressionParser
     {
-        readonly NodeRepository nodeRepository;
-
-        public ExpressionParser(NodeRepository nodeRepository)
+        public FormulaDescriptor<TProp> GetFormulaInfo<TProp>(Expression<Func<TProp>> target)
         {
-            this.nodeRepository = nodeRepository;
+            return new GetNodeVisitor<TProp>().GetFormulaInfo(target);
         }
 
-        public INodeInfo GetNodeInfo<TProp>(Expression<Func<TProp>> target)
+        public DependencyDescriptor<TProp> GetTargetInfo<TProp>(Expression<Func<TProp>> target)
         {
-            return new GetNodeVisitor<TProp>(nodeRepository).GetNode(target);
+            return new GetNodeVisitor<TProp>().GetTargetInfo(target);
         }
 
         class GetNodeVisitor<T> : ExpressionVisitor
         {
             readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
-            readonly NodeRepository nodeRepository;
-            INodeInfo formulaNode;
+            FormulaDescriptor<T> formulaFormula;
+            DependencyDescriptor<T> dependencyInfo;
 
-            public GetNodeVisitor(NodeRepository nodeRepository)
+            public FormulaDescriptor<T> GetFormulaInfo(Expression<Func<T>> target)
             {
-                this.nodeRepository = nodeRepository;
+                formulaFormula = new FormulaDescriptor<T>(target);
+                Visit(target);
+                return formulaFormula;
             }
 
-            public INodeInfo GetNode(Expression target)
+            public DependencyDescriptor<T> GetTargetInfo(Expression<Func<T>> target)
             {
                 Visit(target);
-                return formulaNode.ReduceIfPossible();
-            }
-
-            protected override Expression VisitLambda<T1>(Expression<T1> node)
-            {
-                formulaNode = nodeRepository.GetOrCreate<T>(node);
-                return base.VisitLambda(node);
+                return dependencyInfo;
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -50,14 +44,14 @@ namespace ReactGraph.Internals.Construction
 
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                var currentValue = node.Value;
+                var parentValue = node.Value;
                 var rootValue = node.Value;
-                INodeInfo currentNode = null;
+                DependencyDescriptor currentNode = null;
                 while (path.Count > 0)
                 {
                     var expression = path.Pop();
-                    var nodeInfo = nodeRepository.GetOrCreate(rootValue, currentValue, expression.Member, expression);
-                    var nodeValue = ((IValueSource) nodeInfo).GetValue();
+                    var nodeInfo = CreateMember(rootValue, parentValue, expression.Member, expression);
+                    var nodeValue = nodeInfo.GetValue();
                     if (currentNode == null)
                     {
                         rootValue = nodeValue;
@@ -68,13 +62,45 @@ namespace ReactGraph.Internals.Construction
                         nodeInfo.Dependencies.Add(currentNode);
                     }
                     currentNode = nodeInfo;
-                    currentValue = nodeValue;
+                    parentValue = nodeValue;
                 }
 
-                if (currentNode != null && !formulaNode.Dependencies.Contains(currentNode))
-                    formulaNode.Dependencies.Add(currentNode);
+                if (currentNode != null)
+                {
+                    if (formulaFormula == null)
+                    {
+                        if (dependencyInfo != null)
+                            throw new InvalidOperationException("Expression contains more than one property");
+                        dependencyInfo = (DependencyDescriptor<T>) currentNode;
+                    }
+                    else if (!formulaFormula.Dependencies.Contains(currentNode))
+                        formulaFormula.Dependencies.Add(currentNode);
+                }
 
                 return base.VisitConstant(node);
+            }
+
+            DependencyDescriptor CreateMember(object rootValue, object parentInstance, MemberInfo member, MemberExpression expression)
+            {
+                var propertyInfo = member as PropertyInfo;
+                DependencyDescriptor dependencyDescriptor;
+                if (propertyInfo != null)
+                {
+                    var type = typeof(MemberDependencyDescriptor<>).MakeGenericType(propertyInfo.PropertyType);
+                    dependencyDescriptor = (DependencyDescriptor)Activator.CreateInstance(
+                        type, rootValue, parentInstance,
+                        propertyInfo, expression);
+                }
+                else
+                {
+                    var fieldInfo = ((FieldInfo)member);
+                    var type = typeof(MemberDependencyDescriptor<>).MakeGenericType(fieldInfo.FieldType);
+                    dependencyDescriptor = (DependencyDescriptor)Activator.CreateInstance(
+                        type, rootValue, parentInstance,
+                        fieldInfo, expression);
+                }
+
+                return dependencyDescriptor;
             }
         }
     }

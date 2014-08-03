@@ -25,6 +25,7 @@ namespace ReactGraph.Tests
             engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
                   .Bind(() => notifies.Total);
 
+            Console.WriteLine(engine.ToString());
             notifies.SubTotal = 100;
             notifies.Total.ShouldBe(120);
         }
