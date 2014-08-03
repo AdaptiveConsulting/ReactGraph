@@ -82,11 +82,6 @@ namespace ReactGraph.Internals.Construction
             }
         }
 
-        public override string Key
-        {
-            get { return key; }
-        }
-
         public override object GetValue()
         {
             return getValue();

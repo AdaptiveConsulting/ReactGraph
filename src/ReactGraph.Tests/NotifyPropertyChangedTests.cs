@@ -23,7 +23,7 @@ namespace ReactGraph.Tests
             };
 
             engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
-                  .Bind(() => notifies.Total);
+                  .Bind(() => notifies.Total, e => { });
 
             Console.WriteLine(engine.ToString());
             notifies.SubTotal = 100;
@@ -36,7 +36,7 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
 
             engine.Expr(() => !viewModel.PaymentSchedule.HasValidationError)
-                  .Bind(() => viewModel.CanApply);
+                  .Bind(() => viewModel.CanApply, e => { });
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
             Console.WriteLine(engine.ToString());
@@ -68,10 +68,11 @@ namespace ReactGraph.Tests
              *     +--2<--+
              */
             engine.Expr(() => two.Value + three.Value)
-                  .Bind(() => four.Value);
+                  .Bind(() => four.Value, e => { });
             engine.Expr(() => one.Value)
-                  .Bind(() => two.Value);
-            engine.Expr(() => one.Value).Bind(() => three.Value);
+                  .Bind(() => two.Value, e => { });
+            engine.Expr(() => one.Value)
+                .Bind(() => three.Value, e => { });
 
             Console.WriteLine(engine.ToString());
 
@@ -87,7 +88,7 @@ namespace ReactGraph.Tests
             viewModel.RegeneratePaymentSchedule(true);
 
             engine.Expr(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule))
-                  .Bind(() => Foo);
+                  .Bind(() => Foo, e => { });
 
             Foo.ShouldNotBe(42);
             viewModel.PaymentSchedule.HasValidationError = false;

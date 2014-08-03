@@ -6,6 +6,13 @@ namespace ReactGraph.Tests
 {
     public class ApiTest
     {
+        readonly DependencyEngine engine;
+
+        public ApiTest()
+        {
+            engine = new DependencyEngine();
+        }
+
         [Fact]
         public void FluentApiTest()
         {
@@ -36,13 +43,13 @@ namespace ReactGraph.Tests
             var vertex8 = new SinglePropertyType();
             var engine = new DependencyEngine();
 
-            engine.Expr(() => Addition(vertex6.Value)).Bind(() => vertex0.Value);
-            engine.Expr(() => Addition(vertex0.Value, vertex5.Value, vertex4.Value)).Bind(() => vertex1.Value);
-            engine.Expr(() => Addition(vertex0.Value, vertex1.Value)).Bind(() => vertex2.Value);
-            engine.Expr(() => Addition(vertex1.Value, vertex2.Value)).Bind(() => vertex3.Value);
-            engine.Expr(() => Addition(vertex4.Value)).Bind(() => vertex5.Value);
-            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex7.Value);
-            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex8.Value);
+            engine.Expr(() => Addition(vertex6.Value)).Bind(() => vertex0.Value, e => { });
+            engine.Expr(() => Addition(vertex0.Value, vertex5.Value, vertex4.Value)).Bind(() => vertex1.Value, e => { });
+            engine.Expr(() => Addition(vertex0.Value, vertex1.Value)).Bind(() => vertex2.Value, e => { });
+            engine.Expr(() => Addition(vertex1.Value, vertex2.Value)).Bind(() => vertex3.Value, e => { });
+            engine.Expr(() => Addition(vertex4.Value)).Bind(() => vertex5.Value, e => { });
+            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex7.Value, e => { });
+            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex8.Value, e => { });
                 
             Console.WriteLine(engine.ToString());
 
@@ -70,10 +77,9 @@ namespace ReactGraph.Tests
             var b = new SinglePropertyType();
             var c = new SinglePropertyType();
             b.Value = 3;
-            var engine = new DependencyEngine();
 
             engine.Expr(() => Addition(a.Value, b.Value)).Metadata(label: "+", color: ".7 .3 1.0")
-                  .Bind(() => c.Value)
+                  .Bind(() => c.Value, e => { })
                   .Metadata(color: ".7 .3 .5");
 
             var dotFormat = engine.ToString();
@@ -90,6 +96,69 @@ namespace ReactGraph.Tests
             lines[1].ShouldContain("[label=\"a.Value\"]");
         }
 
+        [Fact]
+        public void ThrowsForTypeMismatch()
+        {
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+
+            var ex = Should.Throw<ArgumentException>(() => 
+                engine.Expr(() => (object) a.Value)
+                      .Bind(() => b.Value, e => { }));
+
+            ex.Message.ShouldBe("Cannot bind target of type System.Int32 to source of type System.Object");
+        }
+
+        [Fact]
+        public void ExceptionsArePassedToHandlers()
+        {
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+
+            Exception ex;
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value))
+                  .Bind(() => b.Value, e => ex = e);
+
+            ex = null;
+            a.Value = 2;
+            engine.ValueHasChanged(a, "Value");
+
+            ex.ShouldBeOfType<InvalidOperationException>();
+        }
+
+        [Fact]
+        public void NodeWhichThrowsExceptionHasSubgraphRemovedFromCurrentExecution()
+        {
+            /*
+             *      A
+             *     / \
+             *    B   Throws
+             *    |   |
+             *    C   Skipped
+             */
+
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+            var c = new SinglePropertyType();
+            var throws = new SinglePropertyType();
+            var skipped = new SinglePropertyType();
+
+            engine.Expr(() => a.Value).Bind(() => b.Value, e => { });
+            engine.Expr(() => b.Value).Bind(() => c.Value, e => { });
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => c.Value, e => { });
+            engine.Expr(() => throws.Value).Bind(() => skipped.Value, e => { });
+
+            a.Value = 2;
+            engine.ValueHasChanged(a, "Value");
+
+            skipped.ValueSet.ShouldBe(0);
+            c.Value.ShouldBe(2);
+        }
+
+        int ThrowsInvalidOperationException(int value)
+        {
+            throw new InvalidOperationException();
+        }
 
         private int Addition(int i1, int i2, int i3)
         {
@@ -108,7 +177,19 @@ namespace ReactGraph.Tests
 
         private class SinglePropertyType
         {
-            public int Value { get; set; }
+            int value;
+
+            public int Value
+            {
+                get { return value; }
+                set
+                {
+                    this.value = value;
+                    ValueSet++;
+                }
+            }
+
+            public int ValueSet { get; private set; }
         }
     }
 }
