@@ -1,7 +1,9 @@
+using System;
+
 namespace ReactGraph.Internals.NodeInfo
 {
-    interface IValueSink<in T>
+    interface IValueSink<T>
     {
-        void SetSource(IValueSource<T> formulaNode);
+        void SetSource(IValueSource<T> formulaNode, Action<Exception> errorHandler);
     }
 }

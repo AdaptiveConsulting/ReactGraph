@@ -42,7 +42,7 @@ namespace ReactGraph.Internals.Api
             return this;
         }
 
-        public IMemberDefinition Bind(Expression<Func<T>> targetProperty)
+        public IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty, Action<Exception> onError)
         {
             if (edge != null)
                 throw new InvalidOperationException("You can only bind a single expression to a property");
@@ -50,7 +50,14 @@ namespace ReactGraph.Internals.Api
             var targetPropertyDescriptor = expressionParser.GetTargetInfo(targetProperty);
             var targetNode = targetPropertyDescriptor.GetOrCreateWritableNodeInfo(repo);
 
-            targetNode.SetSource(formulaNode);
+            var valueSource = formulaNode as IValueSource<TProp>;
+            if (valueSource == null)
+            {
+                var message = string.Format("Cannot bind target of type {0} to source of type {1}", typeof(TProp), typeof(T));
+                throw new ArgumentException(message);
+            }
+
+            targetNode.SetSource(valueSource, onError);
 
             edge = graph.AddEdge(formulaNode, targetNode);
             edge.Source.Color = color;

@@ -8,13 +8,12 @@ namespace ReactGraph.Internals.Construction
     {
         readonly Expression<Func<T>> node;
         readonly Func<T> executeNode;
-        readonly string key;
 
         public FormulaDescriptor(Expression<Func<T>> node)
         {
             this.node = node;
-            executeNode = node.Compile();
-            key = this.node.ToString();
+            var expression = ((Expression<Func<T>>)new NullCheckRewriter().Visit(node));
+            executeNode = expression.Compile();
         }
 
         public override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)
@@ -30,11 +29,6 @@ namespace ReactGraph.Internals.Construction
         public override IWritableNodeInfo<T> GetOrCreateWritableNodeInfo(NodeRepository repo)
         {
             throw new NotSupportedException();
-        }
-
-        public override string Key
-        {
-            get { return key; }
         }
     }
 }

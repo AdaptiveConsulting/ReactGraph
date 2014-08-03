@@ -2,10 +2,10 @@ namespace ReactGraph.Internals.NodeInfo
 {
     interface INodeInfo : IValueSource
     {
-        void Reevaluate();
+        ReevalResult Reevaluate();
 
         void ValueChanged();
 
-        void UpdateSubscriptions(object newParent);
+        void UpdateSubscriptions(IMaybe newParent);
     }
 }

@@ -42,9 +42,14 @@
     <Compile Include="IExpressionDefinition.cs" />
     <Compile Include="Internals\Construction\DependencyDescriptor.cs" />
     <Compile Include="Internals\Construction\FormulaDescriptor.cs" />
+    <Compile Include="Internals\Construction\FormulaNullReferenceException.cs" />
     <Compile Include="Internals\Construction\MemberDependencyDescriptor.cs" />
+    <Compile Include="Internals\Construction\NullCheckRewriter.cs" />
+    <Compile Include="Internals\NodeInfo\IMaybe.cs" />
     <Compile Include="Internals\NodeInfo\INodeInfo`1.cs" />
+    <Compile Include="Internals\NodeInfo\IValueSource`1.cs" />
     <Compile Include="Internals\NodeInfo\IWritableNodeInfo.cs" />
+    <Compile Include="Internals\NodeInfo\Maybe.cs" />
     <Compile Include="Internals\Notification\INotificationStrategy.cs" />
     <Compile Include="Internals\ExpressionStringBuilder.cs" />
     <Compile Include="Internals\Graph\Edge.cs" />

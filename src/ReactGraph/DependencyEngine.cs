@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using ReactGraph.Internals.Api;
@@ -27,17 +28,26 @@ namespace ReactGraph
             if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
 
             var node = nodeRepository.Get(instance, key);
-            
+
             try
             {
                 isExecuting = true;
-                var orderToReeval = graph.TopologicalSort(node).ToArray();
-                var firstVertex = orderToReeval[0];
+                var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
+                var firstVertex = orderToReeval.Dequeue();
                 node.ValueChanged();
                 NotificationStratgegyValueUpdate(firstVertex);
-                foreach (var vertex in orderToReeval.Skip(1))
+                while (orderToReeval.Count > 0)
                 {
-                    vertex.Data.Reevaluate();
+                    var vertex = orderToReeval.Dequeue();
+                    var results = vertex.Data.Reevaluate();
+                    if (results == ReevalResult.Error)
+                    {
+                        var nodesRelatedToError = graph.TopologicalSort(vertex.Data).ToDictionary(k => k.Data);
+                        var newListToProcess = orderToReeval
+                            .Where(remaining => !nodesRelatedToError.ContainsKey(remaining.Data))
+                            .ToArray();
+                        orderToReeval = new Queue<Vertex<INodeInfo>>(newListToProcess);
+                    }
                     NotificationStratgegyValueUpdate(vertex);
                 }
             }

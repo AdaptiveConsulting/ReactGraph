@@ -9,11 +9,12 @@ namespace ReactGraph.Internals.NodeInfo
         readonly string label;
         readonly string key;
         readonly INotificationStrategy[] notificationStrategies;
+        readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly Action<T> setValue;
         IValueSource<T> formula;
-        T currentValue;
         object parentInstance;
+        Action<Exception> exceptionHandler;
 
         public WritableNodeInfo(
             object parentInstance,
@@ -34,12 +35,16 @@ namespace ReactGraph.Internals.NodeInfo
             ValueChanged();
         }
 
-        public void SetSource(IValueSource<T> formulaNode)
+        public void SetSource(IValueSource<T> formulaNode, Action<Exception> errorHandler)
         {
+            if (formula != null)
+                throw new InvalidOperationException(string.Format("{0} already has a formula associated with it", label));
+
             formula = formulaNode;
+            exceptionHandler = errorHandler;
         }
 
-        public T GetValue()
+        public Maybe<T> GetValue()
         {
             return currentValue;
         }
@@ -49,38 +54,72 @@ namespace ReactGraph.Internals.NodeInfo
             return label;
         }
 
-        object IValueSource.GetValue()
+        IMaybe IValueSource.GetValue()
         {
             return GetValue();
         }
 
-        public void Reevaluate()
+        public ReevalResult Reevaluate()
         {
             if (formula != null)
             {
                 ValueChanged();
-                setValue(formula.GetValue());
+                var value = formula.GetValue();
+                if (value.HasValue)
+                {
+                    // TODO Don't set and return NoChange when value has not changed
+                    setValue(value.Value);
+                    return ReevalResult.Changed;
+                }
+
+                exceptionHandler(value.Exception);
+                return ReevalResult.Error;
             }
+
+            return ReevalResult.NoChange;
         }
 
         public void ValueChanged()
         {
-            foreach (var notificationStrategy in notificationStrategies)
-                notificationStrategy.Untrack(currentValue);
-            nodeRepository.RemoveLookup(currentValue, null);
+            if (currentValue.HasValue)
+            {
+                foreach (var notificationStrategy in notificationStrategies)
+                    notificationStrategy.Untrack(currentValue.Value);
+                nodeRepository.RemoveLookup(currentValue.Value, null);
+            }
 
-            currentValue = getValue();
+            try
+            {
+                currentValue.NewValue(getValue());
+            }
+            catch (Exception ex)
+            {
+                currentValue.CouldNotCalculate(ex);
+            }
 
-            nodeRepository.AddLookup(currentValue, null, this);
-            foreach (var notificationStrategy in notificationStrategies)
-                notificationStrategy.Track(currentValue);
+            if (currentValue.HasValue)
+            {
+                nodeRepository.AddLookup(currentValue.Value, null, this);
+                foreach (var notificationStrategy in notificationStrategies)
+                    notificationStrategy.Track(currentValue.Value);
+            }
         }
 
-        public void UpdateSubscriptions(object newParent)
+        public void UpdateSubscriptions(IMaybe newParent)
         {
             nodeRepository.RemoveLookup(parentInstance, key);
-            parentInstance = newParent;
-            nodeRepository.AddLookup(parentInstance, key, this);
+            if (newParent.HasValue)
+            {
+                parentInstance = newParent.Value;
+                nodeRepository.AddLookup(parentInstance, key, this);
+            }
         }
+    }
+
+    enum ReevalResult
+    {
+        NoChange,
+        Error,
+        Changed
     }
 }

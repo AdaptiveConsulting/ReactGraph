@@ -1,6 +1,6 @@
 namespace ReactGraph.Internals.NodeInfo
 {
-    interface INodeInfo<out T> : INodeInfo, IValueSource<T>
+    interface INodeInfo<T> : INodeInfo, IValueSource<T>
     {
     }
 }

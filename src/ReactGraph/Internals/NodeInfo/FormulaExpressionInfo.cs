@@ -4,55 +4,54 @@ namespace ReactGraph.Internals.NodeInfo
 {
     class FormulaExpressionInfo<T> : INodeInfo<T>
     {
-        private readonly Func<T> getValue;
-        private T currentValue;
+        readonly Maybe<T> currentValue = new Maybe<T>();
+        readonly Func<T> getValue;
         readonly string label;
 
         public FormulaExpressionInfo(Func<T> execute, string label)
         {
             this.label = label;
-            var compiledFormula = execute;
-            getValue = () =>
-            {
-                try
-                {
-                    return compiledFormula();
-                }
-                catch (NullReferenceException)
-                {
-                    return default(T);
-                }
-            };
-            currentValue = getValue();
+            getValue = execute;
+            ValueChanged();
         }
 
-        public T GetValue()
+        public Maybe<T> GetValue()
         {
             return currentValue;
         }
 
-        public void Reevaluate()
+        public ReevalResult Reevaluate()
         {
             ValueChanged();
+            // Formulas do not report errors,
+            // anything that relies on this formula will report the error
+            return ReevalResult.Changed;
         }
 
         public void ValueChanged()
         {
-            currentValue = getValue();
+            try
+            {
+                currentValue.NewValue(getValue());
+            }
+            catch (Exception ex)
+            {
+                currentValue.CouldNotCalculate(ex);
+            }
         }
 
-        public void UpdateSubscriptions(object newParent)
+        public void UpdateSubscriptions(IMaybe newParent)
         {
-        }
-
-        object IValueSource.GetValue()
-        {
-            return GetValue();
         }
 
         public override string ToString()
         {
             return label;
+        }
+
+        IMaybe IValueSource.GetValue()
+        {
+            return GetValue();
         }
     }
 }
