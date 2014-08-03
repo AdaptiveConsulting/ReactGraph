@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.NodeInfo
 {
-    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T>
+    class FormulaExpressionInfo<T> : INodeInfo, IValueSource<T> // TODO override gethashcode and equal
     {
         readonly Expression<Func<T>> formula;
         private readonly Func<T> getValue;
@@ -14,7 +14,6 @@ namespace ReactGraph.Internals
         public FormulaExpressionInfo(Expression<Func<T>> formula)
         {
             this.formula = formula;
-            Key = formula.Name;
             var compiledFormula = formula.Compile();
             getValue = () =>
             {
@@ -30,8 +29,6 @@ namespace ReactGraph.Internals
             currentValue = getValue();
             Dependencies = new List<INodeInfo>();
         }
-
-        public string Key { get; private set; }
 
         public List<INodeInfo> Dependencies { get; private set; }
 

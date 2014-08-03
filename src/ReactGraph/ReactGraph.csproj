@@ -34,31 +34,28 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DependencyEngine.cs" />
-    <Compile Include="Internals\ExpressionDefinition.cs" />
+    <Compile Include="Internals\Construction\ExpressionDefinition.cs" />
     <Compile Include="IExpressionDefinition.cs" />
-    <Compile Include="INotificationStrategy.cs" />
+    <Compile Include="Internals\Notification\INotificationStrategy.cs" />
     <Compile Include="Internals\ExpressionStringBuilder.cs" />
-    <Compile Include="Internals\Edge.cs" />
-    <Compile Include="Internals\DirectedGraph.cs" />
-    <Compile Include="Internals\ExpressionParser.cs" />
-    <Compile Include="Internals\IValueSink.cs" />
-    <Compile Include="Internals\IValueSource.cs" />
-    <Compile Include="Internals\MemberNodeInfo.cs" />
-    <Compile Include="Internals\FormulaExpressionInfo.cs" />
-    <Compile Include="Internals\INodeInfo.cs" />
-    <Compile Include="NodeRepository.cs" />
-    <Compile Include="NotifyPropertyChangedStrategy.cs" />
+    <Compile Include="Internals\Graph\Edge.cs" />
+    <Compile Include="Internals\Graph\DirectedGraph.cs" />
+    <Compile Include="Internals\Construction\ExpressionParser.cs" />
+    <Compile Include="Internals\NodeInfo\IValueSink.cs" />
+    <Compile Include="Internals\NodeInfo\IValueSource.cs" />
+    <Compile Include="Internals\NodeInfo\MemberNodeInfo.cs" />
+    <Compile Include="Internals\NodeInfo\FormulaExpressionInfo.cs" />
+    <Compile Include="Internals\NodeInfo\INodeInfo.cs" />
+    <Compile Include="IMemberDefinition.cs" />
+    <Compile Include="Internals\NodeInfo\NodeRepository.cs" />
+    <Compile Include="Internals\Notification\NotifyPropertyChangedStrategy.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Internals\Vertex.cs" />
+    <Compile Include="Internals\Graph\Vertex.cs" />
+    <Compile Include="Internals\Construction\MemberDefinition.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -148,7 +147,6 @@ namespace ReactGraph.Internals
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            int argindex = 0;
             Visit(node.Object);
 
             IEnumerable<Expression> arguments = node.Arguments;
@@ -156,7 +154,6 @@ namespace ReactGraph.Internals
             {
                 Visit(arguments.First());
                 arguments = arguments.Skip(1);
-                argindex++;
             }
 
             Out("." + node.Method.Name + "(");

@@ -2,12 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
-using ReactGraph.Annotations;
+using ReactGraph.Internals.Notification;
+using ReactGraph.Properties;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Internals.NodeInfo
 {
     class MemberNodeInfo<T> : INodeInfo, IValueSink<T>, IValueSource<T>
     {
+        readonly NodeRepository nodeRepository;
+
         readonly INotificationStrategy[] notificationStrategies;
         readonly Func<T> getValue;
         readonly Action<object> setValue;
@@ -15,7 +18,6 @@ namespace ReactGraph.Internals
         IValueSource<T> formula;
         T currentValue;
         object parentInstance;
-        NodeRepository nodeRepository;
 
         private MemberNodeInfo(object rootInstance, object parentInstance,
             MemberExpression propertyExpression,
@@ -72,7 +74,7 @@ namespace ReactGraph.Internals
 
         public MemberInfo MemberInfo { get; private set; }
 
-        public MemberExpression PropertyExpression { get; private set; }
+        MemberExpression PropertyExpression { get; set; }
 
         public object ParentInstance
         {
@@ -84,8 +86,6 @@ namespace ReactGraph.Internals
                 nodeRepository.AddLookup(parentInstance, MemberInfo.Name, this);
             }
         }
-
-        public string Key { get; private set; }
 
         public List<INodeInfo> Dependencies { get; private set; }
 

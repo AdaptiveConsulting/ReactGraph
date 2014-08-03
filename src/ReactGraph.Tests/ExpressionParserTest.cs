@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq.Expressions;
 using ReactGraph.Internals;
+using ReactGraph.Internals.Construction;
+using ReactGraph.Internals.NodeInfo;
 using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;

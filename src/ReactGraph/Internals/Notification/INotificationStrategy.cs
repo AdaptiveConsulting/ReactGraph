@@ -1,8 +1,8 @@
 using System;
 
-namespace ReactGraph
+namespace ReactGraph.Internals.Notification
 {
-    public interface INotificationStrategy
+    internal interface INotificationStrategy
     {
         void Track(object instance);
         void Untrack(object instance);
