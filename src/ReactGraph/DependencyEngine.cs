@@ -22,7 +22,10 @@ namespace ReactGraph
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
+            Visualisation = new DotVisualisation(graph);
         }
+
+        public IVisualisation Visualisation { get; set; }
 
         public bool ValueHasChanged(object instance, string key)
         {
@@ -74,10 +77,10 @@ namespace ReactGraph
             return dotVisualisation.Generate("DependencyGraph");
         }
 
-        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction)
+        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction, string expressionId = null)
         {
             var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
-            return new ExpressionDefinition<TProp>(formulaNode, expressionParser, graph, nodeRepository);
+            return new ExpressionDefinition<TProp>(formulaNode, expressionId, expressionParser, graph, nodeRepository);
         }
     }
 }

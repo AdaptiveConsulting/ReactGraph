@@ -8,18 +8,23 @@ namespace ReactGraph.Internals.Api
 {
     internal class ExpressionDefinition<T> : IExpressionDefinition<T>
     {
+        readonly FormulaDescriptor<T> formulaDescriptor;
+        readonly string expressionId;
         readonly ExpressionParser expressionParser;
         readonly DirectedGraph<INodeInfo> graph;
         readonly NodeRepository repo;
         readonly INodeInfo<T> formulaNode;
         Edge<INodeInfo> edge;
-        string label;
-        string color;
 
         public ExpressionDefinition(
-            FormulaDescriptor<T> formulaDescriptor, ExpressionParser expressionParser, 
-            DirectedGraph<INodeInfo> graph, NodeRepository repo)
+            FormulaDescriptor<T> formulaDescriptor, 
+            string expressionId,
+            ExpressionParser expressionParser, 
+            DirectedGraph<INodeInfo> graph, 
+            NodeRepository repo)
         {
+            this.formulaDescriptor = formulaDescriptor;
+            this.expressionId = expressionId;
             this.expressionParser = expressionParser;
             this.graph = graph;
             this.repo = repo;
@@ -27,22 +32,7 @@ namespace ReactGraph.Internals.Api
             AddDependenciesToGraph(formulaDescriptor);
         }
 
-        public IExpressionDefinition<T> Metadata(string lbl = null, string clr = null)
-        {
-            if (edge == null)
-            {
-                label = lbl;
-                color = clr;
-            }
-            else
-            {
-                edge.Source.Color = color;
-                edge.Source.Label = label;
-            }
-            return this;
-        }
-
-        public IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty, Action<Exception> onError)
+        public IMemberDefinition Bind<TProp>(Expression<Func<TProp>> targetProperty, Action<Exception> onError, string propertyId = null)
         {
             if (edge != null)
                 throw new InvalidOperationException("You can only bind a single expression to a property");
@@ -59,9 +49,7 @@ namespace ReactGraph.Internals.Api
 
             targetNode.SetSource(valueSource, onError);
 
-            edge = graph.AddEdge(formulaNode, targetNode);
-            edge.Source.Color = color;
-            edge.Source.Label = label;
+            edge = graph.AddEdge(formulaNode, targetNode, expressionId, propertyId);
             return new MemberDefinition(edge.Target);
         }
 
@@ -69,7 +57,7 @@ namespace ReactGraph.Internals.Api
         {
             foreach (var dependency in descriptor.Dependencies)
             {
-                graph.AddEdge(dependency.GetOrCreateNodeInfo(repo), formulaNode);
+                graph.AddEdge(dependency.GetOrCreateNodeInfo(repo), formulaNode, null, descriptor == formulaDescriptor ? expressionId : null);
                 AddDependenciesToGraph(dependency);
             }
         }

@@ -11,3 +11,5 @@ Base class node info => INodeInfo could be replaced by a base class
 create an enum or something for colors, at the moment it's a string (I don't want to take a dependency on System.Drawing just for that...)
 
 INodeInfo.Dependencies => why don't we use the graph instead? It's weird to relationships between nodes here...
+
+Expose cycle detection in engine (some validate method)

@@ -7,6 +7,7 @@ namespace ReactGraph.Internals.Graph
     internal class DirectedGraph<T>
     {
         private readonly Dictionary<T, Vertex<T>> verticies = new Dictionary<T, Vertex<T>>();
+        long vertexIdCounter;
 
         public int VerticiesCount
         {
@@ -18,10 +19,10 @@ namespace ReactGraph.Internals.Graph
             get { return verticies.Values.Sum(v => v.Successors.Count()); }
         }
 
-        public Edge<T> AddEdge(T source, T target)
+        public Edge<T> AddEdge(T source, T target, string sourceId, string targetId)
         {
-            var sourceVertex = AddVertex(source);
-            var targetVertex = AddVertex(target);
+            var sourceVertex = AddVertex(source, sourceId);
+            var targetVertex = AddVertex(target, targetId);
 
             var edge = sourceVertex.Successors.FirstOrDefault(e => e.Target == targetVertex);
 
@@ -107,7 +108,7 @@ namespace ReactGraph.Internals.Graph
                 {
                     if (dfs.Contains(edge.Target))
                     {
-                        graph.AddEdge(vertex.Data, edge.Target.Data);
+                        graph.AddEdge(vertex.Data, edge.Target.Data, vertex.Id, edge.Target.Id);
                     }
                 }
             }
@@ -148,11 +149,18 @@ namespace ReactGraph.Internals.Graph
             return result;
         }
 
-        private Vertex<T> AddVertex(T data)
+        private Vertex<T> AddVertex(T data, string id)
         {
             if (!verticies.ContainsKey(data))
             {
-                var vertex = new Vertex<T>(data);
+                var newVertexId = id;
+                if (string.IsNullOrEmpty(newVertexId))
+                {
+                    vertexIdCounter++;
+                    newVertexId = "__" + vertexIdCounter;
+                }
+
+                var vertex = new Vertex<T>(data, newVertexId);
                 verticies[data] = vertex;
             }
             return verticies[data];

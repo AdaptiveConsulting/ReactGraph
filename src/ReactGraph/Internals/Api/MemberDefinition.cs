@@ -11,12 +11,5 @@ namespace ReactGraph.Internals.Api
         {
             this.propertyVertex = propertyVertex;
         }
-
-        public IMemberDefinition Metadata(string label = null, string color = null)
-        {
-            propertyVertex.Color = color;
-            propertyVertex.Label = label;
-            return this;
-        }
     }
 }
