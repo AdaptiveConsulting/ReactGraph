@@ -61,7 +61,6 @@ namespace ReactGraph.Tests
             vertex3.Value.ShouldBe(6);
         }
 
-            var lines = dotFormat.Replace("\r\n", "\n").Split(new[] { "\n" }, StringSplitOptions.None);
         [Fact]
         public void ThrowsForTypeMismatch()
         {
