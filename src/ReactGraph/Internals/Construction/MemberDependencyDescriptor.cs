@@ -39,7 +39,7 @@ namespace ReactGraph.Internals.Construction
             ParentInstance = parentInstance;
             this.memberExpression = memberExpression;
             memberInfo = propertyInfo;
-            key = propertyInfo.Name; 
+            key = propertyInfo.Name;
             memberType = propertyInfo.PropertyType;
             getValue = () =>
             {
@@ -53,16 +53,8 @@ namespace ReactGraph.Internals.Construction
 
         public override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)
         {
-            return GetOrCreateWritableNodeInfo(repo);
-        }
-
-        public override IWritableNodeInfo<T> GetOrCreateWritableNodeInfo(NodeRepository repo)
-        {
-            if (isReadOnly)
-                throw new InvalidOperationException("Target property should be writable");
-
             if (repo.Contains(ParentInstance, key))
-                return (IWritableNodeInfo<T>) repo.Get(ParentInstance, key);
+                return repo.Get(ParentInstance, key);
 
             var strategies = repo.GetStrategies(memberType);
             SubscribeToRootObject(repo);
@@ -71,6 +63,14 @@ namespace ReactGraph.Internals.Construction
                 ExpressionStringBuilder.ToString(memberExpression), key);
             repo.AddLookup(ParentInstance, key, memberNodeInfo);
             return memberNodeInfo;
+        }
+
+        public override IWritableNodeInfo<T> GetOrCreateWritableNodeInfo(NodeRepository repo)
+        {
+            if (isReadOnly)
+                throw new InvalidOperationException("Target property should be writable");
+
+            return (IWritableNodeInfo<T>)GetOrCreateNodeInfo(repo);
         }
 
         //TODO need a better place for this..

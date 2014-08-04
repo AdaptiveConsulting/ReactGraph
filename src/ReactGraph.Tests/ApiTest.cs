@@ -90,7 +90,7 @@ namespace ReactGraph.Tests
             engine.ValueHasChanged(a, "Value");
             c.Value.ShouldBe(5);
 
-            var lines = dotFormat.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+            var lines = dotFormat.Replace("\r\n", "\n").Split(new[] { "\n" }, StringSplitOptions.None);
             lines[2].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\"]");
             lines[4].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\"]");
             lines[1].ShouldContain("[label=\"a.Value\"]");

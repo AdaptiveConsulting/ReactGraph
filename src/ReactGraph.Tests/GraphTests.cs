@@ -154,8 +154,8 @@ namespace ReactGraph.Tests
      2 -> 5;
 })";
 
-            var dotLanguage = sut.ToDotLanguage("Foo");
-            dotLanguage.ShouldBe(expected);
+            var dotLanguage = sut.ToDotLanguage("Foo").Replace("\r\n", "\n");
+            dotLanguage.ShouldBe(expected.Replace("\r\n", "\n"));
         }
 
         [Fact]
