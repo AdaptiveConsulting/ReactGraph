@@ -13,3 +13,5 @@ create an enum or something for colors, at the moment it's a string (I don't wan
 INodeInfo.Dependencies => why don't we use the graph instead? It's weird to relationships between nodes here...
 
 Expose cycle detection in engine (some validate method)
+
+Count number of time things get set duing one propagation in the graph, and make sure it's no more than 1

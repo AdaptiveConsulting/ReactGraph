@@ -3,6 +3,7 @@
     class MortgateCalculatorViewModel : NotifyPropertyChanged
     {
         private ScheduleViewModel paymentSchedule;
+        bool canApply;
 
         public void RegeneratePaymentSchedule(bool hasValidationError)
         {
@@ -23,6 +24,10 @@
             }
         }
 
-        public bool CanApply { get; private set; }
+        public bool CanApply
+        {
+            get { return canApply; }
+            private set { canApply = value; }
+        }
     }
 }

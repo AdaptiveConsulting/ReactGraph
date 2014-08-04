@@ -14,7 +14,7 @@ namespace ReactGraph.Internals.Visualisation
             this.graph = graph;
         }
 
-        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null)
+        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null, bool showRootAsClusters = false)
         {
             var labels = new StringBuilder();
             var graphDefinition = new StringBuilder();
