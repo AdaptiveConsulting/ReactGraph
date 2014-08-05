@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ReactGraph.Graph;
 using Shouldly;
 using Xunit;
 

@@ -7,7 +7,7 @@ using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
-using ReactGraph.Internals.Visualisation;
+using ReactGraph.Visualisation;
 
 namespace ReactGraph
 {
