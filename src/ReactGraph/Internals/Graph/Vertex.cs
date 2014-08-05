@@ -7,16 +7,15 @@ namespace ReactGraph.Internals.Graph
         private readonly List<Edge<T>> predecessors = new List<Edge<T>>();
         private readonly List<Edge<T>> successors = new List<Edge<T>>();
 
-        public Vertex(T data)
+        public Vertex(T data, string id)
         {
             Data = data;
+            Id = id;
         }
 
-        public string Color { get; set; }
-
-        public string Label { get; set; }
-
         public T Data { get; private set; }
+
+        public string Id { get; private set; }
 
         public IEnumerable<Edge<T>> Predecessors { get { return predecessors; } } 
 

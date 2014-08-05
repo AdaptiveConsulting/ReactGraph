@@ -61,41 +61,6 @@ namespace ReactGraph.Tests
             vertex3.Value.ShouldBe(6);
         }
 
-
-        [Fact]
-        public void AddMetadataToNodesTest()
-        {
-            /*
-             * A -> A + B ----> C
-             *      ^
-             *     /
-             *    /
-             *   B
-             */
-
-            var a = new SinglePropertyType();
-            var b = new SinglePropertyType();
-            var c = new SinglePropertyType();
-            b.Value = 3;
-
-            engine.Expr(() => Addition(a.Value, b.Value)).Metadata(label: "+", color: ".7 .3 1.0")
-                  .Bind(() => c.Value, e => { })
-                  .Metadata(color: ".7 .3 .5");
-
-            var dotFormat = engine.ToString();
-            Console.WriteLine(dotFormat);
-
-            // We set the value to 2, then tell the engine the value has changed
-            a.Value = 2;
-            engine.ValueHasChanged(a, "Value");
-            c.Value.ShouldBe(5);
-
-            var lines = dotFormat.Replace("\r\n", "\n").Split(new[] { "\n" }, StringSplitOptions.None);
-            lines[2].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\"]");
-            lines[4].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\"]");
-            lines[1].ShouldContain("[label=\"a.Value\"]");
-        }
-
         [Fact]
         public void ThrowsForTypeMismatch()
         {

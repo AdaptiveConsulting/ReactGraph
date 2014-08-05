@@ -6,6 +6,7 @@ using ReactGraph.Internals.Api;
 using ReactGraph.Internals.Construction;
 using ReactGraph.Internals.Graph;
 using ReactGraph.Internals.NodeInfo;
+using ReactGraph.Internals.Visualisation;
 
 namespace ReactGraph
 {
@@ -21,7 +22,10 @@ namespace ReactGraph
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
+            Visualisation = new DotVisualisation(graph);
         }
+
+        public IVisualisation Visualisation { get; set; }
 
         public bool ValueHasChanged(object instance, string key)
         {
@@ -69,13 +73,14 @@ namespace ReactGraph
 
         public override string ToString()
         {
-            return graph.ToDotLanguage("DependencyGraph");
+            var dotVisualisation = new DotVisualisation(graph);
+            return dotVisualisation.Generate("DependencyGraph");
         }
 
-        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction)
+        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction, string expressionId = null)
         {
             var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
-            return new ExpressionDefinition<TProp>(formulaNode, expressionParser, graph, nodeRepository);
+            return new ExpressionDefinition<TProp>(formulaNode, expressionId, expressionParser, graph, nodeRepository);
         }
     }
 }

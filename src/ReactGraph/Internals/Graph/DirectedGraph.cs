@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace ReactGraph.Internals.Graph
 {
     internal class DirectedGraph<T>
     {
         private readonly Dictionary<T, Vertex<T>> verticies = new Dictionary<T, Vertex<T>>();
+        long vertexIdCounter;
 
         public int VerticiesCount
         {
@@ -19,10 +19,10 @@ namespace ReactGraph.Internals.Graph
             get { return verticies.Values.Sum(v => v.Successors.Count()); }
         }
 
-        public Edge<T> AddEdge(T source, T target)
+        public Edge<T> AddEdge(T source, T target, string sourceId, string targetId)
         {
-            var sourceVertex = AddVertex(source);
-            var targetVertex = AddVertex(target);
+            var sourceVertex = AddVertex(source, sourceId);
+            var targetVertex = AddVertex(target, targetId);
 
             var edge = sourceVertex.Successors.FirstOrDefault(e => e.Target == targetVertex);
 
@@ -38,10 +38,15 @@ namespace ReactGraph.Internals.Graph
             edge.Source.RemoveSuccessorEdge(edge);
         }
 
-        private IEnumerable<Edge<T>> Edges
+        public IEnumerable<Edge<T>> Edges
         {
             get { return verticies.Values.SelectMany(vertex => vertex.Successors); }
-        } 
+        }
+
+        public IEnumerable<Vertex<T>> Verticies
+        {
+            get { return verticies.Values; }
+        }
 
         /// <summary>
         /// Perform a depth first seach
@@ -103,7 +108,7 @@ namespace ReactGraph.Internals.Graph
                 {
                     if (dfs.Contains(edge.Target))
                     {
-                        graph.AddEdge(vertex.Data, edge.Target.Data);
+                        graph.AddEdge(vertex.Data, edge.Target.Data, vertex.Id, edge.Target.Id);
                     }
                 }
             }
@@ -144,37 +149,21 @@ namespace ReactGraph.Internals.Graph
             return result;
         }
 
-        private Vertex<T> AddVertex(T data)
+        private Vertex<T> AddVertex(T data, string id)
         {
             if (!verticies.ContainsKey(data))
             {
-                var vertex = new Vertex<T>(data);
+                var newVertexId = id;
+                if (string.IsNullOrEmpty(newVertexId))
+                {
+                    vertexIdCounter++;
+                    newVertexId = "__" + vertexIdCounter;
+                }
+
+                var vertex = new Vertex<T>(data, newVertexId);
                 verticies[data] = vertex;
             }
             return verticies[data];
-        }
-
-        public string ToDotLanguage(string title)
-        {
-            var labels = new StringBuilder();
-            var graph = new StringBuilder();
-
-            foreach (var vertex in verticies)
-            {
-                var label = string.IsNullOrEmpty(vertex.Value.Label) ? vertex.Value.Data.ToString() : vertex.Value.Label;
-                var color = string.IsNullOrEmpty(vertex.Value.Color) ? string.Empty : string.Format(", fillcolor=\"{0}\"", vertex.Value.Color);
-                labels.AppendFormat("     {0} [label=\"{1}\"{2}];", vertex.Value.Data.GetHashCode(), label, color).AppendLine();
-            }
-            foreach (var edge in Edges)
-            {
-                graph.AppendFormat("     {0} -> {1};", 
-                    edge.Source.Data.GetHashCode(), edge.Target.Data.GetHashCode())
-                    .AppendLine();
-            }
-
-            return string.Format(@"digraph {0} {{
-{1}
-{2}}})", title, labels, graph);
         }
 
         /// <summary>
