@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ReactGraph.Internals.Graph
+namespace ReactGraph.Graph
 {
     internal class Vertex<T>
     {

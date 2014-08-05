@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel;
 
-namespace ReactGraph.Internals.Notification
+namespace ReactGraph.Notification
 {
     class NotifyPropertyChangedStrategy : INotificationStrategy
     {

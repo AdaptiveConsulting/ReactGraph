@@ -1,8 +1,8 @@
 using System;
 using System.Linq.Expressions;
-using ReactGraph.Internals.NodeInfo;
+using ReactGraph.NodeInfo;
 
-namespace ReactGraph.Internals.Construction
+namespace ReactGraph.Construction
 {
     class FormulaDescriptor<T> : DependencyDescriptor<T>
     {

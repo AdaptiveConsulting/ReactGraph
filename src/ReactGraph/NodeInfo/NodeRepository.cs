@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ReactGraph.Internals.Notification;
+using ReactGraph.Notification;
 
-namespace ReactGraph.Internals.NodeInfo
+namespace ReactGraph.NodeInfo
 {
     class NodeRepository
     {

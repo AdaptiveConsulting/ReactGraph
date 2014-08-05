@@ -1,4 +1,4 @@
-namespace ReactGraph.Internals.NodeInfo
+namespace ReactGraph.NodeInfo
 {
     interface IValueSource<T> : IValueSource
     {

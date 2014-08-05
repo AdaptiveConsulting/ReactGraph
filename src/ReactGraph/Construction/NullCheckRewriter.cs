@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 
-namespace ReactGraph.Internals.Construction
+namespace ReactGraph.Construction
 {
     class NullCheckRewriter : ExpressionVisitor
     {

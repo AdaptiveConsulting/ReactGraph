@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace ReactGraph.Internals
+namespace ReactGraph.Construction
 {
     /// <summary>
     /// This is adapted from the internal class in the .net framework

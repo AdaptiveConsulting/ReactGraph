@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace ReactGraph.Internals.NodeInfo
+namespace ReactGraph.NodeInfo
 {
     class Maybe<T> : IMaybe
     {

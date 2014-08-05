@@ -1,4 +1,4 @@
-namespace ReactGraph.Internals.Graph
+namespace ReactGraph.Graph
 {
     internal class Edge<T>
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace ReactGraph.Internals.Graph
+namespace ReactGraph.Graph
 {
     internal class DirectedGraph<T>
     {

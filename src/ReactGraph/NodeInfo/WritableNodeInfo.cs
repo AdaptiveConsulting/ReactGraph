@@ -1,7 +1,7 @@
 using System;
-using ReactGraph.Internals.Notification;
+using ReactGraph.Notification;
 
-namespace ReactGraph.Internals.NodeInfo
+namespace ReactGraph.NodeInfo
 {
     class WritableNodeInfo<T> : IWritableNodeInfo<T>
     {

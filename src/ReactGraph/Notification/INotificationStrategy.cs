@@ -1,6 +1,6 @@
 using System;
 
-namespace ReactGraph.Internals.Notification
+namespace ReactGraph.Notification
 {
     internal interface INotificationStrategy
     {

@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ReactGraph.Internals.Api;
-using ReactGraph.Internals.Construction;
-using ReactGraph.Internals.Graph;
-using ReactGraph.Internals.NodeInfo;
+using ReactGraph.Api;
+using ReactGraph.Construction;
+using ReactGraph.Graph;
+using ReactGraph.NodeInfo;
 using ReactGraph.Internals.Visualisation;
 
 namespace ReactGraph

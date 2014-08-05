@@ -1,7 +1,7 @@
-using ReactGraph.Internals.Graph;
-using ReactGraph.Internals.NodeInfo;
+using ReactGraph.Graph;
+using ReactGraph.NodeInfo;
 
-namespace ReactGraph.Internals.Api
+namespace ReactGraph.Api
 {
     class MemberDefinition : IMemberDefinition
     {

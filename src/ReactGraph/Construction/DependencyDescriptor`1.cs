@@ -1,7 +1,6 @@
-﻿using System;
-using ReactGraph.Internals.NodeInfo;
+﻿using ReactGraph.NodeInfo;
 
-namespace ReactGraph.Internals.Construction
+namespace ReactGraph.Construction
 {
     abstract class DependencyDescriptor<T> : DependencyDescriptor
     {

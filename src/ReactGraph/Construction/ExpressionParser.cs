@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace ReactGraph.Internals.Construction
+namespace ReactGraph.Construction
 {
     class ExpressionParser
     {

@@ -1,6 +1,6 @@
 using System;
 
-namespace ReactGraph.Internals.NodeInfo
+namespace ReactGraph.NodeInfo
 {
     class FormulaExpressionInfo<T> : INodeInfo<T>
     {

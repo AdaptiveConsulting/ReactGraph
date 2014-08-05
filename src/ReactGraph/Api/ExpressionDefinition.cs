@@ -1,10 +1,10 @@
 using System;
 using System.Linq.Expressions;
-using ReactGraph.Internals.Construction;
-using ReactGraph.Internals.Graph;
-using ReactGraph.Internals.NodeInfo;
+using ReactGraph.Construction;
+using ReactGraph.Graph;
+using ReactGraph.NodeInfo;
 
-namespace ReactGraph.Internals.Api
+namespace ReactGraph.Api
 {
     internal class ExpressionDefinition<T> : IExpressionDefinition<T>
     {

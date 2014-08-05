@@ -2,7 +2,7 @@ using System;
 using System.Runtime.Serialization;
 using ReactGraph.Properties;
 
-namespace ReactGraph.Internals.Construction
+namespace ReactGraph.Construction
 {
     [Serializable]
     class FormulaNullReferenceException : NullReferenceException
