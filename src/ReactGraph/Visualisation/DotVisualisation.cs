@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
-using ReactGraph.Internals.Graph;
-using ReactGraph.Internals.NodeInfo;
+using ReactGraph.Graph;
+using ReactGraph.NodeInfo;
 
-namespace ReactGraph.Internals.Visualisation
+namespace ReactGraph.Visualisation
 {
     internal class DotVisualisation : IVisualisation
     {

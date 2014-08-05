@@ -45,6 +45,8 @@
     <Compile Include="Construction\FormulaNullReferenceException.cs" />
     <Compile Include="Construction\MemberDependencyDescriptor.cs" />
     <Compile Include="Construction\NullCheckRewriter.cs" />
+    <Compile Include="Instrumentation\IEngineInstrumentation.cs" />
+    <Compile Include="Instrumentation\EngineInstrumenter.cs" />
     <Compile Include="NodeInfo\IMaybe.cs" />
     <Compile Include="NodeInfo\INodeInfo`1.cs" />
     <Compile Include="NodeInfo\IValueSource`1.cs" />
@@ -63,9 +65,9 @@
     <Compile Include="IMemberDefinition.cs" />
     <Compile Include="NodeInfo\NodeRepository.cs" />
     <Compile Include="Notification\NotifyPropertyChangedStrategy.cs" />
-    <Compile Include="Internals\Visualisation\DotVisualisation.cs" />
+    <Compile Include="Visualisation\DotVisualisation.cs" />
     <Compile Include="IVisualisation.cs" />
-    <Compile Include="Internals\Visualisation\VertexVisualProperties.cs" />
+    <Compile Include="Visualisation\VertexVisualProperties.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Graph\Vertex.cs" />

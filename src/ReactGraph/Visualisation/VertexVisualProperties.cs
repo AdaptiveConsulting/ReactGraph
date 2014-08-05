@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 
-namespace ReactGraph.Internals.Visualisation
+namespace ReactGraph.Visualisation
 {
     public class VertexVisualProperties
     {

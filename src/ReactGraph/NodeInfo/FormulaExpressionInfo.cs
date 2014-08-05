@@ -20,12 +20,12 @@ namespace ReactGraph.NodeInfo
             return currentValue;
         }
 
-        public ReevalResult Reevaluate()
+        public ReevaluationResult Reevaluate()
         {
             ValueChanged();
             // Formulas do not report errors,
             // anything that relies on this formula will report the error
-            return ReevalResult.Changed;
+            return ReevaluationResult.Changed;
         }
 
         public void ValueChanged()
