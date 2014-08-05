@@ -45,6 +45,8 @@
     <Compile Include="Construction\FormulaNullReferenceException.cs" />
     <Compile Include="Construction\MemberDependencyDescriptor.cs" />
     <Compile Include="Construction\NullCheckRewriter.cs" />
+    <Compile Include="Instrumentation\IEngineInstrumentation.cs" />
+    <Compile Include="Instrumentation\EngineInstrumenter.cs" />
     <Compile Include="NodeInfo\IMaybe.cs" />
     <Compile Include="NodeInfo\INodeInfo`1.cs" />
     <Compile Include="NodeInfo\IValueSource`1.cs" />

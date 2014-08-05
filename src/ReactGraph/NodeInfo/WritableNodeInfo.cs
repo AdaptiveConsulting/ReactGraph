@@ -59,7 +59,7 @@ namespace ReactGraph.NodeInfo
             return GetValue();
         }
 
-        public ReevalResult Reevaluate()
+        public ReevaluationResult Reevaluate()
         {
             if (formula != null)
             {
@@ -69,14 +69,14 @@ namespace ReactGraph.NodeInfo
                 {
                     // TODO Don't set and return NoChange when value has not changed
                     setValue(value.Value);
-                    return ReevalResult.Changed;
+                    return ReevaluationResult.Changed;
                 }
 
                 exceptionHandler(value.Exception);
-                return ReevalResult.Error;
+                return ReevaluationResult.Error;
             }
 
-            return ReevalResult.NoChange;
+            return ReevaluationResult.NoChange;
         }
 
         public void ValueChanged()
@@ -116,7 +116,7 @@ namespace ReactGraph.NodeInfo
         }
     }
 
-    enum ReevalResult
+    public enum ReevaluationResult
     {
         NoChange,
         Error,

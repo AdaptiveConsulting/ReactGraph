@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using ReactGraph.Instrumentation;
+using ReactGraph.NodeInfo;
 using Shouldly;
 using Xunit;
 
@@ -6,7 +9,7 @@ namespace ReactGraph.Tests
 {
     public class ApiTest
     {
-        readonly DependencyEngine engine;
+        DependencyEngine engine;
 
         public ApiTest()
         {
@@ -126,6 +129,87 @@ namespace ReactGraph.Tests
             d.ValueSet.ShouldBe(0);
             c.Value.ShouldBe(2);
             e.Value.ShouldBe(2);
+        }
+
+        [Fact]
+        public void Instrumentation()
+        {
+            /*
+             *      A
+             *     / \
+             *    B   Throws
+             *    |   |
+             *    C   Skipped
+             *   / \ /
+             *  E   D
+             */
+            var instrumentation = new CustomInstrumentation();
+            engine = new DependencyEngine(instrumentation);
+
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+            var c = new SinglePropertyType();
+            var d = new SinglePropertyType();
+            var e = new SinglePropertyType();
+            var throws = new SinglePropertyType();
+            var skipped = new SinglePropertyType();
+
+            engine.Expr(() => a.Value).Bind(() => b.Value, ex => { });
+            engine.Expr(() => b.Value).Bind(() => c.Value, ex => { });
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, ex => { });
+            engine.Expr(() => throws.Value).Bind(() => skipped.Value, ex => { });
+            engine.Expr(() => c.Value + skipped.Value).Bind(() => d.Value, ex => { });
+            engine.Expr(() => c.Value).Bind(() => e.Value, ex => { });
+
+            a.Value = 2;
+            engine.ValueHasChanged(a, "Value");
+
+            Console.WriteLine(engine.ToString());
+
+            instrumentation.WalkIndexStart.ShouldBe(1);
+            instrumentation.WalkIndexEnd.ShouldBe(1);
+            instrumentation.NodeEvaluations.Count.ShouldBe(8);
+        }
+
+        class CustomInstrumentation : IEngineInstrumentation
+        {
+            public CustomInstrumentation()
+            {
+                NodeEvaluations = new List<NodeEval>();
+            }
+
+            public long WalkIndexStart { get; private set; }
+            public long WalkIndexEnd { get; private set; }
+            public List<NodeEval> NodeEvaluations { get; private set; }
+
+            public void OnDependencyWalkStart(long walkIndex, string sourceProperty)
+            {
+                WalkIndexStart = walkIndex;
+            }
+
+            public void OnNodeEvaluated(long walkIndex, string updatedNode, ReevaluationResult result)
+            {
+                NodeEvaluations.Add(new NodeEval(walkIndex, updatedNode, result));
+            }
+
+            public void OnDepdendencyWalkEnd(long walkIndex)
+            {
+                WalkIndexEnd = walkIndex;
+            }
+        }
+        
+        class NodeEval
+        {
+            public long WalkIndex { get; set; }
+            public string UpdatedNode { get; set; }
+            public ReevaluationResult Result { get; set; }
+
+            public NodeEval(long walkIndex, string updatedNode, ReevaluationResult result)
+            {
+                WalkIndex = walkIndex;
+                UpdatedNode = updatedNode;
+                Result = result;
+            }
         }
 
         int ThrowsInvalidOperationException(int value)
