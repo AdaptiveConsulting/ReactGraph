@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using ReactGraph.Instrumentation;
-using ReactGraph.NodeInfo;
 using Shouldly;
 using Xunit;
 
@@ -143,7 +140,7 @@ namespace ReactGraph.Tests
              *   / \ /
              *  E   D
              */
-            var instrumentation = new CustomInstrumentation();
+            var instrumentation = new TestInstrumentation();
             engine = new DependencyEngine(instrumentation);
 
             var a = new SinglePropertyType();
@@ -169,47 +166,6 @@ namespace ReactGraph.Tests
             instrumentation.WalkIndexStart.ShouldBe(1);
             instrumentation.WalkIndexEnd.ShouldBe(1);
             instrumentation.NodeEvaluations.Count.ShouldBe(8);
-        }
-
-        class CustomInstrumentation : IEngineInstrumentation
-        {
-            public CustomInstrumentation()
-            {
-                NodeEvaluations = new List<NodeEval>();
-            }
-
-            public long WalkIndexStart { get; private set; }
-            public long WalkIndexEnd { get; private set; }
-            public List<NodeEval> NodeEvaluations { get; private set; }
-
-            public void OnDependencyWalkStart(long walkIndex, string sourceProperty)
-            {
-                WalkIndexStart = walkIndex;
-            }
-
-            public void OnNodeEvaluated(long walkIndex, string updatedNode, ReevaluationResult result)
-            {
-                NodeEvaluations.Add(new NodeEval(walkIndex, updatedNode, result));
-            }
-
-            public void OnDepdendencyWalkEnd(long walkIndex)
-            {
-                WalkIndexEnd = walkIndex;
-            }
-        }
-        
-        class NodeEval
-        {
-            public long WalkIndex { get; set; }
-            public string UpdatedNode { get; set; }
-            public ReevaluationResult Result { get; set; }
-
-            public NodeEval(long walkIndex, string updatedNode, ReevaluationResult result)
-            {
-                WalkIndex = walkIndex;
-                UpdatedNode = updatedNode;
-                Result = result;
-            }
         }
 
         int ThrowsInvalidOperationException(int value)
