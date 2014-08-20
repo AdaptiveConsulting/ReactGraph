@@ -34,6 +34,13 @@ namespace ReactGraph.Construction
             return node;
         }
 
+        protected override Expression VisitInvocation(InvocationExpression node)
+        {
+            var visitInvocation = base.VisitInvocation(node);
+            Out("()");
+            return visitInvocation;
+        }
+
         protected override Expression VisitBinary(BinaryExpression node)
         {
             Out("(");

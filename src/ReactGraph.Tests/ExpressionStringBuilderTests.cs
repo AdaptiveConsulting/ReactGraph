@@ -18,6 +18,7 @@ namespace ReactGraph.Tests
             VerifyExpression(() => viewModel.Value, "() => viewModel.Value");
             VerifyExpression(() => mortgateCalculatorViewModel.PaymentSchedule.HasValidationError, "() => mortgateCalculatorViewModel.PaymentSchedule.HasValidationError");
         }
+
         [Fact]
         public void VerifyFormulas()
         {
@@ -29,6 +30,13 @@ namespace ReactGraph.Tests
             VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "() => (notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))");
             VerifyExpression(() => InstanceMethodCall(), "() => InstanceMethodCall()");
             VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
+        }
+
+        [Fact]
+        public void VerifyAction()
+        {
+            Action action = () => { };
+            VerifyExpression(() => action(), "() => action()");
         }
 
         object InstanceMethodCall()
