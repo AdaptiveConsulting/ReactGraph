@@ -104,7 +104,23 @@ namespace ReactGraph.Construction
                 }
                 else
                 {
-                    Out(node.Value.ToString());
+                    if (node.Value is bool)
+                    {
+                        Out(node.Value.ToString().ToLower());
+                    }
+                    else
+                    {
+                        var valueToString = node.Value.ToString();
+                        var type = node.Value.GetType();
+                        if (type.FullName != valueToString)
+                        {
+                            Out(valueToString);
+                        }
+                        else
+                        {
+                            skipDot = true;
+                        }
+                    }
                 }
             }
 
@@ -115,9 +131,7 @@ namespace ReactGraph.Construction
         {
             if (node.NodeType == ExpressionType.Convert)
             {
-                Out("Convert(");
                 Visit(node.Operand);
-                Out(")");
                 return node;
             }
             if (node.NodeType == ExpressionType.Not)
@@ -156,7 +170,11 @@ namespace ReactGraph.Construction
                 arguments = arguments.Skip(1);
             }
 
-            Out("." + node.Method.Name + "(");
+            if (!skipDot)
+            {
+                Out("."); 
+            }
+            Out(node.Method.Name + "(");
             VisitArguments(arguments.ToArray());
             Out(")");
             return node;
