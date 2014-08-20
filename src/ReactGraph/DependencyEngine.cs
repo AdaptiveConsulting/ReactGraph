@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using ReactGraph.Internals.Api;
-using ReactGraph.Internals.Construction;
-using ReactGraph.Internals.Graph;
-using ReactGraph.Internals.NodeInfo;
-using ReactGraph.Internals.Visualisation;
+using ReactGraph.Api;
+using ReactGraph.Construction;
+using ReactGraph.Graph;
+using ReactGraph.Instrumentation;
+using ReactGraph.NodeInfo;
+using ReactGraph.Visualisation;
 
 namespace ReactGraph
 {
@@ -15,14 +16,16 @@ namespace ReactGraph
         private readonly DirectedGraph<INodeInfo> graph;
         private readonly ExpressionParser expressionParser;
         private readonly NodeRepository nodeRepository;
+        private readonly EngineInstrumenter engineInstrumenter;
         private bool isExecuting;
 
-        public DependencyEngine()
+        public DependencyEngine(IEngineInstrumentation engineInstrumentation = null)
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
             Visualisation = new DotVisualisation(graph);
+            engineInstrumenter = new EngineInstrumenter(engineInstrumentation);
         }
 
         public IVisualisation Visualisation { get; set; }
@@ -32,6 +35,7 @@ namespace ReactGraph
             if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
 
             var node = nodeRepository.Get(instance, key);
+            if (engineInstrumenter != null) engineInstrumenter.DependecyWalkStarted(key);
 
             try
             {
@@ -44,20 +48,32 @@ namespace ReactGraph
                 {
                     var vertex = orderToReeval.Dequeue();
                     var results = vertex.Data.Reevaluate();
-                    if (results == ReevalResult.Error)
+
+                    switch (results)
                     {
-                        var nodesRelatedToError = graph.TopologicalSort(vertex.Data).ToDictionary(k => k.Data);
-                        var newListToProcess = orderToReeval
-                            .Where(remaining => !nodesRelatedToError.ContainsKey(remaining.Data))
-                            .ToArray();
-                        orderToReeval = new Queue<Vertex<INodeInfo>>(newListToProcess);
+                        case ReevaluationResult.NoChange:
+                            break;
+                        case ReevaluationResult.Error:
+                            var nodesRelatedToError = graph.TopologicalSort(vertex.Data).ToDictionary(k => k.Data);
+                            var newListToProcess = orderToReeval
+                                .Where(remaining => !nodesRelatedToError.ContainsKey(remaining.Data))
+                                .ToArray();
+                            orderToReeval = new Queue<Vertex<INodeInfo>>(newListToProcess);
+                            break;
+                        case ReevaluationResult.Changed:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
                     }
+                    if (engineInstrumenter != null) engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), results);
+
                     NotificationStratgegyValueUpdate(vertex);
                 }
             }
             finally
             {
                 isExecuting = false;
+                if (engineInstrumenter != null) engineInstrumenter.DependencyWalkEnded();
             }
 
             return true;

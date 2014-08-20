@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Linq.Expressions;
-using ReactGraph.Internals.Construction;
+using ReactGraph.Construction;
 using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;

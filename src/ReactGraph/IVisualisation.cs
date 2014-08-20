@@ -1,5 +1,5 @@
 ﻿using System;
-using ReactGraph.Internals.Visualisation;
+using ReactGraph.Visualisation;
 
 namespace ReactGraph
 {

@@ -6,7 +6,7 @@ namespace ReactGraph.Tests
 {
     public class ApiTest
     {
-        readonly DependencyEngine engine;
+        DependencyEngine engine;
 
         public ApiTest()
         {
@@ -126,6 +126,46 @@ namespace ReactGraph.Tests
             d.ValueSet.ShouldBe(0);
             c.Value.ShouldBe(2);
             e.Value.ShouldBe(2);
+        }
+
+        [Fact]
+        public void Instrumentation()
+        {
+            /*
+             *      A
+             *     / \
+             *    B   Throws
+             *    |   |
+             *    C   Skipped
+             *   / \ /
+             *  E   D
+             */
+            var instrumentation = new TestInstrumentation();
+            engine = new DependencyEngine(instrumentation);
+
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+            var c = new SinglePropertyType();
+            var d = new SinglePropertyType();
+            var e = new SinglePropertyType();
+            var throws = new SinglePropertyType();
+            var skipped = new SinglePropertyType();
+
+            engine.Expr(() => a.Value).Bind(() => b.Value, ex => { });
+            engine.Expr(() => b.Value).Bind(() => c.Value, ex => { });
+            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, ex => { });
+            engine.Expr(() => throws.Value).Bind(() => skipped.Value, ex => { });
+            engine.Expr(() => c.Value + skipped.Value).Bind(() => d.Value, ex => { });
+            engine.Expr(() => c.Value).Bind(() => e.Value, ex => { });
+
+            a.Value = 2;
+            engine.ValueHasChanged(a, "Value");
+
+            Console.WriteLine(engine.ToString());
+
+            instrumentation.WalkIndexStart.ShouldBe(1);
+            instrumentation.WalkIndexEnd.ShouldBe(1);
+            instrumentation.NodeEvaluations.Count.ShouldBe(8);
         }
 
         int ThrowsInvalidOperationException(int value)

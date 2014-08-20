@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiTest.cs" />
+    <Compile Include="TestInstrumentation.cs" />
     <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
     <Compile Include="TestObjects\SimpleWithNotification.cs" />
