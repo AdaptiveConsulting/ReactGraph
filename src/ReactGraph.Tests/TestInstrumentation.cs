@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.Linq;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
+using Shouldly;
 
 namespace ReactGraph.Tests
 {
@@ -42,6 +44,13 @@ namespace ReactGraph.Tests
                 UpdatedNode = updatedNode;
                 Result = result;
             }
+        }
+
+        public void AssertSetCount(string property, int count)
+        {
+            var nodeEvaluationCount = NodeEvaluations.Where(n => n.UpdatedNode == property);
+
+            nodeEvaluationCount.Count().ShouldBe(count);
         }
     }
 }

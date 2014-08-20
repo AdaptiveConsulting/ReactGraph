@@ -1,11 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace ReactGraph.Notification
 {
     class NotifyPropertyChangedStrategy : INotificationStrategy
     {
-        private readonly DependencyEngine dependencyEngine;
+        readonly List<INotifyPropertyChanged> tracking = new List<INotifyPropertyChanged>();
+        readonly DependencyEngine dependencyEngine;
 
         public NotifyPropertyChangedStrategy(DependencyEngine dependencyEngine)
         {
@@ -15,8 +17,9 @@ namespace ReactGraph.Notification
         public void Track(object instance)
         {
             var notifyPropertyChanged = instance as INotifyPropertyChanged;
-            if (notifyPropertyChanged != null)
+            if (notifyPropertyChanged != null && !tracking.Contains(notifyPropertyChanged))
             {
+                tracking.Add(notifyPropertyChanged);
                 notifyPropertyChanged.PropertyChanged += NotifyPropertyChangedOnPropertyChanged;
             }
         }
@@ -24,8 +27,9 @@ namespace ReactGraph.Notification
         public void Untrack(object instance)
         {
             var notifyPropertyChanged = instance as INotifyPropertyChanged;
-            if (notifyPropertyChanged != null)
+            if (notifyPropertyChanged != null && tracking.Contains(notifyPropertyChanged))
             {
+                tracking.Remove(notifyPropertyChanged);
                 notifyPropertyChanged.PropertyChanged -= NotifyPropertyChangedOnPropertyChanged;
             }
         }

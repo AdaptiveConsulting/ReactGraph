@@ -8,10 +8,12 @@ namespace ReactGraph.Tests
     public class NotifyPropertyChangedTests
     {
         private readonly DependencyEngine engine;
+        TestInstrumentation engineInstrumentation;
 
         public NotifyPropertyChangedTests()
         {
-            engine = new DependencyEngine();
+            engineInstrumentation = new TestInstrumentation();
+            engine = new DependencyEngine(engineInstrumentation);
         }
 
         [Fact]
@@ -24,10 +26,12 @@ namespace ReactGraph.Tests
 
             engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
                   .Bind(() => notifies.Total, e => { });
-
             Console.WriteLine(engine.ToString());
+
             notifies.SubTotal = 100;
+
             notifies.Total.ShouldBe(120);
+            engineInstrumentation.AssertSetCount("notifies.Total", 1);
         }
 
         [Fact]
