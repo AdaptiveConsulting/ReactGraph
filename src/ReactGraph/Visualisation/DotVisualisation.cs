@@ -26,17 +26,22 @@ namespace ReactGraph.Visualisation
                     Label = vertex.Data.ToString()
                 };
 
-                if (vertex.Data.Type == NodeType.Formula)
+                switch (vertex.Data.Type)
                 {
-                    properties.Color = "lightblue";
-                    properties.AddCustomProperty("style", "filled");
-                    properties.AddCustomProperty("shape", "octagon");
-                }
-                else if (vertex.Data.Type == NodeType.WritableNode)
-                {
-                    properties.AddCustomProperty("shape", "box");
-                    properties.AddCustomProperty("style", "filled");
-                    properties.AddCustomProperty("style", "rounded");
+                    case NodeType.Formula:
+                        properties.Color = "lightblue";
+                        properties.AddCustomProperty("style", "filled");
+                        properties.AddCustomProperty("shape", "octagon");
+                        break;
+                    case NodeType.WritableNode:
+                        properties.AddCustomProperty("shape", "box");
+                        properties.AddCustomProperty("style", "filled");
+                        properties.AddCustomProperty("style", "rounded");
+                        break;
+                    case NodeType.Action:
+                        properties.AddCustomProperty("style", "filled");
+                        properties.Color = "green";
+                        break;
                 }
 
                 if (overrideVisualProperties != null)
