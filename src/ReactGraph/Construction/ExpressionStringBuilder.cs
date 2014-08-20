@@ -179,7 +179,8 @@ namespace ReactGraph.Construction
 
             if (!skipDot)
             {
-                Out("."); 
+                Out(".");
+                skipDot = false;
             }
             Out(node.Method.Name + "(");
             VisitArguments(arguments.ToArray());
