@@ -1,5 +1,5 @@
-using System;
 using ReactGraph.NodeInfo;
+using ReactGraph.Properties;
 
 namespace ReactGraph.Instrumentation
 {
@@ -8,15 +8,14 @@ namespace ReactGraph.Instrumentation
         readonly IEngineInstrumentation engineInstrumentation;
         long walkIndex;
 
-        public EngineInstrumenter(IEngineInstrumentation engineInstrumentation)
+        public EngineInstrumenter([CanBeNull] IEngineInstrumentation engineInstrumentation)
         {
-            if(engineInstrumentation == null) throw new ArgumentNullException("engineInstrumentation");
-
             this.engineInstrumentation = engineInstrumentation;
         }
 
         public void DependecyWalkStarted(string sourceProperty)
         {
+            if (engineInstrumentation == null) return;
             walkIndex++;
 
             engineInstrumentation.OnDependencyWalkStart(walkIndex, sourceProperty);
@@ -24,12 +23,12 @@ namespace ReactGraph.Instrumentation
 
         public void NodeEvaluated(string updatedNode, ReevaluationResult result)
         {
-            engineInstrumentation.OnNodeEvaluated(walkIndex, updatedNode, result);
+            if (engineInstrumentation != null) engineInstrumentation.OnNodeEvaluated(walkIndex, updatedNode, result);
         }
 
         public void DependencyWalkEnded()
         {
-            engineInstrumentation.OnDepdendencyWalkEnd(walkIndex);
+            if (engineInstrumentation != null) engineInstrumentation.OnDepdendencyWalkEnd(walkIndex);
         }
     }
 }

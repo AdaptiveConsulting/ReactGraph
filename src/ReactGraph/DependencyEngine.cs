@@ -25,10 +25,7 @@ namespace ReactGraph
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
             Visualisation = new DotVisualisation(graph);
-            if (engineInstrumentation != null)
-            {
-                engineInstrumenter = new EngineInstrumenter(engineInstrumentation);
-            }
+            engineInstrumenter = new EngineInstrumenter(engineInstrumentation);
         }
 
         public IVisualisation Visualisation { get; set; }
