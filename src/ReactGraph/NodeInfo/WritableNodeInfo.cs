@@ -20,7 +20,7 @@ namespace ReactGraph.NodeInfo
             object parentInstance,
             INotificationStrategy[] notificationStrategies,
             Func<T> getValue,
-            Action<T> setValue, 
+            Action<T> setValue,
             NodeRepository nodeRepository,
             string label,
             string key)
@@ -58,6 +58,8 @@ namespace ReactGraph.NodeInfo
         {
             return GetValue();
         }
+
+        public NodeType Type { get { return NodeType.WritableNode; } }
 
         public ReevaluationResult Reevaluate()
         {
@@ -114,12 +116,5 @@ namespace ReactGraph.NodeInfo
                 nodeRepository.AddLookup(parentInstance, key, this);
             }
         }
-    }
-
-    public enum ReevaluationResult
-    {
-        NoChange,
-        Error,
-        Changed
     }
 }

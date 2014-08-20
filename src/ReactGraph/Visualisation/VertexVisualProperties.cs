@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ReactGraph.Visualisation
@@ -20,7 +21,10 @@ namespace ReactGraph.Visualisation
 
         public void AddCustomProperty(string key, string value)
         {
-            customProperties[key] = value;
+            if (customProperties.ContainsKey(key))
+                customProperties[key] = customProperties[key] + "," + value;
+            else
+                customProperties[key] = value;
         }
 
         public override string ToString()

@@ -2,6 +2,7 @@ using System;
 using System.Linq.Expressions;
 using System.Reflection;
 using ReactGraph.NodeInfo;
+using ReactGraph.Properties;
 
 namespace ReactGraph.Construction
 {
@@ -15,6 +16,7 @@ namespace ReactGraph.Construction
         readonly string key;
         readonly bool isReadOnly;
 
+        [UsedImplicitly]
         public MemberDependencyDescriptor(object rootValue, object parentInstance, FieldInfo fieldInfo, MemberExpression memberExpression)
         {
             RootInstance = rootValue;
@@ -33,6 +35,7 @@ namespace ReactGraph.Construction
             isReadOnly = fieldInfo.IsInitOnly;
         }
 
+        [UsedImplicitly]
         public MemberDependencyDescriptor(object rootValue, object parentInstance, PropertyInfo propertyInfo, MemberExpression memberExpression)
         {
             RootInstance = rootValue;

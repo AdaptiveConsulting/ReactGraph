@@ -43,18 +43,23 @@
     <Reference Include="xunit">
       <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
+    <Reference Include="xunit.extensions">
+      <HintPath>..\packages\xunit.extensions.1.9.2\lib\net20\xunit.extensions.dll</HintPath>
+    </Reference>
     <Reference Include="xunit.runner.visualstudio.testadapter">
       <HintPath>..\packages\xunit.runner.visualstudio.0.99.2\lib\xunit.runner.visualstudio.testadapter.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionTarget.cs" />
     <Compile Include="ApiTest.cs" />
+    <Compile Include="ExpressionStringBuilderTests.cs" />
     <Compile Include="TestInstrumentation.cs" />
     <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
     <Compile Include="TestObjects\SimpleWithNotification.cs" />
     <Compile Include="TestObjects\Totals.cs" />
-    <Compile Include="TestObjects\NotifiesViewModel.cs" />
+    <Compile Include="TestObjects\MortgateCalculatorViewModel.cs" />
     <Compile Include="TestObjects\NotifyPropertyChanged.cs" />
     <Compile Include="NotifyPropertyChangedTests.cs" />
     <Compile Include="Properties\Annotations.cs" />

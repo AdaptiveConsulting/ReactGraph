@@ -7,11 +7,13 @@ namespace ReactGraph.Tests
 {
     public class NotifyPropertyChangedTests
     {
-        private readonly DependencyEngine engine;
+        readonly TestInstrumentation engineInstrumentation;
+        readonly DependencyEngine engine;
 
         public NotifyPropertyChangedTests()
         {
-            engine = new DependencyEngine();
+            engineInstrumentation = new TestInstrumentation();
+            engine = new DependencyEngine(engineInstrumentation);
         }
 
         [Fact]
@@ -24,10 +26,12 @@ namespace ReactGraph.Tests
 
             engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
                   .Bind(() => notifies.Total, e => { });
-
             Console.WriteLine(engine.ToString());
+
             notifies.SubTotal = 100;
+
             notifies.Total.ShouldBe(120);
+            engineInstrumentation.AssertSetCount("notifies.Total", 1);
         }
 
         [Fact]
@@ -41,14 +45,17 @@ namespace ReactGraph.Tests
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
             Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(false);
+            engineInstrumentation.AssertSetCount("viewModel.CanApply", 1);
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: false);
             Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(true);
+            engineInstrumentation.AssertSetCount("viewModel.CanApply", 2);
 
             viewModel.PaymentSchedule.HasValidationError = true;
             Console.WriteLine(engine.ToString());
             viewModel.CanApply.ShouldBe(false);
+            engineInstrumentation.AssertSetCount("viewModel.CanApply", 3);
 
             Console.WriteLine(engine.ToString());
         }
@@ -79,6 +86,7 @@ namespace ReactGraph.Tests
             one.Value = 1;
 
             four.Value.ShouldBe(2);
+            engineInstrumentation.AssertSetCount("four.Value", 1);
         }
 
         [Fact]
@@ -93,6 +101,7 @@ namespace ReactGraph.Tests
             Foo.ShouldNotBe(42);
             viewModel.PaymentSchedule.HasValidationError = false;
             Foo.ShouldBe(42);
+            engineInstrumentation.AssertSetCount("Foo", 1);
         }
 
         private int CalcSomethingToDoWithSchedule(ScheduleViewModel paymentSchedule)
