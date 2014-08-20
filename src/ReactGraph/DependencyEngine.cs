@@ -35,7 +35,7 @@ namespace ReactGraph
             if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
 
             var node = nodeRepository.Get(instance, key);
-            if (engineInstrumenter != null) engineInstrumenter.DependecyWalkStarted(key);
+            engineInstrumenter.DependecyWalkStarted(key);
 
             try
             {
@@ -65,7 +65,7 @@ namespace ReactGraph
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-                    if (engineInstrumenter != null) engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), results);
+                    engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), results);
 
                     NotificationStratgegyValueUpdate(vertex);
                 }
@@ -73,7 +73,7 @@ namespace ReactGraph
             finally
             {
                 isExecuting = false;
-                if (engineInstrumenter != null) engineInstrumenter.DependencyWalkEnded();
+                engineInstrumenter.DependencyWalkEnded();
             }
 
             return true;
