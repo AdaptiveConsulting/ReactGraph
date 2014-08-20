@@ -36,6 +36,7 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\ActionNodeInfo.cs" />
     <Compile Include="DependencyEngine.cs" />
     <Compile Include="Construction\DependencyDescriptor`1.cs" />
     <Compile Include="Api\ExpressionDefinition.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="NodeInfo\IWritableNodeInfo.cs" />
     <Compile Include="NodeInfo\Maybe.cs" />
     <Compile Include="NodeInfo\NodeType.cs" />
+    <Compile Include="NodeInfo\ReevaluationResult.cs" />
     <Compile Include="Notification\INotificationStrategy.cs" />
     <Compile Include="Construction\ExpressionStringBuilder.cs" />
     <Compile Include="Graph\Edge.cs" />

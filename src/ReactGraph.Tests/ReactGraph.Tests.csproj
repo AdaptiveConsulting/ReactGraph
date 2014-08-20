@@ -51,6 +51,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionTarget.cs" />
     <Compile Include="ApiTest.cs" />
     <Compile Include="ExpressionStringBuilderTests.cs" />
     <Compile Include="TestInstrumentation.cs" />

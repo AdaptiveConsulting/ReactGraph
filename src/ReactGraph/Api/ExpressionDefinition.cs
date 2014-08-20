@@ -53,6 +53,21 @@ namespace ReactGraph.Api
             return new MemberDefinition(edge.Target);
         }
 
+        public IMemberDefinition Action(Expression<Action<T>> action, Action<Exception> onError, string actionId = null)
+        {
+            string nodeLabel = ExpressionStringBuilder.ToString(action);
+            return Action(action.Compile(), nodeLabel, onError, actionId);
+        }
+
+        public IMemberDefinition Action(Action<T> action, string nodeLabel, Action<Exception> onError, string actionId = null)
+        {
+            var actionNode = new ActionNodeInfo<T>(action, nodeLabel);
+            actionNode.SetSource(formulaNode, onError);
+
+            edge = graph.AddEdge(formulaNode, actionNode, expressionId, actionId);
+            return new MemberDefinition(edge.Target);
+        }
+
         private void AddDependenciesToGraph(DependencyDescriptor descriptor)
         {
             foreach (var dependency in descriptor.Dependencies)
