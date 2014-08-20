@@ -52,6 +52,7 @@
     <Compile Include="NodeInfo\IValueSource`1.cs" />
     <Compile Include="NodeInfo\IWritableNodeInfo.cs" />
     <Compile Include="NodeInfo\Maybe.cs" />
+    <Compile Include="NodeInfo\NodeType.cs" />
     <Compile Include="Notification\INotificationStrategy.cs" />
     <Compile Include="Construction\ExpressionStringBuilder.cs" />
     <Compile Include="Graph\Edge.cs" />

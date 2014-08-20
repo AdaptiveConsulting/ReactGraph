@@ -26,6 +26,19 @@ namespace ReactGraph.Visualisation
                     Label = vertex.Data.ToString()
                 };
 
+                if (vertex.Data.Type == NodeType.Formula)
+                {
+                    properties.Color = "lightblue";
+                    properties.AddCustomProperty("style", "filled");
+                    properties.AddCustomProperty("shape", "octagon");
+                }
+                else if (vertex.Data.Type == NodeType.WritableNode)
+                {
+                    properties.AddCustomProperty("shape", "box");
+                    properties.AddCustomProperty("style", "filled");
+                    properties.AddCustomProperty("style", "rounded");
+                }
+
                 if (overrideVisualProperties != null)
                 {
                     properties = overrideVisualProperties(properties);

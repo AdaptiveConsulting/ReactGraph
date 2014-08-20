@@ -20,6 +20,8 @@ namespace ReactGraph.NodeInfo
             return currentValue;
         }
 
+        public NodeType Type { get { return NodeType.Formula; } }
+
         public ReevaluationResult Reevaluate()
         {
             ValueChanged();
