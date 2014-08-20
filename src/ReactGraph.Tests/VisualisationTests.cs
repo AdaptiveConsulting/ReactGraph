@@ -59,7 +59,7 @@ namespace ReactGraph.Tests
             engine.ValueHasChanged(a, "Value");
             c.Value.ShouldBe(5);
 
-            var lines = dotFormat.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            var lines = dotFormat.Split(new[] { "\n" }, StringSplitOptions.None);
             lines[2].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\", style=\"filled\", shape=\"octagon\"]");
             lines[4].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\", shape=\"box\", style=\"filled,rounded\"]");
             lines[1].ShouldContain("[label=\"a.Value\", shape=\"box\", style=\"filled,rounded\"]");

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using ReactGraph.Api;
 using ReactGraph.Construction;
 using ReactGraph.Graph;
@@ -97,6 +98,24 @@ namespace ReactGraph
         {
             var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
             return new ExpressionDefinition<TProp>(formulaNode, expressionId, expressionParser, graph, nodeRepository);
+        }
+
+        public void CheckCycles()
+        {
+            var cycles = graph.DetectCyles().ToList();
+            if (cycles.Count == 0) return;
+
+            var sb = new StringBuilder();
+            sb.AppendFormat("{0} cycles found:", cycles.Count).AppendLine();
+            foreach (var cycle in cycles)
+            {
+                var nodes = cycle.Reverse().ToList();
+                nodes.Add(nodes.First());
+
+                sb.AppendLine(string.Join(" --> ", nodes.Select(v => v.Data.ToString().Replace("() => ", string.Empty))));
+            }
+
+            throw new CycleDetectedException(sb.ToString().Trim());
         }
     }
 }

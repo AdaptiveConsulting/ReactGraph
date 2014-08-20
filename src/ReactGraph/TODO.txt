@@ -2,16 +2,8 @@
  - one factory type per type of strategy: this guy has the apply to method and news up a instance of the corresponding strategy
  - the strategy instances should maybe be stored directly in the node, this way when the external property raises, you have a direct reference to the node and to the engine, you don't have to do any lookup in the node repo.
 
-Split INodeInfo between a construction Model and runtime model
-
-using gethashcode to draw the graph is a bad idea, it's not unique => maybe we could just have a counter that we increment for new instances
-
 Base class node info => INodeInfo could be replaced by a base class
 
 create an enum or something for colors, at the moment it's a string (I don't want to take a dependency on System.Drawing just for that...)
 
 INodeInfo.Dependencies => why don't we use the graph instead? It's weird to relationships between nodes here...
-
-Expose cycle detection in engine (some validate method)
-
-Count number of time things get set duing one propagation in the graph, and make sure it's no more than 1
