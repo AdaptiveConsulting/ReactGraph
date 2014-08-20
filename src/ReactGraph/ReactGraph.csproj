@@ -40,6 +40,7 @@
     <Compile Include="DependencyEngine.cs" />
     <Compile Include="Construction\DependencyDescriptor`1.cs" />
     <Compile Include="Api\ExpressionDefinition.cs" />
+    <Compile Include="Graph\CycleDetectedException.cs" />
     <Compile Include="IExpressionDefinition.cs" />
     <Compile Include="Construction\DependencyDescriptor.cs" />
     <Compile Include="Construction\FormulaDescriptor.cs" />

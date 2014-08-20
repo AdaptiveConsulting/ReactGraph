@@ -1,4 +1,5 @@
 ﻿using System;
+using ReactGraph.Graph;
 using Shouldly;
 using Xunit;
 
@@ -167,6 +168,56 @@ namespace ReactGraph.Tests
             instrumentation.WalkIndexEnd.ShouldBe(1);
             instrumentation.NodeEvaluations.Count.ShouldBe(8);
         }
+
+        [Fact]
+        public void CheckCyclesShouldThrowWhenThereIsACycle()
+        {
+            engine = new DependencyEngine();
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+
+            engine.Expr(() => a.Value*2).Bind(() => b.Value, ex => { });
+            engine.Expr(() => b.Value-2).Bind(() => a.Value, ex => { });
+
+            Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
+                  .Message.ShouldBe(@"1 cycles found:
+a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value");
+        }
+
+
+        [Fact]
+        public void CheckCyclesShouldThrowWhenThereAreTwoCycles()
+        {
+            engine = new DependencyEngine();
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+            var c = new SinglePropertyType();
+            var d = new SinglePropertyType();
+
+            engine.Expr(() => a.Value * 2).Bind(() => b.Value, ex => { });
+            engine.Expr(() => b.Value - 2).Bind(() => a.Value, ex => { });
+
+            engine.Expr(() => c.Value * 2).Bind(() => d.Value, ex => { });
+            engine.Expr(() => d.Value - 2).Bind(() => c.Value, ex => { });
+
+            Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
+                  .Message.ShouldBe(@"2 cycles found:
+a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value
+c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
+        }
+
+        [Fact]
+        public void CheckCyclesShouldNotThrowWhenNoCycleExists()
+        {
+            engine = new DependencyEngine();
+            var a = new SinglePropertyType();
+            var b = new SinglePropertyType();
+
+            engine.Expr(() => a.Value * 2).Bind(() => b.Value, ex => { });
+
+            Should.NotThrow(() => engine.CheckCycles());
+        }
+
 
         int ThrowsInvalidOperationException(int value)
         {
