@@ -1,4 +1,5 @@
 ﻿using System;
+using ApprovalTests;
 using ReactGraph.Tests.TestObjects;
 using ReactGraph.Visualisation;
 using Shouldly;
@@ -60,10 +61,7 @@ namespace ReactGraph.Tests
             engine.ValueHasChanged(a, "Value");
             c.Value.ShouldBe(5);
 
-            var lines = dotFormat.Split(new[] { "\n" }, StringSplitOptions.None);
-            lines[2].ShouldContain("[label=\"+\", fillcolor=\".7 .3 1.0\", style=\"filled\", shape=\"octagon\"]");
-            lines[4].ShouldContain("[label=\"c.Value\", fillcolor=\".7 .3 .5\", shape=\"box\", style=\"filled,rounded\"]");
-            lines[1].ShouldContain("[label=\"a.Value\", shape=\"box\", style=\"filled,rounded\"]");
+            Approvals.Verify(dotFormat);
         }
 
         [Fact]
@@ -78,86 +76,40 @@ namespace ReactGraph.Tests
                   .Bind(() => notifies.Total, e => { });
 
             var dotFormat = engine.ToDotFormat(string.Empty);
-            Console.WriteLine(dotFormat);
 
-            var lines = dotFormat.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-            lines[2].ShouldContain("[label=\"() => (notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))\", fillcolor=\"lightblue\", style=\"filled\", shape=\"octagon\"];");
+            Approvals.Verify(dotFormat);
         }
 
-//        [Fact]
-//        public void UserClustersToRepresentParents()
-//        {
-//            var subViewModel = new SubViewModel(string.Empty);
-//            var model = new Model("Hello ", "World!");
-//            var vm = new SampleViewModel(subViewModel, model);
-
-//            engine.Expr(() => vm.Model.Hello + vm.Model.World)
-//                  .Bind(() => vm.SubViewModel.ComputedProperty, e => { });
-
-//            var dotFormat = engine.Visualisation.Generate("Foo", prop => prop, showRootAsClusters: true);
-
-//            Console.WriteLine(dotFormat);
-
-//            const string expected = @"digraph Foo {
-//     compounded=true;
-//     subgraph cluster0 {
-//          label=vm.SubViewModel;
-//          __5;
-//     }
-//     subgraph cluster1 {
-//          label=vm.Model;
-//          __1;
-//          __4;
-//     }
-//
-//     __1 [label=""vm.Model.Hello""];
-//     __2 [label=""() => vm.Model.Hello + vm.Model.World];
-//     __4 [label=""vm.Model.World""];
-//     __5 [label=""vm.SubViewModel.ComputedProperty""];
-//
-//     __1 -> __2;
-//     __2 -> __5;
-//     __4 -> __2;
-//}";
-
-//            dotFormat.ShouldBe(expected);
-
-//            /*
-//             * digraph G {
-//                compound=true;
-//                subgraph cluster0 {
-//                    a -> b;
-//                    a -> c;
-//                    b -> d;
-//                    c -> d;
-//                }
-//                subgraph cluster1 {
-//                    e -> g;
-//                    e -> f;
-//                }
-//                b -> f [lhead=cluster1];
-//                d -> e;
-//                c -> g [ltail=cluster0,
-//                lhead=cluster1];
-//                c -> e [ltail=cluster0];
-//                d -> h;
-//                }
-//                */
-//        }
-
-        private int Addition(int i1, int i2, int i3)
+        [Fact]
+        public void LogAllTransitionsAsDot()
         {
-            return i1 + i2 + i3;
+            var foo = new Foo();
+
+            engine.Expr(() => foo.A + foo.B)
+                  .Bind(() => foo.C, e => { });
+            engine.Expr(() => foo.A + foo.C)
+                  .Bind(() => foo.D, e => { });
+
+            var temp = string.Empty;
+            var disposable = engine.OnWalkComplete(s => { temp = s; });
+
+            foo.C = 4;
+            engine.ValueHasChanged(foo, "C");
+
+            Approvals.Verify(temp);
+
+            disposable.Dispose();
+
+            temp = string.Empty;
+            foo.C = 5;
+            engine.ValueHasChanged(foo, "C");
+
+            temp.ShouldBeNullOrEmpty();
         }
 
         private int Addition(int i1, int i2)
         {
             return i1 + i2;
-        }
-
-        private int Addition(int i1)
-        {
-            return i1;
         }
 
         private class SinglePropertyType
@@ -175,9 +127,6 @@ namespace ReactGraph.Tests
             }
 
             public int ValueSet { get; private set; }
-
-            public int Value1 { get; set; }
-            public int Value2 { get; set; }
         }
 
         private class SampleViewModel
@@ -214,6 +163,14 @@ namespace ReactGraph.Tests
             }
 
             public string ComputedProperty { get; set; }
+        }
+
+        class Foo
+        {
+            public int A { get; set; }
+            public int B { get; set; }
+            public int C { get; set; }
+            public int D { get; set; }
         }
     }
 }

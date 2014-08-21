@@ -13,7 +13,8 @@ namespace ReactGraph.Tests
         public NotifyPropertyChangedTests()
         {
             engineInstrumentation = new TestInstrumentation();
-            engine = new DependencyEngine(engineInstrumentation);
+            engine = new DependencyEngine();
+            engine.AddInstrumentation(engineInstrumentation);
         }
 
         [Fact]

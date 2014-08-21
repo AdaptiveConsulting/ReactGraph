@@ -4,8 +4,8 @@ namespace ReactGraph.Instrumentation
 {
     public interface IEngineInstrumentation
     {
-        void OnDependencyWalkStart(long walkIndex, string sourceProperty);
-        void OnNodeEvaluated(long walkIndex, string updatedNode, ReevaluationResult result);
+        void OnDependencyWalkStart(long walkIndex, string sourceProperty, string nodeId);
+        void OnNodeEvaluated(long walkIndex, string updatedNode, string nodeId, ReevaluationResult result);
         void OnDepdendencyWalkEnd(long walkIndex);
     }
 }

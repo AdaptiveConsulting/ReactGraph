@@ -48,6 +48,12 @@ namespace ReactGraph.Graph
             get { return verticies.Values; }
         }
 
+
+        public Vertex<T> GetVertexById(string nodeId)
+        {
+            return Verticies.First(v => v.Id == nodeId);
+        }
+
         /// <summary>
         /// Perform a depth first seach
         /// <see cref="http://en.wikipedia.org/wiki/Depth-first_search"/>

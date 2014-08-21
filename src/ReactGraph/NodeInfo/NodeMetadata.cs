@@ -12,5 +12,23 @@ namespace ReactGraph.NodeInfo
             Label = label;
             Id = id;
         }
+
+        protected bool Equals(NodeMetadata other)
+        {
+            return string.Equals(Id, other.Id);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((NodeMetadata) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Id != null ? Id.GetHashCode() : 0);
+        }
     }
 }

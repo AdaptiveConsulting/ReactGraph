@@ -10,5 +10,10 @@ namespace ReactGraph.Visualisation
             var visualsaition = new DotVisualisation(graphSnapshot);
             return visualsaition.Generate(title, overrideVisualProperties);
         }
+
+        public static IDisposable OnWalkComplete(this DependencyEngine dependencyEngine, Action<string> onWalkComplete)
+        {
+            return new DependencyEngineListener(dependencyEngine, onWalkComplete);
+        }
     }
 }
