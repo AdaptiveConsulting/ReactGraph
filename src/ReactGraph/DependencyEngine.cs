@@ -91,8 +91,6 @@ namespace ReactGraph
             return true;
         }
 
-        }
-
         public void CheckCycles()
         {
             var cycles = graph.DetectCyles().ToList();

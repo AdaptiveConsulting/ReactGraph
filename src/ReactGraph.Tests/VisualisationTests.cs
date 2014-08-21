@@ -86,10 +86,10 @@ namespace ReactGraph.Tests
         {
             var foo = new Foo();
 
-            engine.Expr(() => foo.A + foo.B)
-                  .Bind(() => foo.C, e => { });
-            engine.Expr(() => foo.A + foo.C)
-                  .Bind(() => foo.D, e => { });
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
 
             var temp = string.Empty;
             var disposable = engine.OnWalkComplete(s => { temp = s; });
@@ -113,10 +113,10 @@ namespace ReactGraph.Tests
         {
             var foo = new Foo();
 
-            engine.Expr(() => foo.A + foo.B)
-                  .Bind(() => foo.C, e => { });
-            engine.Expr(() => foo.A + foo.C)
-                  .Bind(() => foo.D, e => { });
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
 
             var path = Path.Combine(Environment.CurrentDirectory, "Transitions.log");
             if (File.Exists(path))
