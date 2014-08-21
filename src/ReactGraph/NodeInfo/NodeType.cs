@@ -1,6 +1,6 @@
 namespace ReactGraph.NodeInfo
 {
-    enum NodeType
+    public enum NodeType
     {
         Formula,
         WritableNode,

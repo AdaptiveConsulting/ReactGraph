@@ -17,12 +17,12 @@ namespace ReactGraph.Tests
         public long WalkIndexEnd { get; private set; }
         public List<NodeEval> NodeEvaluations { get; private set; }
 
-        public void OnDependencyWalkStart(long walkIndex, string sourceProperty)
+        public void OnDependencyWalkStart(long walkIndex, string sourceProperty, string nodeId)
         {
             WalkIndexStart = walkIndex;
         }
 
-        public void OnNodeEvaluated(long walkIndex, string updatedNode, ReevaluationResult result)
+        public void OnNodeEvaluated(long walkIndex, string updatedNode, string nodeId, ReevaluationResult result)
         {
             NodeEvaluations.Add(new NodeEval(walkIndex, updatedNode, result));
         }

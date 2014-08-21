@@ -1,34 +1,47 @@
+using System.Collections.Generic;
 using ReactGraph.NodeInfo;
-using ReactGraph.Properties;
 
 namespace ReactGraph.Instrumentation
 {
     class EngineInstrumenter
     {
-        readonly IEngineInstrumentation engineInstrumentation;
+        readonly List<IEngineInstrumentation> instrumentations = new List<IEngineInstrumentation>(); 
         long walkIndex;
 
-        public EngineInstrumenter([CanBeNull] IEngineInstrumentation engineInstrumentation)
+        public void DependecyWalkStarted(string sourceProperty, string nodeId)
         {
-            this.engineInstrumentation = engineInstrumentation;
-        }
-
-        public void DependecyWalkStarted(string sourceProperty)
-        {
-            if (engineInstrumentation == null) return;
             walkIndex++;
 
-            engineInstrumentation.OnDependencyWalkStart(walkIndex, sourceProperty);
+            foreach (var engineInstrumentation in instrumentations)
+            {
+                engineInstrumentation.OnDependencyWalkStart(walkIndex, sourceProperty, nodeId);
+            }
         }
 
-        public void NodeEvaluated(string updatedNode, ReevaluationResult result)
+        public void NodeEvaluated(string updatedNode, string nodeId, ReevaluationResult result)
         {
-            if (engineInstrumentation != null) engineInstrumentation.OnNodeEvaluated(walkIndex, updatedNode, result);
+            foreach (var engineInstrumentation in instrumentations)
+            {
+                engineInstrumentation.OnNodeEvaluated(walkIndex, updatedNode, nodeId, result);
+            }
         }
 
         public void DependencyWalkEnded()
         {
-            if (engineInstrumentation != null) engineInstrumentation.OnDepdendencyWalkEnd(walkIndex);
+            foreach (var engineInstrumentation in instrumentations)
+            {
+                engineInstrumentation.OnDepdendencyWalkEnd(walkIndex);
+            }
+        }
+
+        public void Add(IEngineInstrumentation engineInstrumentation)
+        {
+            instrumentations.Add(engineInstrumentation);
+        }
+
+        public void Remove(IEngineInstrumentation engineInstrumentation)
+        {
+            instrumentations.Remove(engineInstrumentation);
         }
     }
 }

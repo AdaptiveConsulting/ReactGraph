@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace ReactGraph.Graph
 {
-    internal class Vertex<T>
+    public class Vertex<T>
     {
         private readonly List<Edge<T>> predecessors = new List<Edge<T>>();
         private readonly List<Edge<T>> successors = new List<Edge<T>>();

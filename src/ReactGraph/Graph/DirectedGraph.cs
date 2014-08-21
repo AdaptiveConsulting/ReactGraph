@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace ReactGraph.Graph
 {
-    internal class DirectedGraph<T>
+    public class DirectedGraph<T>
     {
         private readonly Dictionary<T, Vertex<T>> verticies = new Dictionary<T, Vertex<T>>();
         long vertexIdCounter;
@@ -46,6 +46,12 @@ namespace ReactGraph.Graph
         public IEnumerable<Vertex<T>> Verticies
         {
             get { return verticies.Values; }
+        }
+
+
+        public Vertex<T> GetVertexById(string nodeId)
+        {
+            return Verticies.First(v => v.Id == nodeId);
         }
 
         /// <summary>
@@ -114,6 +120,21 @@ namespace ReactGraph.Graph
             }
 
             return graph;
+        }
+
+        public DirectedGraph<TTarget> Clone<TTarget>(Func<Vertex<T>, TTarget> projectNode)
+        {
+            var graph = new DirectedGraph<TTarget>();
+
+            foreach (var vertex in Verticies)
+            {
+                foreach (var edge in vertex.Successors)
+                {
+                    graph.AddEdge(projectNode(vertex), projectNode(edge.Target), vertex.Id, edge.Target.Id);
+                }
+            }
+
+            return graph;
         } 
 
         /// <summary>
@@ -149,23 +170,6 @@ namespace ReactGraph.Graph
             return result;
         }
 
-        private Vertex<T> AddVertex(T data, string id)
-        {
-            if (!verticies.ContainsKey(data))
-            {
-                var newVertexId = id;
-                if (string.IsNullOrEmpty(newVertexId))
-                {
-                    vertexIdCounter++;
-                    newVertexId = "__" + vertexIdCounter;
-                }
-
-                var vertex = new Vertex<T>(data, newVertexId);
-                verticies[data] = vertex;
-            }
-            return verticies[data];
-        }
-
         /// <summary>
         /// <see cref="http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm"/>
         /// </summary>
@@ -186,6 +190,23 @@ namespace ReactGraph.Graph
                 }
             }
             return result;
+        }
+
+        private Vertex<T> AddVertex(T data, string id)
+        {
+            if (!verticies.ContainsKey(data))
+            {
+                var newVertexId = id;
+                if (string.IsNullOrEmpty(newVertexId))
+                {
+                    vertexIdCounter++;
+                    newVertexId = "__" + vertexIdCounter;
+                }
+
+                var vertex = new Vertex<T>(data, newVertexId);
+                verticies[data] = vertex;
+            }
+            return verticies[data];
         }
 
         private static void StrongConnect(Vertex<T> v, ref int index, Stack<Vertex<T>> stack, Dictionary<Vertex<T>, int> indexes, Dictionary<Vertex<T>, int> lowlinks, List<List<Vertex<T>>> result)

@@ -1,16 +1,15 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-using ApprovalTests.Reporters;
-
-[assembly: AssemblyTitle("ReactGraph.Tests")]
+[assembly: AssemblyTitle("ReactGraph.Visualisation")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ReactGraph.Tests")]
+[assembly: AssemblyProduct("ReactGraph.Visualisation")]
 [assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -21,7 +20,7 @@ using ApprovalTests.Reporters;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("c2b446a9-516e-42f7-8a9c-9420734d13c5")]
+[assembly: Guid("bf544531-a20b-46c9-820f-d34a351dbfed")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -35,5 +34,3 @@ using ApprovalTests.Reporters;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-[assembly: UseReporter(typeof (KDiffReporter))]

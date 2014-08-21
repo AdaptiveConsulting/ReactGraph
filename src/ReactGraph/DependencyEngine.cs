@@ -8,7 +8,6 @@ using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
-using ReactGraph.Visualisation;
 
 namespace ReactGraph
 {
@@ -20,29 +19,41 @@ namespace ReactGraph
         private readonly EngineInstrumenter engineInstrumenter;
         private bool isExecuting;
 
-        public DependencyEngine(IEngineInstrumentation engineInstrumentation = null)
+        public DependencyEngine()
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
-            Visualisation = new DotVisualisation(graph);
-            engineInstrumenter = new EngineInstrumenter(engineInstrumentation);
+            engineInstrumenter = new EngineInstrumenter();
         }
 
-        public IVisualisation Visualisation { get; set; }
+        public void AddInstrumentation(IEngineInstrumentation engineInstrumentation)
+        {
+            engineInstrumenter.Add(engineInstrumentation);
+        }
+
+        public void RemoveInstrumentation(IEngineInstrumentation engineInstrumentation)
+        {
+            engineInstrumenter.Remove(engineInstrumentation);
+        }
+
+        public DirectedGraph<INodeMetadata> GetGraphSnapshot()
+        {
+            return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.Type, vertex.Data.ToString(), vertex.Id));
+        } 
 
         public bool ValueHasChanged(object instance, string key)
         {
             if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
 
             var node = nodeRepository.Get(instance, key);
-            engineInstrumenter.DependecyWalkStarted(key);
 
             try
             {
                 isExecuting = true;
                 var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
                 var firstVertex = orderToReeval.Dequeue();
+                engineInstrumenter.DependecyWalkStarted(key, firstVertex.Id);
                 node.ValueChanged();
                 NotificationStratgegyValueUpdate(firstVertex);
                 while (orderToReeval.Count > 0)
@@ -66,7 +77,7 @@ namespace ReactGraph
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-                    engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), results);
+                    engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), vertex.Id, results);
 
                     NotificationStratgegyValueUpdate(vertex);
                 }
@@ -86,12 +97,6 @@ namespace ReactGraph
             {
                 firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
             }
-        }
-
-        public override string ToString()
-        {
-            var dotVisualisation = new DotVisualisation(graph);
-            return dotVisualisation.Generate("DependencyGraph");
         }
 
         public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction, string expressionId = null)

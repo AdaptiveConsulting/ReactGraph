@@ -142,7 +142,8 @@ namespace ReactGraph.Tests
              *  E   D
              */
             var instrumentation = new TestInstrumentation();
-            engine = new DependencyEngine(instrumentation);
+            engine = new DependencyEngine();
+            engine.AddInstrumentation(instrumentation);
 
             var a = new SinglePropertyType();
             var b = new SinglePropertyType();

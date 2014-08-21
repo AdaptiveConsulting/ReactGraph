@@ -30,6 +30,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ApprovalTests">
+      <HintPath>..\packages\ApprovalTests.3.0.7\lib\net40\ApprovalTests.dll</HintPath>
+    </Reference>
+    <Reference Include="ApprovalUtilities">
+      <HintPath>..\packages\ApprovalUtilities.3.0.7\lib\net35\ApprovalUtilities.dll</HintPath>
+    </Reference>
     <Reference Include="Shouldly">
       <HintPath>..\packages\Shouldly.2.1.1\lib\net40\Shouldly.dll</HintPath>
     </Reference>
@@ -68,6 +74,10 @@
     <Compile Include="VisualisationTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ReactGraph.Visualisation\ReactGraph.Visualisation.csproj">
+      <Project>{378465c5-cb16-4015-9d8c-e5d7c29afd56}</Project>
+      <Name>ReactGraph.Visualisation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\ReactGraph\ReactGraph.csproj">
       <Project>{74bd04ae-452c-4a37-8fb3-9d2a902b3a86}</Project>
       <Name>ReactGraph</Name>
