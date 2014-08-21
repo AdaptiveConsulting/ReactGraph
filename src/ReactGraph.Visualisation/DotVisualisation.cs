@@ -5,16 +5,16 @@ using ReactGraph.NodeInfo;
 
 namespace ReactGraph.Visualisation
 {
-    internal class DotVisualisation : IVisualisation
+    internal class DotVisualisation
     {
-        readonly DirectedGraph<INodeInfo> graph;
+        readonly DirectedGraph<INodeMetadata> graph;
 
-        public DotVisualisation(DirectedGraph<INodeInfo> graph)
+        public DotVisualisation(DirectedGraph<INodeMetadata> graph)
         {
             this.graph = graph;
         }
 
-        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null, bool showRootAsClusters = false)
+        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null)
         {
             var labels = new StringBuilder();
             var graphDefinition = new StringBuilder();
@@ -23,10 +23,10 @@ namespace ReactGraph.Visualisation
             {
                 var properties = new VertexVisualProperties(vertex.Id)
                 {
-                    Label = vertex.Data.ToString()
+                    Label = vertex.Data.Label
                 };
 
-                switch (vertex.Data.Type)
+                switch (vertex.Data.NodeType)
                 {
                     case NodeType.Formula:
                         properties.Color = "lightblue";

@@ -1,5 +1,6 @@
 ﻿using System;
 using ReactGraph.Tests.TestObjects;
+using ReactGraph.Visualisation;
 using Shouldly;
 using Xunit;
 
@@ -35,7 +36,7 @@ namespace ReactGraph.Tests
             engine.Expr(() => Addition(a.Value, b.Value), additionId)
                   .Bind(() => c.Value, e => { }, propertyId);
 
-            var dotFormat = engine.Visualisation.Generate("Foo",
+            var dotFormat = engine.ToDotFormat("Foo",
                 prop =>
                 {
                     switch (prop.Id)
@@ -76,7 +77,7 @@ namespace ReactGraph.Tests
             engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
                   .Bind(() => notifies.Total, e => { });
 
-            var dotFormat = engine.ToString();
+            var dotFormat = engine.ToDotFormat(string.Empty);
             Console.WriteLine(dotFormat);
 
             var lines = dotFormat.Split(new[] { Environment.NewLine }, StringSplitOptions.None);

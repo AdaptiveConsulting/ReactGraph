@@ -8,7 +8,6 @@ using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
-using ReactGraph.Visualisation;
 
 namespace ReactGraph
 {
@@ -25,11 +24,13 @@ namespace ReactGraph
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
             expressionParser = new ExpressionParser();
-            Visualisation = new DotVisualisation(graph);
             engineInstrumenter = new EngineInstrumenter(engineInstrumentation);
         }
 
-        public IVisualisation Visualisation { get; set; }
+        public DirectedGraph<INodeMetadata> GetGraphSnapshot()
+        {
+            return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.Type, vertex.Data.ToString(), vertex.Id));
+        } 
 
         public bool ValueHasChanged(object instance, string key)
         {
@@ -86,12 +87,6 @@ namespace ReactGraph
             {
                 firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
             }
-        }
-
-        public override string ToString()
-        {
-            var dotVisualisation = new DotVisualisation(graph);
-            return dotVisualisation.Generate("DependencyGraph");
         }
 
         public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction, string expressionId = null)
