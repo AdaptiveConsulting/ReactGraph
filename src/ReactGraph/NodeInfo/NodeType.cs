@@ -3,7 +3,7 @@ namespace ReactGraph.NodeInfo
     public enum NodeType
     {
         Formula,
-        WritableNode,
+        Member,
         Action
     }
 }

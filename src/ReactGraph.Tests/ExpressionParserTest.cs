@@ -22,11 +22,11 @@ namespace ReactGraph.Tests
         {
             var notifies = new Totals();
             Expression<Func<int>> expr = () => notifies.Total;
-            var formulaNode = expressionParser.GetFormulaInfo(expr);
-            formulaNode.Dependencies.Count.ShouldBe(1);
-            var propertyNode = formulaNode.Dependencies.Single();
+            var formulaNode = expressionParser.GetFormulaDescriptor(expr);
+            formulaNode.SubExpressions.Count.ShouldBe(1);
+            var propertyNode = formulaNode.SubExpressions.Single();
             propertyNode.RootInstance.ShouldBeSameAs(notifies);
-            propertyNode.ShouldBeOfType<MemberDependencyDescriptor<int>>()
+            propertyNode.ShouldBeOfType<MemberSourceDescriptor<int>>()
                 .MemberInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
         }
 
@@ -36,14 +36,14 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetFormulaInfo(expr).Dependencies.Single();
+            var node = expressionParser.GetFormulaDescriptor(expr).SubExpressions.Single();
             node.RootInstance.ShouldBeSameAs(viewModel);
-            node.ShouldBeOfType<MemberDependencyDescriptor<bool>>()
+            node.ShouldBeOfType<MemberSourceDescriptor<bool>>()
                 .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-            node.Dependencies.Count.ShouldBe(1);
-            var paymentScheduleNode = node.Dependencies[0];
+            node.SubExpressions.Count.ShouldBe(1);
+            var paymentScheduleNode = node.SubExpressions[0];
             paymentScheduleNode
-                .ShouldBeOfType<MemberDependencyDescriptor<ScheduleViewModel>>()
+                .ShouldBeOfType<MemberSourceDescriptor<ScheduleViewModel>>()
                 .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
@@ -54,17 +54,17 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => !viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetFormulaInfo(expr);
-            node.Dependencies.Count.ShouldBe(1);
-            var validationErrorNode = node.Dependencies[0];
+            var node = expressionParser.GetFormulaDescriptor(expr);
+            node.SubExpressions.Count.ShouldBe(1);
+            var validationErrorNode = node.SubExpressions[0];
             validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
-            validationErrorNode.Dependencies.Count.ShouldBe(1);
-            validationErrorNode.ShouldBeOfType<MemberDependencyDescriptor<bool>>()
+            validationErrorNode.SubExpressions.Count.ShouldBe(1);
+            validationErrorNode.ShouldBeOfType<MemberSourceDescriptor<bool>>()
                 .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
 
-            var paymentScheduleNode = validationErrorNode.Dependencies[0];
+            var paymentScheduleNode = validationErrorNode.SubExpressions[0];
             paymentScheduleNode
-                .ShouldBeOfType<MemberDependencyDescriptor<ScheduleViewModel>>()
+                .ShouldBeOfType<MemberSourceDescriptor<ScheduleViewModel>>()
                 .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
             paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
         }
@@ -74,8 +74,8 @@ namespace ReactGraph.Tests
         {
             var simple = new SimpleWithNotification();
             Expression<Func<int>> expr = () => Negate(simple.Value);
-            var node = expressionParser.GetFormulaInfo(expr);
-            node.Dependencies.Count.ShouldBe(1);
+            var node = expressionParser.GetFormulaDescriptor(expr);
+            node.SubExpressions.Count.ShouldBe(1);
         }
 
         int Negate(int value)

@@ -33,7 +33,7 @@ namespace ReactGraph.Visualisation
                         properties.AddCustomProperty("style", "filled");
                         properties.AddCustomProperty("shape", "octagon");
                         break;
-                    case NodeType.WritableNode:
+                    case NodeType.Member:
                         properties.AddCustomProperty("shape", "box");
                         properties.AddCustomProperty("style", "filled");
                         properties.AddCustomProperty("style", "rounded");

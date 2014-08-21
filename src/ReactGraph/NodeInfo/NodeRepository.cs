@@ -1,29 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ReactGraph.Notification;
 
 namespace ReactGraph.NodeInfo
 {
     class NodeRepository
     {
         private readonly Dictionary<Tuple<object, string>, INodeInfo> nodeLookup;
-        private readonly List<INotificationStrategy> notificationStrategies;
 
-        public NodeRepository(DependencyEngine dependencyEngine)
+        public NodeRepository()
         {
             nodeLookup = new Dictionary<Tuple<object, string>, INodeInfo>();
-            notificationStrategies = new List<INotificationStrategy>
-            {
-                new NotifyPropertyChangedStrategy(dependencyEngine)
-            };
-        }
-
-        public INotificationStrategy[] GetStrategies(Type type)
-        {
-            return notificationStrategies
-                .Where(notificationStrategy => notificationStrategy.AppliesTo(type))
-                .ToArray();
         }
 
         public bool Contains(object instance, string key)

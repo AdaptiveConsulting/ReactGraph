@@ -1,37 +1,24 @@
 using System;
-using ReactGraph.Notification;
 
 namespace ReactGraph.NodeInfo
 {
     class WritableNodeInfo<T> : IWritableNodeInfo<T>
     {
-        readonly NodeRepository nodeRepository;
         readonly string label;
-        readonly string key;
-        readonly INotificationStrategy[] notificationStrategies;
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly Action<T> setValue;
         IValueSource<T> formula;
-        object parentInstance;
         Action<Exception> exceptionHandler;
 
         public WritableNodeInfo(
-            object parentInstance,
-            INotificationStrategy[] notificationStrategies,
             Func<T> getValue,
             Action<T> setValue,
-            NodeRepository nodeRepository,
-            string label,
-            string key)
+            string label)
         {
-            this.notificationStrategies = notificationStrategies;
             this.setValue = setValue;
-            this.nodeRepository = nodeRepository;
             this.label = label;
-            this.key = key;
             this.getValue = getValue;
-            this.parentInstance = parentInstance;
             ValueChanged();
         }
 
@@ -59,7 +46,7 @@ namespace ReactGraph.NodeInfo
             return GetValue();
         }
 
-        public NodeType Type { get { return NodeType.WritableNode; } }
+        public NodeType Type { get { return NodeType.Member; } }
 
         public ReevaluationResult Reevaluate()
         {
@@ -83,13 +70,6 @@ namespace ReactGraph.NodeInfo
 
         public void ValueChanged()
         {
-            if (currentValue.HasValue)
-            {
-                foreach (var notificationStrategy in notificationStrategies)
-                    notificationStrategy.Untrack(currentValue.Value);
-                nodeRepository.RemoveLookup(currentValue.Value, null);
-            }
-
             try
             {
                 currentValue.NewValue(getValue());
@@ -97,23 +77,6 @@ namespace ReactGraph.NodeInfo
             catch (Exception ex)
             {
                 currentValue.CouldNotCalculate(ex);
-            }
-
-            if (currentValue.HasValue)
-            {
-                nodeRepository.AddLookup(currentValue.Value, null, this);
-                foreach (var notificationStrategy in notificationStrategies)
-                    notificationStrategy.Track(currentValue.Value);
-            }
-        }
-
-        public void UpdateSubscriptions(IMaybe newParent)
-        {
-            nodeRepository.RemoveLookup(parentInstance, key);
-            if (newParent.HasValue)
-            {
-                parentInstance = newParent.Value;
-                nodeRepository.AddLookup(parentInstance, key, this);
             }
         }
     }

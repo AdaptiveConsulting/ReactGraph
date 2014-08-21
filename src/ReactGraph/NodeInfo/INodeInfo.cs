@@ -7,7 +7,5 @@ namespace ReactGraph.NodeInfo
         ReevaluationResult Reevaluate();
 
         void ValueChanged();
-
-        void UpdateSubscriptions(IMaybe newParent);
     }
 }

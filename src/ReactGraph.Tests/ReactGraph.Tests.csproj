@@ -63,6 +63,7 @@
     <Compile Include="TestInstrumentation.cs" />
     <Compile Include="ExpressionParserTest.cs" />
     <Compile Include="GraphTests.cs" />
+    <Compile Include="TestObjects\OptionsViewModel.cs" />
     <Compile Include="TestObjects\SimpleWithNotification.cs" />
     <Compile Include="TestObjects\Totals.cs" />
     <Compile Include="TestObjects\MortgateCalculatorViewModel.cs" />

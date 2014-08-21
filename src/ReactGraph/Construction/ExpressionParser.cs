@@ -5,14 +5,14 @@ using System.Reflection;
 
 namespace ReactGraph.Construction
 {
-    class ExpressionParser
+    public static class ExpressionParser
     {
-        public FormulaDescriptor<TProp> GetFormulaInfo<TProp>(Expression<Func<TProp>> target)
+        public static FormulaDescriptor<TProp> GetFormulaDescriptor<TProp>(Expression<Func<TProp>> target)
         {
             return new GetNodeVisitor<TProp>().GetFormulaInfo(target);
         }
 
-        public DependencyDescriptor<TProp> GetTargetInfo<TProp>(Expression<Func<TProp>> target)
+        public static SourceDescriptor<TProp> GetMemberDescriptor<TProp>(Expression<Func<TProp>> target)
         {
             return new GetNodeVisitor<TProp>().GetTargetInfo(target);
         }
@@ -21,7 +21,7 @@ namespace ReactGraph.Construction
         {
             readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
             FormulaDescriptor<T> formulaFormula;
-            DependencyDescriptor<T> dependencyInfo;
+            SourceDescriptor<T> sourceInfo;
 
             public FormulaDescriptor<T> GetFormulaInfo(Expression<Func<T>> target)
             {
@@ -30,10 +30,10 @@ namespace ReactGraph.Construction
                 return formulaFormula;
             }
 
-            public DependencyDescriptor<T> GetTargetInfo(Expression<Func<T>> target)
+            public SourceDescriptor<T> GetTargetInfo(Expression<Func<T>> target)
             {
                 Visit(target);
-                return dependencyInfo;
+                return sourceInfo;
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -46,7 +46,7 @@ namespace ReactGraph.Construction
             {
                 var parentValue = node.Value;
                 var rootValue = node.Value;
-                DependencyDescriptor currentNode = null;
+                ExpressionDescriptor currentNode = null;
                 while (path.Count > 0)
                 {
                     var expression = path.Pop();
@@ -57,9 +57,9 @@ namespace ReactGraph.Construction
                         rootValue = nodeValue;
                         nodeInfo.RootInstance = rootValue;
                     }
-                    else if (node.Value != currentNode.ParentInstance && !nodeInfo.Dependencies.Contains(currentNode))
+                    else if (node.Value != currentNode.ParentInstance && !nodeInfo.SubExpressions.Contains(currentNode))
                     {
-                        nodeInfo.Dependencies.Add(currentNode);
+                        nodeInfo.SubExpressions.Add(currentNode);
                     }
                     currentNode = nodeInfo;
                     parentValue = nodeValue;
@@ -69,38 +69,38 @@ namespace ReactGraph.Construction
                 {
                     if (formulaFormula == null)
                     {
-                        if (dependencyInfo != null)
+                        if (sourceInfo != null)
                             throw new InvalidOperationException("Expression contains more than one property");
-                        dependencyInfo = (DependencyDescriptor<T>) currentNode;
+                        sourceInfo = (SourceDescriptor<T>) currentNode;
                     }
-                    else if (!formulaFormula.Dependencies.Contains(currentNode))
-                        formulaFormula.Dependencies.Add(currentNode);
+                    else if (!formulaFormula.SubExpressions.Contains(currentNode))
+                        formulaFormula.SubExpressions.Add(currentNode);
                 }
 
                 return base.VisitConstant(node);
             }
 
-            DependencyDescriptor CreateMember(object rootValue, object parentInstance, MemberInfo member, MemberExpression expression)
+            ExpressionDescriptor CreateMember(object rootValue, object parentInstance, MemberInfo member, MemberExpression expression)
             {
                 var propertyInfo = member as PropertyInfo;
-                DependencyDescriptor dependencyDescriptor;
+                ExpressionDescriptor expressionDescriptor;
                 if (propertyInfo != null)
                 {
-                    var type = typeof(MemberDependencyDescriptor<>).MakeGenericType(propertyInfo.PropertyType);
-                    dependencyDescriptor = (DependencyDescriptor)Activator.CreateInstance(
+                    var type = typeof(MemberSourceDescriptor<>).MakeGenericType(propertyInfo.PropertyType);
+                    expressionDescriptor = (ExpressionDescriptor)Activator.CreateInstance(
                         type, rootValue, parentInstance,
                         propertyInfo, expression);
                 }
                 else
                 {
                     var fieldInfo = ((FieldInfo)member);
-                    var type = typeof(MemberDependencyDescriptor<>).MakeGenericType(fieldInfo.FieldType);
-                    dependencyDescriptor = (DependencyDescriptor)Activator.CreateInstance(
+                    var type = typeof(MemberSourceDescriptor<>).MakeGenericType(fieldInfo.FieldType);
+                    expressionDescriptor = (ExpressionDescriptor)Activator.CreateInstance(
                         type, rootValue, parentInstance,
                         fieldInfo, expression);
                 }
 
-                return dependencyDescriptor;
+                return expressionDescriptor;
             }
         }
     }

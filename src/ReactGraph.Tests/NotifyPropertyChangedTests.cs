@@ -25,7 +25,7 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
 
-            engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
+            engine.When(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
                   .Bind(() => notifies.Total, e => { });
             Console.WriteLine(engine.ToString());
 
@@ -40,7 +40,7 @@ namespace ReactGraph.Tests
         {
             var viewModel = new MortgateCalculatorViewModel();
 
-            engine.Expr(() => !viewModel.PaymentSchedule.HasValidationError)
+            engine.When(() => !viewModel.PaymentSchedule.HasValidationError)
                   .Bind(() => viewModel.CanApply, e => { });
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
@@ -75,11 +75,11 @@ namespace ReactGraph.Tests
              *     ^      |
              *     +--2<--+
              */
-            engine.Expr(() => two.Value + three.Value)
+            engine.When(() => two.Value + three.Value)
                   .Bind(() => four.Value, e => { });
-            engine.Expr(() => one.Value)
+            engine.When(() => one.Value)
                   .Bind(() => two.Value, e => { });
-            engine.Expr(() => one.Value)
+            engine.When(() => one.Value)
                 .Bind(() => three.Value, e => { });
 
             Console.WriteLine(engine.ToString());
@@ -96,7 +96,7 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(true);
 
-            engine.Expr(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule))
+            engine.When(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule))
                   .Bind(() => Foo, e => { });
 
             Foo.ShouldNotBe(42);

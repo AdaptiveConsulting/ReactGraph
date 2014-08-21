@@ -6,7 +6,7 @@ using ReactGraph.Properties;
 
 namespace ReactGraph.Construction
 {
-    class MemberDependencyDescriptor<T> : DependencyDescriptor<T>
+    class MemberSourceDescriptor<T> : SourceDescriptor<T>
     {
         readonly MemberExpression memberExpression;
         readonly MemberInfo memberInfo;
@@ -17,7 +17,7 @@ namespace ReactGraph.Construction
         readonly bool isReadOnly;
 
         [UsedImplicitly]
-        public MemberDependencyDescriptor(object rootValue, object parentInstance, FieldInfo fieldInfo, MemberExpression memberExpression)
+        public MemberSourceDescriptor(object rootValue, object parentInstance, FieldInfo fieldInfo, MemberExpression memberExpression)
         {
             RootInstance = rootValue;
             ParentInstance = parentInstance;
@@ -36,7 +36,7 @@ namespace ReactGraph.Construction
         }
 
         [UsedImplicitly]
-        public MemberDependencyDescriptor(object rootValue, object parentInstance, PropertyInfo propertyInfo, MemberExpression memberExpression)
+        public MemberSourceDescriptor(object rootValue, object parentInstance, PropertyInfo propertyInfo, MemberExpression memberExpression)
         {
             RootInstance = rootValue;
             ParentInstance = parentInstance;
@@ -54,7 +54,7 @@ namespace ReactGraph.Construction
             isReadOnly = !propertyInfo.CanWrite;
         }
 
-        public override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)
+        internal override INodeInfo GetOrCreateNodeInfo(NodeRepository repo)
         {
             if (repo.Contains(ParentInstance, key))
                 return repo.Get(ParentInstance, key);

@@ -15,30 +15,17 @@ namespace ReactGraph.Tests
         }
 
         [Fact]
-        public void ExpressionCanTriggerAction()
-        {
-            var simple = new SimpleWithNotification();
-            var actionInvoked = 0;
-
-            engine.Expr(() => simple.Value).Action(v => actionInvoked++, "actionInvoked = true", ex => { });
-            actionInvoked.ShouldBe(0);
-
-            simple.Value = 2;
-
-            actionInvoked.ShouldBe(1);
-        }
-
-        [Fact]
         public void ExpressionCanTriggerAction2()
         {
             var simple = new SimpleWithNotification();
             var actionInvoked = 0;
             Action action = () => actionInvoked++;
 
-            engine.Expr(() => simple.Value).Action(v => action(), ex => { });
+            engine.When(() => simple.Value).Do(v => action(), ex => { });
             actionInvoked.ShouldBe(0);
 
             simple.Value = 2;
+            engine.ValueHasChanged(simple, "Value");
 
             actionInvoked.ShouldBe(1);
             Console.WriteLine(engine.ToString());
