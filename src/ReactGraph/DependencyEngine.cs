@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
@@ -133,15 +131,16 @@ namespace ReactGraph
         {
             var sourceNode = nodeRepository.Contains(sourceDefinition.Root, sourceDefinition.Path)
                 ? nodeRepository.Get(sourceDefinition.Root, sourceDefinition.Path)
-                : CreateSourceNode((dynamic)sourceDefinition);
+                : CreateSourceNode(sourceDefinition);
 
             foreach (var sourcePath in sourceDefinition.SourcePaths)
             {
                 var pathNode = nodeRepository.Contains(sourcePath.Root, sourcePath.Path)
                 ? nodeRepository.Get(sourcePath.Root, sourcePath.Path)
-                : CreateSourceNode((dynamic)sourcePath);
+                : CreateSourceNode(sourcePath);
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
+                AddSourcePathExpressions(sourcePath);
             }
         }
 
@@ -150,13 +149,14 @@ namespace ReactGraph
             switch (target.NodeType)
             {
                 case NodeType.Formula:
-                case NodeType.Action:
-                    throw new ArgumentException("Formula and Action nodes cannot be a value target");
+                    throw new ArgumentException("Formula nodes cannot be a value target");
                 case NodeType.Member:
                     // TODO Figure out how to remove cast
                     var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
                     var setValueDelegate = target.CreateSetValueDelegate();
                     return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path);
+                case NodeType.Action:
+                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.Path);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -178,206 +178,15 @@ namespace ReactGraph
                     throw new ArgumentOutOfRangeException();
             }
         }
-    }
 
-    public interface ITargetDefinition<in T> : IDefinitionIdentity
-    {
-        Action<T> CreateSetValueDelegate();
-    }
+        readonly MethodInfo createSourceInfo = typeof (DependencyEngine).GetMethods(BindingFlags.Instance |
+                                                                           BindingFlags.NonPublic)
+            .Single(m => m.Name == "CreateSourceNode" && m.IsGenericMethodDefinition);
 
-    public interface ISourceDefinition<out T> : ISourceDefinition
-    {
-        Func<T> CreateGetValueDelegate();
-    }
-
-    public interface ISourceDefinition : IDefinitionIdentity
-    {
-        List<ISourceDefinition> SourcePaths { get; }
-    }
-
-    public interface IDefinitionIdentity
-    {
-        object Root { get; }
-
-        string Path { get; }
-
-        string NodeName { get; }
-
-        NodeType NodeType { get; }
-    }
-
-    public static class RegistrationExtensions
-    {
-        public static WhenFormulaChangesBuilder<TProp> When<TProp>(this DependencyEngine engine, Expression<Func<TProp>> sourceFunction, string expressionId = null)
+        INodeInfo CreateSourceNode(ISourceDefinition source)
         {
-            return new WhenFormulaChangesBuilder<TProp>(sourceFunction, expressionId, engine);
-        }
-
-        public static AssignPropertyBuilder<TProp> Assign<TProp>(this DependencyEngine engine, Expression<Func<TProp>> targetMemberExpression, string expressionId = null)
-        {
-            return new AssignPropertyBuilder<TProp>(engine, targetMemberExpression, expressionId);
-        }
-    }
-
-    public class AssignPropertyBuilder<T> : BuilderBase
-    {
-        readonly MemberDefinition<T> targetMemberDefinition;
-        readonly DependencyEngine engine;
-
-        public AssignPropertyBuilder(DependencyEngine engine, Expression<Func<T>> targetMemberExpression, string nodeId)
-        {
-            var memberExpression = targetMemberExpression.Body as MemberExpression;
-            if (memberExpression == null)
-                throw new ArgumentException("Expression must be a member (field/property) accessor, for example foo.Bar", "targetMemberExpression");
-
-            var propertyInfo = memberExpression.Member as PropertyInfo;
-            var fieldInfo = memberExpression.Member as FieldInfo;
-
-            if (propertyInfo == null && fieldInfo == null)
-                throw new ArgumentException("Only fields and properties are supported", "targetMemberExpression");
-            if (propertyInfo != null && !propertyInfo.CanWrite)
-                throw new ArgumentException("Property must be writable", "targetMemberExpression");
-            if (fieldInfo != null && fieldInfo.IsInitOnly)
-                throw new ArgumentException("Field cannot be read-only", "targetMemberExpression");
-
-            this.engine = engine;
-            targetMemberDefinition = CreateMemberDefinition(targetMemberExpression, nodeId);
-
-        }
-
-        public WhenFormulaChangesBuilder<T> From(Expression<Func<T>> sourceExpression, Action<Exception> onError, string nodeId = null)
-        {
-            ISourceDefinition<T> sourceDefinition;
-            if (IsWritable(sourceExpression))
-            {
-                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId);
-            }
-            else
-            {
-                sourceDefinition = new FormulaDefinition<T>(sourceExpression, nodeId);
-            }
-
-            engine.AddExpression(sourceDefinition, targetMemberDefinition, onError);
-            return new WhenFormulaChangesBuilder<T>(sourceExpression, nodeId, engine);
-        }
-    }
-
-    public class FormulaDefinition<T> : ExpressionDefinition<T>, ISourceDefinition<T>
-    {
-        readonly Expression<Func<T>> sourceExpression;
-
-        public FormulaDefinition(Expression<Func<T>> sourceExpression, string nodeId) : base(sourceExpression, NodeType.Formula, nodeId)
-        {
-            this.sourceExpression = sourceExpression;
-        }
-
-        public Func<T> CreateGetValueDelegate()
-        {
-            return sourceExpression.Compile();
-        }
-
-        public List<ISourceDefinition> SourcePaths { get; private set; }
-    }
-
-    public class ExpressionDefinition<T> : IDefinitionIdentity
-    {
-        public ExpressionDefinition(Expression expression, NodeType nodeType, string nodeName)
-        {
-            NodeType = nodeType;
-            NodeName = nodeName;
-            Path = ExpressionStringBuilder.ToString(expression);
-            Root = ExpressionParser.GetRootOf(expression);
-        }
-
-        public object Root { get; private set; }
-        public string Path { get; private set; }
-        public string NodeName { get; private set; }
-        public NodeType NodeType { get; private set; }
-    }
-
-    public class BuilderBase
-    {
-        protected bool IsWritable<T>(Expression<Func<T>> expression)
-        {
-            var memberExpression = expression.Body as MemberExpression;
-            if (memberExpression == null) return false;
-            var propertyInfo = memberExpression.Member as PropertyInfo;
-            var fieldInfo = memberExpression.Member as FieldInfo;
-
-            if (propertyInfo == null && fieldInfo == null) return false;
-            if (propertyInfo != null && !propertyInfo.CanWrite) return false;
-            if (fieldInfo != null && fieldInfo.IsInitOnly) return false;
-
-            return true;
-        }
-
-        // TODO this needs to go somewhere else
-        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId)
-        {
-            var parameterExpression = Expression.Parameter(typeof(T));
-            var targetAssignmentLambda = Expression.Lambda<Action<T>>(Expression.Assign(expression.Body, parameterExpression), parameterExpression);
-
-            return new MemberDefinition<T>(expression, targetAssignmentLambda, nodeId);
-        }
-    }
-
-    public class MemberDefinition<T> : ExpressionDefinition<T>, ISourceDefinition<T>, ITargetDefinition<T>
-    {
-        readonly Expression<Func<T>> targetMemberExpression;
-        readonly Expression<Action<T>> assignmentLambda;
-
-        public MemberDefinition(Expression<Func<T>> targetMemberExpression, Expression<Action<T>> assignmentLambda, string targetMemberId) : base(targetMemberExpression, NodeType.Member, targetMemberId)
-        {
-            this.targetMemberExpression = targetMemberExpression;
-            this.assignmentLambda = assignmentLambda;
-        }
-
-        public Func<T> CreateGetValueDelegate()
-        {
-            return targetMemberExpression.Compile();
-        }
-
-        public Action<T> CreateSetValueDelegate()
-        {
-            return assignmentLambda.Compile();
-        }
-
-        public List<ISourceDefinition> SourcePaths { get; private set; }
-    }
-
-    public class WhenFormulaChangesBuilder<T> : BuilderBase
-    {
-        readonly ISourceDefinition<T> sourceDefinition;
-        readonly DependencyEngine dependencyEngine;
-
-        public WhenFormulaChangesBuilder(Expression<Func<T>> sourceFunction, string nodeId, DependencyEngine dependencyEngine)
-        {
-            this.dependencyEngine = dependencyEngine;
-            if (IsWritable(sourceFunction))
-                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId);
-            else
-                sourceDefinition = new FormulaDefinition<T>(sourceFunction, nodeId);
-        }
-
-        public void Do(Expression<Action<T>> action, Action<Exception> onError, string actionId = null)
-        {
-            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId), onError);
-        }
-    }
-
-    public class ActionDefinition<T> : ExpressionDefinition<T>, ITargetDefinition<T>
-    {
-        readonly Expression<Action<T>> expression;
-
-        public ActionDefinition(Expression<Action<T>> expression, string nodeName)
-            : base(expression, NodeType.Action, nodeName)
-        {
-            this.expression = expression;
-        }
-
-        public Action<T> CreateSetValueDelegate()
-        {
-            return expression.Compile();
+            var method = createSourceInfo.MakeGenericMethod(source.SourceType);
+            return (INodeInfo)method.Invoke(this, new object[] { source });
         }
     }
 }

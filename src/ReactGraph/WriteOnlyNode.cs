@@ -1,22 +1,19 @@
 using System;
+using ReactGraph.NodeInfo;
 
-namespace ReactGraph.NodeInfo
+namespace ReactGraph
 {
-    class ReadWriteNode<T> : ITakeValue<T>, IValueSource<T>
+    class WriteOnlyNode<T> : ITakeValue<T>
     {
-        readonly string label;
-        readonly Maybe<T> currentValue = new Maybe<T>();
-        readonly Func<T> getValue;
         readonly Action<T> setValue;
+        readonly string label;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string label)
+        public WriteOnlyNode(Action<T> setValue, string label)
         {
             this.setValue = setValue;
             this.label = label;
-            this.getValue = getValue;
-            ValueChanged();
         }
 
         public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
@@ -28,17 +25,7 @@ namespace ReactGraph.NodeInfo
             exceptionHandler = errorHandler;
         }
 
-        public Maybe<T> GetValue()
-        {
-            return currentValue;
-        }
-
-        public override string ToString()
-        {
-            return label;
-        }
-
-        public NodeType Type { get { return NodeType.Member; } }
+        public NodeType Type { get { return NodeType.Action; } }
 
         public ReevaluationResult Reevaluate()
         {
@@ -62,14 +49,6 @@ namespace ReactGraph.NodeInfo
 
         public void ValueChanged()
         {
-            try
-            {
-                currentValue.NewValue(getValue());
-            }
-            catch (Exception ex)
-            {
-                currentValue.CouldNotCalculate(ex);
-            }
         }
     }
 }

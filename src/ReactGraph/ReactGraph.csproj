@@ -37,14 +37,23 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionDefinition.cs" />
+    <Compile Include="AssignPropertyBuilder.cs" />
+    <Compile Include="BuilderBase.cs" />
     <Compile Include="DependencyEngine.cs" />
+    <Compile Include="ExpressionDefinition.cs" />
+    <Compile Include="FormulaDefinition.cs" />
     <Compile Include="Graph\CycleDetectedException.cs" />
     <Compile Include="Construction\ExpressionDescriptor.cs" />
     <Compile Include="Construction\FormulaNullReferenceException.cs" />
     <Compile Include="Construction\NullCheckRewriter.cs" />
     <Compile Include="NodeInfo\INodeMetadata.cs" />
+    <Compile Include="IDefinitionIdentity.cs" />
     <Compile Include="Instrumentation\IEngineInstrumentation.cs" />
     <Compile Include="Instrumentation\EngineInstrumenter.cs" />
+    <Compile Include="ISourceDefinition.cs" />
+    <Compile Include="ITargetDefinition.cs" />
+    <Compile Include="MemberDefinition.cs" />
     <Compile Include="NodeInfo\IMaybe.cs" />
     <Compile Include="NodeInfo\ITakeValue`1.cs" />
     <Compile Include="NodeInfo\IValueSource`1.cs" />
@@ -60,9 +69,12 @@
     <Compile Include="NodeInfo\ReadOnlyNodeInfo.cs" />
     <Compile Include="NodeInfo\INodeInfo.cs" />
     <Compile Include="NodeInfo\NodeRepository.cs" />
+    <Compile Include="RegistrationExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Graph\Vertex.cs" />
+    <Compile Include="WhenFormulaChangesBuilder.cs" />
+    <Compile Include="WriteOnlyNode.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TODO.txt" />

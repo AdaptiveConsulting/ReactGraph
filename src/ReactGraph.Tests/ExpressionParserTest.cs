@@ -18,7 +18,7 @@ namespace ReactGraph.Tests
             var root = ExpressionParser.GetRootOf(expr);
             root.ShouldBeSameAs(notifies);
             var subExpressions = ExpressionParser.GetChildSources(expr, root);
-            subExpressions.Length.ShouldBe(1);
+            subExpressions.Count.ShouldBe(1);
             var propertyNode = subExpressions.Single();
             propertyNode.Root.ShouldBeSameAs(notifies);
             propertyNode.Path.ShouldBe("notifies.Total");
@@ -50,7 +50,7 @@ namespace ReactGraph.Tests
             var root = ExpressionParser.GetRootOf(expr);
             root.ShouldBeSameAs(viewModel);
             var node = ExpressionParser.GetChildSources(expr, root);
-            node.Length.ShouldBe(1);
+            node.Count.ShouldBe(1);
             var validationErrorNode = node[0];
             validationErrorNode.Root.ShouldBeSameAs(viewModel);
             validationErrorNode.Path.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
@@ -69,7 +69,7 @@ namespace ReactGraph.Tests
             var root = ExpressionParser.GetRootOf(expr);
             root.ShouldBeSameAs(simple);
             var node = ExpressionParser.GetChildSources(expr, root);
-            node.Length.ShouldBe(1);
+            node.Count.ShouldBe(1);
         }
 
         int Negate(int value)

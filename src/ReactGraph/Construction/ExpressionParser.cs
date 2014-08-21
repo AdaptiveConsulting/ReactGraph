@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ReactGraph.Properties;
@@ -13,7 +14,7 @@ namespace ReactGraph.Construction
             return new GetRootVisitor().GetRoot(expression);
         }
 
-        public static ISourceDefinition[] GetChildSources(Expression expr, object root)
+        public static List<ISourceDefinition> GetChildSources(Expression expr, object root)
         {
             return new GetNodeVisitor().GetSubExpressions(expr, root);
         }
@@ -41,18 +42,18 @@ namespace ReactGraph.Construction
 
             static GetNodeVisitor()
             {
-                ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic);
+                ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic | BindingFlags.Static);
             }
 
             readonly List<ISourceDefinition> subExpressions = new List<ISourceDefinition>();
             ISourceDefinition current;
             object root;
 
-            public ISourceDefinition[] GetSubExpressions(Expression target, object root)
+            public List<ISourceDefinition> GetSubExpressions(Expression target, object root)
             {
                 this.root = root;
                 Visit(target);
-                return subExpressions.ToArray();
+                return subExpressions;
             }
 
             protected override Expression VisitMember(MemberExpression node)
@@ -89,7 +90,7 @@ namespace ReactGraph.Construction
             static ISourceDefinition ToPath<T>(MemberExpression node)
             {
                 var getter = Expression.Lambda<Func<T>>(node);
-                return BuilderBase.CreateMemberDefinition(getter, null);
+                return BuilderBase.CreateMemberDefinition(getter, null, false);
             }
         }
     }
