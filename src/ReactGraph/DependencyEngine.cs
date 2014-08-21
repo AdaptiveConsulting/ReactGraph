@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using ReactGraph.Api;
 using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
@@ -22,7 +21,7 @@ namespace ReactGraph
         public DependencyEngine()
         {
             graph = new DirectedGraph<INodeInfo>();
-            nodeRepository = new NodeRepository(this);
+            nodeRepository = new NodeRepository();
             engineInstrumenter = new EngineInstrumenter();
         }
 
@@ -54,7 +53,6 @@ namespace ReactGraph
                 var firstVertex = orderToReeval.Dequeue();
                 engineInstrumenter.DependecyWalkStarted(key, firstVertex.Id);
                 node.ValueChanged();
-                NotificationStratgegyValueUpdate(firstVertex);
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
@@ -84,8 +82,6 @@ namespace ReactGraph
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-
-                    NotificationStratgegyValueUpdate(vertex);
                 }
             }
             finally
@@ -97,12 +93,6 @@ namespace ReactGraph
             return true;
         }
 
-        static void NotificationStratgegyValueUpdate(Vertex<INodeInfo> firstVertex)
-        {
-            foreach (var successor in firstVertex.Successors)
-            {
-                firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
-            }
         }
 
         public void CheckCycles()
@@ -127,10 +117,10 @@ namespace ReactGraph
         {
             // Repository should have getsource and get target?
             var sourceNode = nodeRepository.Contains(source.Root, source.Path)
-                ? (INodeInfo<T>)nodeRepository.Get(source.Root, source.Path)
+                ? (IValueSource<T>)nodeRepository.Get(source.Root, source.Path)
                 : CreateSourceNode(source);
             var targetNode = nodeRepository.Contains(target.Root, target.Path)
-                ? (IWritableNodeInfo<T>)nodeRepository.Get(target.Root, target.Path)
+                ? (ITakeValue<T>)nodeRepository.Get(target.Root, target.Path)
                 : CreateTargetNode(target);
 
             targetNode.SetSource(sourceNode, onError);
@@ -143,42 +133,50 @@ namespace ReactGraph
         {
             var sourceNode = nodeRepository.Contains(sourceDefinition.Root, sourceDefinition.Path)
                 ? nodeRepository.Get(sourceDefinition.Root, sourceDefinition.Path)
-                : CreateSourceNode(sourceDefinition);
+                : CreateSourceNode((dynamic)sourceDefinition);
 
             foreach (var sourcePath in sourceDefinition.SourcePaths)
             {
                 var pathNode = nodeRepository.Contains(sourcePath.Root, sourcePath.Path)
                 ? nodeRepository.Get(sourcePath.Root, sourcePath.Path)
-                : CreateSourceNode(sourcePath);
+                : CreateSourceNode((dynamic)sourcePath);
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
             }
         }
 
-        IWritableNodeInfo<T> CreateTargetNode<T>(ITargetDefinition<T> target)
+        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target)
         {
             switch (target.NodeType)
             {
                 case NodeType.Formula:
-                    return new WritableNodeInfo<T>(target.ParentInstance, );
-                    break;
-                case NodeType.Member:
-                    break;
                 case NodeType.Action:
-                    break;
+                    throw new ArgumentException("Formula and Action nodes cannot be a value target");
+                case NodeType.Member:
+                    // TODO Figure out how to remove cast
+                    var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
+                    var setValueDelegate = target.CreateSetValueDelegate();
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        INodeInfo<T> CreateSourceNode<T>(ISourceDefinition<T> source)
+        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source)
         {
-
-        }
-
-        INodeInfo CreateSourceNode(ISourceDefinition source)
-        {
-
+            switch (source.NodeType)
+            {
+                case NodeType.Formula:
+                case NodeType.Action:
+                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegate(), source.Path);
+                case NodeType.Member:
+                    // TODO Figure out how to remove cast
+                    var getValueDelegate = source.CreateGetValueDelegate();
+                    var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path);
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
     }
 
@@ -194,14 +192,12 @@ namespace ReactGraph
 
     public interface ISourceDefinition : IDefinitionIdentity
     {
-        ISourceDefinition[] SourcePaths { get; }
+        List<ISourceDefinition> SourcePaths { get; }
     }
 
     public interface IDefinitionIdentity
     {
         object Root { get; }
-
-        object ParentInstance { get; }
 
         string Path { get; }
 
@@ -261,7 +257,7 @@ namespace ReactGraph
                 sourceDefinition = new FormulaDefinition<T>(sourceExpression, nodeId);
             }
 
-            engine.AddExpression(sourceDefinition, targetMemberDefinition);
+            engine.AddExpression(sourceDefinition, targetMemberDefinition, onError);
             return new WhenFormulaChangesBuilder<T>(sourceExpression, nodeId, engine);
         }
     }
@@ -279,6 +275,8 @@ namespace ReactGraph
         {
             return sourceExpression.Compile();
         }
+
+        public List<ISourceDefinition> SourcePaths { get; private set; }
     }
 
     public class ExpressionDefinition<T> : IDefinitionIdentity
@@ -288,7 +286,7 @@ namespace ReactGraph
             NodeType = nodeType;
             NodeName = nodeName;
             Path = ExpressionStringBuilder.ToString(expression);
-            Root = 
+            Root = ExpressionParser.GetRootOf(expression);
         }
 
         public object Root { get; private set; }
@@ -313,7 +311,8 @@ namespace ReactGraph
             return true;
         }
 
-        protected MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId)
+        // TODO this needs to go somewhere else
+        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId)
         {
             var parameterExpression = Expression.Parameter(typeof(T));
             var targetAssignmentLambda = Expression.Lambda<Action<T>>(Expression.Assign(expression.Body, parameterExpression), parameterExpression);
@@ -342,6 +341,8 @@ namespace ReactGraph
         {
             return assignmentLambda.Compile();
         }
+
+        public List<ISourceDefinition> SourcePaths { get; private set; }
     }
 
     public class WhenFormulaChangesBuilder<T> : BuilderBase
@@ -360,7 +361,7 @@ namespace ReactGraph
 
         public void Do(Expression<Action<T>> action, Action<Exception> onError, string actionId = null)
         {
-            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId));
+            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId), onError);
         }
     }
 

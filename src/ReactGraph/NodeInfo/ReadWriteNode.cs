@@ -2,19 +2,16 @@ using System;
 
 namespace ReactGraph.NodeInfo
 {
-    class WritableNodeInfo<T> : IWritableNodeInfo<T>
+    class ReadWriteNode<T> : ITakeValue<T>, IValueSource<T>
     {
         readonly string label;
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly Action<T> setValue;
-        IValueSource<T> formula;
+        IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
 
-        public WritableNodeInfo(
-            Func<T> getValue,
-            Action<T> setValue,
-            string label)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string label)
         {
             this.setValue = setValue;
             this.label = label;
@@ -24,10 +21,10 @@ namespace ReactGraph.NodeInfo
 
         public void SetSource(IValueSource<T> formulaNode, Action<Exception> errorHandler)
         {
-            if (formula != null)
-                throw new InvalidOperationException(string.Format("{0} already has a formula associated with it", label));
+            if (valueSource != null)
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", label));
 
-            formula = formulaNode;
+            valueSource = formulaNode;
             exceptionHandler = errorHandler;
         }
 
@@ -41,19 +38,14 @@ namespace ReactGraph.NodeInfo
             return label;
         }
 
-        IMaybe IValueSource.GetValue()
-        {
-            return GetValue();
-        }
-
         public NodeType Type { get { return NodeType.Member; } }
 
         public ReevaluationResult Reevaluate()
         {
-            if (formula != null)
+            if (valueSource != null)
             {
                 ValueChanged();
-                var value = formula.GetValue();
+                var value = valueSource.GetValue();
                 if (value.HasValue)
                 {
                     // TODO Don't set and return NoChange when value has not changed

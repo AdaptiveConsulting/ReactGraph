@@ -35,8 +35,8 @@ namespace ReactGraph.Tests
 
             const string additionId = "Addition";
             const string propertyId = "C";
-            engine.When(() => Addition(a.Value, b.Value), additionId)
-                  .Bind(() => c.Value, e => { }, propertyId);
+            engine.Assign(() => c.Value, propertyId)
+                  .From(() => Addition(a.Value, b.Value), e => { }, additionId);
 
             var dotFormat = engine.ToDotFormat("Foo",
                 prop =>
@@ -73,8 +73,8 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
 
-            engine.When(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
-                  .Bind(() => notifies.Total, e => { });
+            engine.Assign(() => notifies.Total)
+                  .From(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), e => { });
 
             var dotFormat = engine.ToDotFormat(string.Empty);
 

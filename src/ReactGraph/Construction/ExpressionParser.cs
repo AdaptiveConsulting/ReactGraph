@@ -2,105 +2,94 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Reflection;
+using ReactGraph.Properties;
 
 namespace ReactGraph.Construction
 {
     public static class ExpressionParser
     {
-        public static FormulaDescriptor<TProp> GetFormulaDescriptor<TProp>(Expression<Func<TProp>> target)
+        public static object GetRootOf(Expression expression)
         {
-            return new GetNodeVisitor<TProp>().GetFormulaInfo(target);
+            return new GetRootVisitor().GetRoot(expression);
         }
 
-        public static SourceDescriptor<TProp> GetMemberDescriptor<TProp>(Expression<Func<TProp>> target)
+        public static ISourceDefinition[] GetChildSources(Expression expr, object root)
         {
-            return new GetNodeVisitor<TProp>().GetTargetInfo(target);
+            return new GetNodeVisitor().GetSubExpressions(expr, root);
         }
 
-        class GetNodeVisitor<T> : ExpressionVisitor
+        class GetRootVisitor : ExpressionVisitor
         {
-            readonly Stack<MemberExpression> path = new Stack<MemberExpression>();
-            FormulaDescriptor<T> formulaFormula;
-            SourceDescriptor<T> sourceInfo;
+            object root;
 
-            public FormulaDescriptor<T> GetFormulaInfo(Expression<Func<T>> target)
+            public object GetRoot(Expression expression)
             {
-                formulaFormula = new FormulaDescriptor<T>(target);
-                Visit(target);
-                return formulaFormula;
+                Visit(expression);
+                return root;
             }
 
-            public SourceDescriptor<T> GetTargetInfo(Expression<Func<T>> target)
+            protected override Expression VisitConstant(ConstantExpression node)
             {
+                root = node.Value;
+                return base.VisitConstant(node);
+            }
+        }
+
+        class GetNodeVisitor : ExpressionVisitor
+        {
+            static readonly MethodInfo ToPathGenericMethod;
+
+            static GetNodeVisitor()
+            {
+                ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic);
+            }
+
+            readonly List<ISourceDefinition> subExpressions = new List<ISourceDefinition>();
+            ISourceDefinition current;
+            object root;
+
+            public ISourceDefinition[] GetSubExpressions(Expression target, object root)
+            {
+                this.root = root;
                 Visit(target);
-                return sourceInfo;
+                return subExpressions.ToArray();
             }
 
             protected override Expression VisitMember(MemberExpression node)
             {
-                path.Push(node);
+                var sourcePath = MemberToSourcePath(node);
+                if (current == null)
+                {
+                    current = sourcePath;
+                }
+                else
+                {
+                    current.SourcePaths.Add(sourcePath);
+                    current = sourcePath;
+                }
                 return base.VisitMember(node);
             }
 
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                var parentValue = node.Value;
-                var rootValue = node.Value;
-                ExpressionDescriptor currentNode = null;
-                while (path.Count > 0)
+                if (current != null)
                 {
-                    var expression = path.Pop();
-                    var nodeInfo = CreateMember(rootValue, parentValue, expression.Member, expression);
-                    var nodeValue = nodeInfo.GetValue();
-                    if (currentNode == null)
-                    {
-                        rootValue = nodeValue;
-                        nodeInfo.RootInstance = rootValue;
-                    }
-                    else if (node.Value != currentNode.ParentInstance && !nodeInfo.SubExpressions.Contains(currentNode))
-                    {
-                        nodeInfo.SubExpressions.Add(currentNode);
-                    }
-                    currentNode = nodeInfo;
-                    parentValue = nodeValue;
+                    subExpressions.Add(current);
+                    current = null;
                 }
-
-                if (currentNode != null)
-                {
-                    if (formulaFormula == null)
-                    {
-                        if (sourceInfo != null)
-                            throw new InvalidOperationException("Expression contains more than one property");
-                        sourceInfo = (SourceDescriptor<T>) currentNode;
-                    }
-                    else if (!formulaFormula.SubExpressions.Contains(currentNode))
-                        formulaFormula.SubExpressions.Add(currentNode);
-                }
-
                 return base.VisitConstant(node);
             }
 
-            ExpressionDescriptor CreateMember(object rootValue, object parentInstance, MemberInfo member, MemberExpression expression)
+            ISourceDefinition MemberToSourcePath(MemberExpression node)
             {
-                var propertyInfo = member as PropertyInfo;
-                ExpressionDescriptor expressionDescriptor;
-                if (propertyInfo != null)
-                {
-                    var type = typeof(MemberSourceDescriptor<>).MakeGenericType(propertyInfo.PropertyType);
-                    expressionDescriptor = (ExpressionDescriptor)Activator.CreateInstance(
-                        type, rootValue, parentInstance,
-                        propertyInfo, expression);
-                }
-                else
-                {
-                    var fieldInfo = ((FieldInfo)member);
-                    var type = typeof(MemberSourceDescriptor<>).MakeGenericType(fieldInfo.FieldType);
-                    expressionDescriptor = (ExpressionDescriptor)Activator.CreateInstance(
-                        type, rootValue, parentInstance,
-                        fieldInfo, expression);
-                }
+                return (ISourceDefinition) ToPathGenericMethod.MakeGenericMethod(node.Type).Invoke(null, new object[] {node});
+            }
 
-                return expressionDescriptor;
+            [UsedImplicitly]
+            static ISourceDefinition ToPath<T>(MemberExpression node)
+            {
+                var getter = Expression.Lambda<Func<T>>(node);
+                return BuilderBase.CreateMemberDefinition(getter, null);
             }
         }
     }

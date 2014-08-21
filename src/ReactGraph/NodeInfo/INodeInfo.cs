@@ -1,6 +1,6 @@
 namespace ReactGraph.NodeInfo
 {
-    interface INodeInfo : IValueSource
+    interface INodeInfo
     {
         NodeType Type { get; }
 

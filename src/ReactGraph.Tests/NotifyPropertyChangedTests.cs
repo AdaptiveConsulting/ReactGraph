@@ -25,8 +25,8 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
 
-            engine.When(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
-                  .Bind(() => notifies.Total, e => { });
+            engine.Assign(() => notifies.Total)
+                  .From(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), e => { });
             Console.WriteLine(engine.ToString());
 
             notifies.SubTotal = 100;
@@ -40,8 +40,8 @@ namespace ReactGraph.Tests
         {
             var viewModel = new MortgateCalculatorViewModel();
 
-            engine.When(() => !viewModel.PaymentSchedule.HasValidationError)
-                  .Bind(() => viewModel.CanApply, e => { });
+            engine.Assign(() => viewModel.CanApply)
+                  .From(() => !viewModel.PaymentSchedule.HasValidationError, e => { });
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
             Console.WriteLine(engine.ToString());
@@ -75,12 +75,12 @@ namespace ReactGraph.Tests
              *     ^      |
              *     +--2<--+
              */
-            engine.When(() => two.Value + three.Value)
-                  .Bind(() => four.Value, e => { });
-            engine.When(() => one.Value)
-                  .Bind(() => two.Value, e => { });
-            engine.When(() => one.Value)
-                .Bind(() => three.Value, e => { });
+            engine.Assign(() => four.Value)
+                  .From(() => two.Value + three.Value, e => { });
+            engine.Assign(() => two.Value)
+                  .From(() => one.Value, e => { });
+            engine.Assign(() => three.Value)
+                  .From(() => one.Value, e => { });
 
             Console.WriteLine(engine.ToString());
 
@@ -96,8 +96,8 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(true);
 
-            engine.When(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule))
-                  .Bind(() => Foo, e => { });
+            engine.Assign(() => Foo)
+                  .From(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule), e => { });
 
             Foo.ShouldNotBe(42);
             viewModel.PaymentSchedule.HasValidationError = false;

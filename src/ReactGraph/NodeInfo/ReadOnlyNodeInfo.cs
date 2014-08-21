@@ -2,16 +2,16 @@ using System;
 
 namespace ReactGraph.NodeInfo
 {
-    class FormulaExpressionInfo<T> : INodeInfo<T>
+    class ReadOnlyNodeInfo<T> : IValueSource<T>
     {
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly string label;
 
-        public FormulaExpressionInfo(Func<T> execute, string label)
+        public ReadOnlyNodeInfo(Func<T> getValue, string label)
         {
             this.label = label;
-            getValue = execute;
+            this.getValue = getValue;
             ValueChanged();
         }
 
@@ -42,18 +42,9 @@ namespace ReactGraph.NodeInfo
             }
         }
 
-        public void UpdateSubscriptions(IMaybe newParent)
-        {
-        }
-
         public override string ToString()
         {
             return label;
-        }
-
-        IMaybe IValueSource.GetValue()
-        {
-            return GetValue();
         }
     }
 }

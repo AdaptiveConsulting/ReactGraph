@@ -32,24 +32,22 @@
     <DocumentationFile>bin\Release\ReactGraph.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\ActionNodeInfo.cs" />
     <Compile Include="DependencyEngine.cs" />
     <Compile Include="Graph\CycleDetectedException.cs" />
     <Compile Include="Construction\ExpressionDescriptor.cs" />
     <Compile Include="Construction\FormulaNullReferenceException.cs" />
-    <Compile Include="Construction\MemberExpressionDescriptor.cs" />
     <Compile Include="Construction\NullCheckRewriter.cs" />
     <Compile Include="NodeInfo\INodeMetadata.cs" />
     <Compile Include="Instrumentation\IEngineInstrumentation.cs" />
     <Compile Include="Instrumentation\EngineInstrumenter.cs" />
     <Compile Include="NodeInfo\IMaybe.cs" />
-    <Compile Include="NodeInfo\INodeInfo`1.cs" />
+    <Compile Include="NodeInfo\ITakeValue`1.cs" />
     <Compile Include="NodeInfo\IValueSource`1.cs" />
-    <Compile Include="NodeInfo\IWritableNodeInfo.cs" />
     <Compile Include="NodeInfo\Maybe.cs" />
     <Compile Include="NodeInfo\NodeType.cs" />
     <Compile Include="NodeInfo\ReevaluationResult.cs" />
@@ -58,9 +56,8 @@
     <Compile Include="Graph\Edge.cs" />
     <Compile Include="Graph\DirectedGraph.cs" />
     <Compile Include="Construction\ExpressionParser.cs" />
-    <Compile Include="NodeInfo\IValueSource.cs" />
-    <Compile Include="NodeInfo\WritableNodeInfo.cs" />
-    <Compile Include="NodeInfo\FormulaExpressionInfo.cs" />
+    <Compile Include="NodeInfo\ReadWriteNode.cs" />
+    <Compile Include="NodeInfo\ReadOnlyNodeInfo.cs" />
     <Compile Include="NodeInfo\INodeInfo.cs" />
     <Compile Include="NodeInfo\NodeRepository.cs" />
     <Compile Include="Properties\Annotations.cs" />

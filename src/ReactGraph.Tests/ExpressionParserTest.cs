@@ -10,24 +10,18 @@ namespace ReactGraph.Tests
 {
     public class ExpressionParserTest
     {
-        readonly ExpressionParser expressionParser;
-
-        public ExpressionParserTest()
-        {
-            expressionParser = new ExpressionParser();
-        }
-
         [Fact]
         public void GetSimpleNode()
         {
             var notifies = new Totals();
             Expression<Func<int>> expr = () => notifies.Total;
-            var formulaNode = expressionParser.GetFormulaDescriptor(expr);
-            formulaNode.SubExpressions.Count.ShouldBe(1);
-            var propertyNode = formulaNode.SubExpressions.Single();
-            propertyNode.RootInstance.ShouldBeSameAs(notifies);
-            propertyNode.ShouldBeOfType<MemberSourceDescriptor<int>>()
-                .MemberInfo.ShouldBe(typeof(Totals).GetProperty("Total"));
+            var root = ExpressionParser.GetRootOf(expr);
+            root.ShouldBeSameAs(notifies);
+            var subExpressions = ExpressionParser.GetChildSources(expr, root);
+            subExpressions.Length.ShouldBe(1);
+            var propertyNode = subExpressions.Single();
+            propertyNode.Root.ShouldBeSameAs(notifies);
+            propertyNode.Path.ShouldBe("notifies.Total");
         }
 
         [Fact]
@@ -36,16 +30,15 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetFormulaDescriptor(expr).SubExpressions.Single();
-            node.RootInstance.ShouldBeSameAs(viewModel);
-            node.ShouldBeOfType<MemberSourceDescriptor<bool>>()
-                .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
-            node.SubExpressions.Count.ShouldBe(1);
-            var paymentScheduleNode = node.SubExpressions[0];
-            paymentScheduleNode
-                .ShouldBeOfType<MemberSourceDescriptor<ScheduleViewModel>>()
-                .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
-            paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
+            var root = ExpressionParser.GetRootOf(expr);
+            root.ShouldBeSameAs(viewModel);
+            var node = ExpressionParser.GetChildSources(expr, root).Single();
+            node.Root.ShouldBeSameAs(viewModel);
+            node.Path.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
+            node.SourcePaths.Count.ShouldBe(1);
+            var paymentScheduleNode = node.SourcePaths[0];
+            paymentScheduleNode.Path.ShouldBe("viewModel.PaymentSchedule");
+            paymentScheduleNode.Root.ShouldBeSameAs(viewModel);
         }
 
         [Fact]
@@ -54,19 +47,18 @@ namespace ReactGraph.Tests
             var viewModel = new MortgateCalculatorViewModel();
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => !viewModel.PaymentSchedule.HasValidationError;
-            var node = expressionParser.GetFormulaDescriptor(expr);
-            node.SubExpressions.Count.ShouldBe(1);
-            var validationErrorNode = node.SubExpressions[0];
-            validationErrorNode.RootInstance.ShouldBeSameAs(viewModel);
-            validationErrorNode.SubExpressions.Count.ShouldBe(1);
-            validationErrorNode.ShouldBeOfType<MemberSourceDescriptor<bool>>()
-                .MemberInfo.ShouldBe(typeof(ScheduleViewModel).GetProperty("HasValidationError"));
+            var root = ExpressionParser.GetRootOf(expr);
+            root.ShouldBeSameAs(viewModel);
+            var node = ExpressionParser.GetChildSources(expr, root);
+            node.Length.ShouldBe(1);
+            var validationErrorNode = node[0];
+            validationErrorNode.Root.ShouldBeSameAs(viewModel);
+            validationErrorNode.Path.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
+            validationErrorNode.SourcePaths.Count.ShouldBe(1);
 
-            var paymentScheduleNode = validationErrorNode.SubExpressions[0];
-            paymentScheduleNode
-                .ShouldBeOfType<MemberSourceDescriptor<ScheduleViewModel>>()
-                .MemberInfo.ShouldBe(typeof(MortgateCalculatorViewModel).GetProperty("PaymentSchedule"));
-            paymentScheduleNode.RootInstance.ShouldBeSameAs(viewModel);
+            var paymentScheduleNode = validationErrorNode.SourcePaths[0];
+            paymentScheduleNode.Path.ShouldBe("viewModel.PaymentSchedule");
+            paymentScheduleNode.Root.ShouldBeSameAs(viewModel);
         }
 
         [Fact]
@@ -74,8 +66,10 @@ namespace ReactGraph.Tests
         {
             var simple = new SimpleWithNotification();
             Expression<Func<int>> expr = () => Negate(simple.Value);
-            var node = expressionParser.GetFormulaDescriptor(expr);
-            node.SubExpressions.Count.ShouldBe(1);
+            var root = ExpressionParser.GetRootOf(expr);
+            root.ShouldBeSameAs(simple);
+            var node = ExpressionParser.GetChildSources(expr, root);
+            node.Length.ShouldBe(1);
         }
 
         int Negate(int value)
