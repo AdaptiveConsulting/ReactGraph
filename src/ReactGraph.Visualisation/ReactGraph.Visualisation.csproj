@@ -43,8 +43,9 @@
     <Compile Include="DependencyEngineListener.cs" />
     <Compile Include="DotVisualisation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TransitionFileLogger.cs" />
     <Compile Include="VertexVisualProperties.cs" />
-    <Compile Include="DependencyEngineExtensions.cs" />
+    <Compile Include="DependencyEngineVisualisationExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactGraph\ReactGraph.csproj">

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using ApprovalTests;
 using ReactGraph.Tests.TestObjects;
 using ReactGraph.Visualisation;
@@ -105,6 +106,32 @@ namespace ReactGraph.Tests
             engine.ValueHasChanged(foo, "C");
 
             temp.ShouldBeNullOrEmpty();
+        }
+
+        [Fact]
+        public void LogTransitionsInDotFormat()
+        {
+            var foo = new Foo();
+
+            engine.Expr(() => foo.A + foo.B)
+                  .Bind(() => foo.C, e => { });
+            engine.Expr(() => foo.A + foo.C)
+                  .Bind(() => foo.D, e => { });
+
+            var path = Path.Combine(Environment.CurrentDirectory, "Transitions.log");
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+            var disposable = engine.LogTransitionsInDotFormat(path);
+
+            foo.C = 4;
+            engine.ValueHasChanged(foo, "C");
+            foo.A = 2;
+            engine.ValueHasChanged(foo, "A");
+            disposable.Dispose();
+
+            Approvals.Verify(File.ReadAllText(path));
         }
 
         private int Addition(int i1, int i2)
