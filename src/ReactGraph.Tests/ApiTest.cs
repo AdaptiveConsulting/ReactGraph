@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using ReactGraph.Graph;
+using ReactGraph.Tests.TestObjects;
 using ReactGraph.Visualisation;
 using Shouldly;
 using Xunit;
@@ -206,6 +207,24 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
 
             Should.NotThrow(() => engine.CheckCycles());
         }
+
+        [Fact]
+        public void TracksNestedProperties()
+        {
+            var mortgateCalculator = new MortgateCalculatorViewModel();
+            mortgateCalculator.RegeneratePaymentSchedule(false);
+
+            engine
+                .Assign(() => Prop)
+                .From(() => mortgateCalculator.PaymentSchedule.HasValidationError, ex => { });
+
+            mortgateCalculator.PaymentSchedule.HasValidationError = true;
+
+            engine.ValueHasChanged(mortgateCalculator.PaymentSchedule, "HasValidationError");
+            Prop.ShouldBe(true);
+        }
+
+        public bool Prop { get; set; }
 
         [Fact]
         public void CanUseCurrentValueWhenRecalculating()

@@ -51,11 +51,8 @@ namespace ReactGraph
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
                 // TODO We need some sort of value source, which notifications can hook into as well as lookups?
-                if (!sourcePath.SourcePaths.Any())
-                {
-                    var instance = pathNode.GetValue().Value;
-                    nodeRepository.AddLookup(instance, pathNode);
-                }
+                var instance = pathNode.GetValue().Value;
+                nodeRepository.AddLookup(instance, pathNode);
                 AddSourcePathExpressions(sourcePath, pathNode);
             }
         }
