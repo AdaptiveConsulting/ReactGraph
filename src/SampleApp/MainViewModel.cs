@@ -22,7 +22,6 @@ namespace SampleApp
 
             engine.Expr(() => Add(A, B)).Bind(() => C, e => {});
             engine.Expr(() => Multiply(C, D)).Bind(() => E, e => { });
-            engine.Expr(() => A).Bind(() => D, e => { });
 
             A = 2;
             B = 3;
