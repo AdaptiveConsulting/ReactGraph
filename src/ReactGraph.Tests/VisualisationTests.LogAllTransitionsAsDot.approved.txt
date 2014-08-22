@@ -6,10 +6,10 @@
      __3 [label="foo.B", fillcolor="gray", shape="box", style="filled,rounded"];
      __6 [label="[2] foo.D", fillcolor="palegreen", shape="box", style="filled,rounded"];
 
-     __1 -> __2;
-     __1 -> __5;
-     __2 -> __4;
-     __5 -> __6;
-     __4 -> __5;
-     __3 -> __2;
+    __1 -> __2;
+    __1 -> __5;
+    __2 -> __4;
+    __5 -> __6;
+    __4 -> __5;
+    __3 -> __2;
 })
