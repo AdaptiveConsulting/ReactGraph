@@ -1,6 +1,6 @@
 namespace ReactGraph.NodeInfo
 {
-    interface IValueSource<T> : INodeInfo
+    interface IValueSource<T> : IValueSource
     {
         new Maybe<T> GetValue();
     }

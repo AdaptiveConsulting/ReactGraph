@@ -4,25 +4,26 @@ namespace ReactGraph.NodeInfo
 {
     class ReadWriteNode<T> : ITakeValue<T>, IValueSource<T>
     {
-        readonly string label;
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string label)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path)
         {
+            Path = path;
             this.setValue = setValue;
-            this.label = label;
             this.getValue = getValue;
             ValueChanged();
         }
 
+        public string Path { get; private set; }
+
         public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
         {
             if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", label));
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
 
             valueSource = sourceNode;
             exceptionHandler = errorHandler;
@@ -35,7 +36,7 @@ namespace ReactGraph.NodeInfo
 
         public override string ToString()
         {
-            return label;
+            return Path;
         }
 
         public NodeType Type { get { return NodeType.Member; } }
@@ -70,6 +71,11 @@ namespace ReactGraph.NodeInfo
             {
                 currentValue.CouldNotCalculate(ex);
             }
+        }
+
+        IMaybe IValueSource.GetValue()
+        {
+            return GetValue();
         }
     }
 }

@@ -1,39 +1,36 @@
-using System;
 using System.Collections.Generic;
 
 namespace ReactGraph.NodeInfo
 {
     class NodeRepository
     {
-        private readonly Dictionary<Tuple<object, string>, INodeInfo> nodeLookup;
+        private readonly Dictionary<object, INodeInfo> nodeLookup;
 
         public NodeRepository()
         {
-            nodeLookup = new Dictionary<Tuple<object, string>, INodeInfo>();
+            nodeLookup = new Dictionary<object, INodeInfo>();
         }
 
-        public bool Contains(object instance, string key)
+        public bool Contains(object instance)
         {
-            return nodeLookup.ContainsKey(Tuple.Create(instance, key));
+            return nodeLookup.ContainsKey(instance);
         }
 
-        public INodeInfo Get(object instance, string key)
+        public INodeInfo Get(object instance)
         {
-            return nodeLookup[Tuple.Create(instance, key)];
+            return nodeLookup[instance];
         }
 
-        public void RemoveLookup(object instance, string key)
+        public void RemoveLookup(object instance)
         {
-            var tuple = Tuple.Create(instance, key);
-            if (nodeLookup.ContainsKey(tuple))
-                nodeLookup.Remove(tuple);
+            if (nodeLookup.ContainsKey(instance))
+                nodeLookup.Remove(instance);
         }
 
-        public void AddLookup(object instance, string key, INodeInfo nodeInfo)
+        public void AddLookup(object instance, INodeInfo nodeInfo)
         {
-            var tuple = Tuple.Create(instance, key);
-            if (!nodeLookup.ContainsKey(tuple))
-                nodeLookup.Add(tuple, nodeInfo);
+            if (instance != null && !nodeLookup.ContainsKey(instance))
+                nodeLookup.Add(instance, nodeInfo);
         }
     }
 }

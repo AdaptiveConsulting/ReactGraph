@@ -6,11 +6,10 @@ namespace ReactGraph.NodeInfo
     {
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly Func<T> getValue;
-        readonly string label;
 
-        public ReadOnlyNodeInfo(Func<T> getValue, string label)
+        public ReadOnlyNodeInfo(Func<T> getValue, string path)
         {
-            this.label = label;
+            Path = path;
             this.getValue = getValue;
             ValueChanged();
         }
@@ -21,6 +20,8 @@ namespace ReactGraph.NodeInfo
         }
 
         public NodeType Type { get { return NodeType.Formula; } }
+
+        public string Path { get; private set; }
 
         public ReevaluationResult Reevaluate()
         {
@@ -42,9 +43,14 @@ namespace ReactGraph.NodeInfo
             }
         }
 
+        IMaybe IValueSource.GetValue()
+        {
+            return GetValue();
+        }
+
         public override string ToString()
         {
-            return label;
+            return Path;
         }
     }
 }

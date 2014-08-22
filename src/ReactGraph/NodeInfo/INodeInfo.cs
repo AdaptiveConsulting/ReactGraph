@@ -4,6 +4,8 @@ namespace ReactGraph.NodeInfo
     {
         NodeType Type { get; }
 
+        string Path { get; }
+
         ReevaluationResult Reevaluate();
 
         void ValueChanged();

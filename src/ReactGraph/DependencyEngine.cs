@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
@@ -11,15 +10,17 @@ namespace ReactGraph
 {
     public class DependencyEngine
     {
-        private readonly DirectedGraph<INodeInfo> graph;
-        private readonly NodeRepository nodeRepository;
-        private readonly EngineInstrumenter engineInstrumenter;
-        private bool isExecuting;
+        readonly DirectedGraph<INodeInfo> graph;
+        readonly NodeRepository nodeRepository;
+        readonly EngineInstrumenter engineInstrumenter;
+        readonly ExpressionAdder expressionAdder;
+        bool isExecuting;
 
         public DependencyEngine()
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository();
+            expressionAdder = new ExpressionAdder(graph, nodeRepository);
             engineInstrumenter = new EngineInstrumenter();
         }
 
@@ -36,20 +37,36 @@ namespace ReactGraph
         public DirectedGraph<INodeMetadata> GetGraphSnapshot()
         {
             return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.Type, vertex.Data.ToString(), vertex.Id));
-        } 
+        }
 
-        public bool ValueHasChanged(object instance, string key)
+        public bool ValueHasChanged(object instance, string pathToChangedValue)
         {
-            if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
+            if (!nodeRepository.Contains(instance) || isExecuting) return false;
 
-            var node = nodeRepository.Get(instance, key);
+            var changedInstance = nodeRepository.Get(instance);
+
+            // The idea of this is for a expression viewModel.Foo.Bar
+            // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
+            // Then get the successors and filter by path to get the intended changed node.
+            var successors = graph.SuccessorsOf(changedInstance)
+                .Where(v => v.Data.Path.EndsWith(pathToChangedValue))
+                .ToArray();
+            // TODO Should make this visible via instrumentation
+
+            INodeInfo node;
+            if (successors.Length > 1)
+                node = changedInstance;
+            else if (successors.Length == 1)
+                node = successors[0].Data;
+            else
+                return false;
 
             try
             {
                 isExecuting = true;
                 var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
                 var firstVertex = orderToReeval.Dequeue();
-                engineInstrumenter.DependecyWalkStarted(key, firstVertex.Id);
+                engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
                 node.ValueChanged();
                 while (orderToReeval.Count > 0)
                 {
@@ -111,80 +128,7 @@ namespace ReactGraph
 
         public void AddExpression<T>(ISourceDefinition<T> source, ITargetDefinition<T> target, Action<Exception> onError)
         {
-            // Repository should have getsource and get target?
-            var sourceNode = nodeRepository.Contains(source.Root, source.Path)
-                ? (IValueSource<T>)nodeRepository.Get(source.Root, source.Path)
-                : CreateSourceNode(source);
-            var targetNode = nodeRepository.Contains(target.Root, target.Path)
-                ? (ITakeValue<T>)nodeRepository.Get(target.Root, target.Path)
-                : CreateTargetNode(target);
-
-            targetNode.SetSource(sourceNode, onError);
-            graph.AddEdge(sourceNode, targetNode, source.NodeName, target.NodeName);
-
-            AddSourcePathExpressions(source);
-        }
-
-        void AddSourcePathExpressions(ISourceDefinition sourceDefinition) 
-        {
-            var sourceNode = nodeRepository.Contains(sourceDefinition.Root, sourceDefinition.Path)
-                ? nodeRepository.Get(sourceDefinition.Root, sourceDefinition.Path)
-                : CreateSourceNode(sourceDefinition);
-
-            foreach (var sourcePath in sourceDefinition.SourcePaths)
-            {
-                var pathNode = nodeRepository.Contains(sourcePath.Root, sourcePath.Path)
-                ? nodeRepository.Get(sourcePath.Root, sourcePath.Path)
-                : CreateSourceNode(sourcePath);
-
-                graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
-                AddSourcePathExpressions(sourcePath);
-            }
-        }
-
-        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target)
-        {
-            switch (target.NodeType)
-            {
-                case NodeType.Formula:
-                    throw new ArgumentException("Formula nodes cannot be a value target");
-                case NodeType.Member:
-                    // TODO Figure out how to remove cast
-                    var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
-                    var setValueDelegate = target.CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path);
-                case NodeType.Action:
-                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.Path);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source)
-        {
-            switch (source.NodeType)
-            {
-                case NodeType.Formula:
-                case NodeType.Action:
-                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegate(), source.Path);
-                case NodeType.Member:
-                    // TODO Figure out how to remove cast
-                    var getValueDelegate = source.CreateGetValueDelegate();
-                    var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path);
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        readonly MethodInfo createSourceInfo = typeof (DependencyEngine).GetMethods(BindingFlags.Instance |
-                                                                           BindingFlags.NonPublic)
-            .Single(m => m.Name == "CreateSourceNode" && m.IsGenericMethodDefinition);
-
-        INodeInfo CreateSourceNode(ISourceDefinition source)
-        {
-            var method = createSourceInfo.MakeGenericMethod(source.SourceType);
-            return (INodeInfo)method.Invoke(this, new object[] { source });
+            expressionAdder.Add(source, target, onError);
         }
     }
 }

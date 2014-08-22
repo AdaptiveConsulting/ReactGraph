@@ -40,7 +40,9 @@
     <Compile Include="ActionDefinition.cs" />
     <Compile Include="AssignPropertyBuilder.cs" />
     <Compile Include="BuilderBase.cs" />
+    <Compile Include="DefinitionComparer.cs" />
     <Compile Include="DependencyEngine.cs" />
+    <Compile Include="ExpressionAdder.cs" />
     <Compile Include="ExpressionDefinition.cs" />
     <Compile Include="FormulaDefinition.cs" />
     <Compile Include="Graph\CycleDetectedException.cs" />
@@ -56,6 +58,7 @@
     <Compile Include="MemberDefinition.cs" />
     <Compile Include="NodeInfo\IMaybe.cs" />
     <Compile Include="NodeInfo\ITakeValue`1.cs" />
+    <Compile Include="NodeInfo\IValueSource.cs" />
     <Compile Include="NodeInfo\IValueSource`1.cs" />
     <Compile Include="NodeInfo\Maybe.cs" />
     <Compile Include="NodeInfo\NodeType.cs" />

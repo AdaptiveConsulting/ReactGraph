@@ -6,20 +6,21 @@ namespace ReactGraph
     class WriteOnlyNode<T> : ITakeValue<T>
     {
         readonly Action<T> setValue;
-        readonly string label;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
 
-        public WriteOnlyNode(Action<T> setValue, string label)
+        public WriteOnlyNode(Action<T> setValue, string path)
         {
             this.setValue = setValue;
-            this.label = label;
+            Path = path;
         }
+
+        public string Path { get; private set; }
 
         public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
         {
             if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", label));
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
 
             valueSource = sourceNode;
             exceptionHandler = errorHandler;
@@ -49,6 +50,11 @@ namespace ReactGraph
 
         public void ValueChanged()
         {
+        }
+
+        public override string ToString()
+        {
+            return Path;
         }
     }
 }

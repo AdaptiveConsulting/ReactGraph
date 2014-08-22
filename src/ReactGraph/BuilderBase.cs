@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ReactGraph.Construction;
@@ -29,7 +30,11 @@ namespace ReactGraph
 
             var memberDefinition = new MemberDefinition<T>(expression, targetAssignmentLambda, nodeId, root);
             if (calculateChildren)
-                memberDefinition.SourcePaths.AddRange(ExpressionParser.GetChildSources(expression.Body, memberDefinition.Root));
+            {
+                var sourceDefinitions = ExpressionParser.GetChildSources(expression, memberDefinition.Root);
+                // Property expressions always return themselves as a child, so skip
+                memberDefinition.SourcePaths.AddRange(sourceDefinitions.Single().SourcePaths);
+            }
             return memberDefinition;
         }
 
