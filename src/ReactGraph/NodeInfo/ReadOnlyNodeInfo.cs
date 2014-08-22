@@ -48,6 +48,24 @@ namespace ReactGraph.NodeInfo
             return GetValue();
         }
 
+        protected bool Equals(ReadOnlyNodeInfo<T> other)
+        {
+            return string.Equals(Path, other.Path);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((ReadOnlyNodeInfo<T>) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Path != null ? Path.GetHashCode() : 0);
+        }
+
         public override string ToString()
         {
             return Path;

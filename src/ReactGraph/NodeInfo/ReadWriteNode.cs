@@ -73,6 +73,24 @@ namespace ReactGraph.NodeInfo
             }
         }
 
+        protected bool Equals(ReadWriteNode<T> other)
+        {
+            return string.Equals(Path, other.Path);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != this.GetType()) return false;
+            return Equals((ReadWriteNode<T>) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return (Path != null ? Path.GetHashCode() : 0);
+        }
+
         IMaybe IValueSource.GetValue()
         {
             return GetValue();

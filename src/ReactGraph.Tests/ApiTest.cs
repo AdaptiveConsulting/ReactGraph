@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using ReactGraph.Graph;
+using ReactGraph.Visualisation;
 using Shouldly;
 using Xunit;
 
@@ -165,6 +166,8 @@ namespace ReactGraph.Tests
 
             engine.Assign(() => b.Value).From(() => a.Value * 2, ex => { });
             engine.Assign(() => a.Value).From(() => b.Value - 2, ex => { });
+
+            var dot = engine.ToDotFormat("Title");
 
             Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
                   .Message.ShouldBe(@"1 cycles found:
