@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using ReactGraph.Properties;
@@ -22,6 +21,7 @@ namespace ReactGraph.Construction
         class GetRootVisitor : ExpressionVisitor
         {
             object root;
+            MemberExpression lastMember;
 
             public object GetRoot(Expression expression)
             {
@@ -29,9 +29,21 @@ namespace ReactGraph.Construction
                 return root;
             }
 
+            protected override Expression VisitMember(MemberExpression node)
+            {
+                lastMember = node;
+                return base.VisitMember(node);
+            }
+
             protected override Expression VisitConstant(ConstantExpression node)
             {
-                root = node.Value;
+                if (lastMember == null)
+                    root = node.Value;
+                else if (lastMember.Member is FieldInfo)
+                    root = ((FieldInfo)lastMember.Member).GetValue(node.Value);
+                else if (lastMember.Member is PropertyInfo)
+                    root = ((PropertyInfo)lastMember.Member).GetValue(node.Value, null);
+
                 return base.VisitConstant(node);
             }
         }
@@ -42,10 +54,11 @@ namespace ReactGraph.Construction
 
             static GetNodeVisitor()
             {
-                ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic | BindingFlags.Static);
+                ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic | BindingFlags.Instance);
             }
 
             readonly List<ISourceDefinition> subExpressions = new List<ISourceDefinition>();
+            ISourceDefinition currentTopLevelDefinition;
             ISourceDefinition current;
             object root;
 
@@ -59,14 +72,15 @@ namespace ReactGraph.Construction
             protected override Expression VisitMember(MemberExpression node)
             {
                 var sourcePath = MemberToSourcePath(node);
-                if (current == null)
+                if (currentTopLevelDefinition == null)
                 {
+                    currentTopLevelDefinition = sourcePath;
                     current = sourcePath;
                 }
                 else
                 {
-                    current.SourcePaths.Add(sourcePath);
-                    current = sourcePath;
+                    currentTopLevelDefinition.SourcePaths.Add(sourcePath);
+                    currentTopLevelDefinition = sourcePath;
                 }
                 return base.VisitMember(node);
             }
@@ -77,20 +91,21 @@ namespace ReactGraph.Construction
                 {
                     subExpressions.Add(current);
                     current = null;
+                    currentTopLevelDefinition = null;
                 }
                 return base.VisitConstant(node);
             }
 
             ISourceDefinition MemberToSourcePath(MemberExpression node)
             {
-                return (ISourceDefinition) ToPathGenericMethod.MakeGenericMethod(node.Type).Invoke(null, new object[] {node});
+                return (ISourceDefinition) ToPathGenericMethod.MakeGenericMethod(node.Type).Invoke(this, new object[] {node});
             }
 
             [UsedImplicitly]
-            static ISourceDefinition ToPath<T>(MemberExpression node)
+            ISourceDefinition ToPath<T>(MemberExpression node)
             {
                 var getter = Expression.Lambda<Func<T>>(node);
-                return BuilderBase.CreateMemberDefinition(getter, null, false);
+                return BuilderBase.CreateMemberDefinition(getter, null, false, root);
             }
         }
     }

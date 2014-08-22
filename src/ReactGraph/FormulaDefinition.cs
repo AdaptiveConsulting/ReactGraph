@@ -9,8 +9,8 @@ namespace ReactGraph
     {
         readonly Expression<Func<T>> sourceExpression;
 
-        public FormulaDefinition(Expression<Func<T>> sourceExpression, string nodeId) : 
-            base(sourceExpression, NodeType.Formula, nodeId)
+        public FormulaDefinition(Expression<Func<T>> sourceExpression, string nodeId, object root) : 
+            base(sourceExpression, NodeType.Formula, nodeId, root)
         {
             this.sourceExpression = sourceExpression;
             SourcePaths = new List<ISourceDefinition>();

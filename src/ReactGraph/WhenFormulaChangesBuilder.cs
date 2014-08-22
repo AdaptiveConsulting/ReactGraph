@@ -1,5 +1,6 @@
 using System;
 using System.Linq.Expressions;
+using ReactGraph.Construction;
 
 namespace ReactGraph
 {
@@ -12,14 +13,14 @@ namespace ReactGraph
         {
             this.dependencyEngine = dependencyEngine;
             if (IsWritable(sourceFunction))
-                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true);
+                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true, ExpressionParser.GetRootOf(sourceFunction));
             else
-                sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true);
+                sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true, ExpressionParser.GetRootOf(sourceFunction));
         }
 
         public void Do(Expression<Action<T>> action, Action<Exception> onError, string actionId = null)
         {
-            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId), onError);
+            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId, ExpressionParser.GetRootOf(action)), onError);
         }
     }
 }

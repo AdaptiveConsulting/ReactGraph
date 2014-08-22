@@ -8,8 +8,8 @@ namespace ReactGraph
     {
         readonly Expression<Action<T>> expression;
 
-        public ActionDefinition(Expression<Action<T>> expression, string nodeName)
-            : base(expression, NodeType.Action, nodeName)
+        public ActionDefinition(Expression<Action<T>> expression, string nodeName, object root)
+            : base(expression, NodeType.Action, nodeName, root)
         {
             this.expression = expression;
         }

@@ -1,6 +1,7 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
+using ReactGraph.Construction;
 
 namespace ReactGraph
 {
@@ -26,8 +27,7 @@ namespace ReactGraph
                 throw new ArgumentException("Field cannot be read-only", "targetMemberExpression");
 
             this.engine = engine;
-            targetMemberDefinition = CreateMemberDefinition(targetMemberExpression, nodeId, true);
-
+            targetMemberDefinition = CreateMemberDefinition(targetMemberExpression, nodeId, true, ExpressionParser.GetRootOf(memberExpression));
         }
 
         public WhenFormulaChangesBuilder<T> From(Expression<Func<T>> sourceExpression, Action<Exception> onError, string nodeId = null)
@@ -35,11 +35,11 @@ namespace ReactGraph
             ISourceDefinition<T> sourceDefinition;
             if (IsWritable(sourceExpression))
             {
-                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true);
+                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true, ExpressionParser.GetRootOf(sourceExpression));
             }
             else
             {
-                sourceDefinition = CreateFormulaDefinition(sourceExpression, nodeId, true);
+                sourceDefinition = CreateFormulaDefinition(sourceExpression, nodeId, true, ExpressionParser.GetRootOf(sourceExpression));
             }
 
             engine.AddExpression(sourceDefinition, targetMemberDefinition, onError);

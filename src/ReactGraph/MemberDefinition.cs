@@ -10,8 +10,8 @@ namespace ReactGraph
         readonly Expression<Func<T>> targetMemberExpression;
         readonly Expression<Action<T>> assignmentLambda;
 
-        public MemberDefinition(Expression<Func<T>> targetMemberExpression, Expression<Action<T>> assignmentLambda, string targetMemberId) : 
-            base(targetMemberExpression, NodeType.Member, targetMemberId)
+        public MemberDefinition(Expression<Func<T>> targetMemberExpression, Expression<Action<T>> assignmentLambda, string targetMemberId, object root) : 
+            base(targetMemberExpression, NodeType.Member, targetMemberId, root)
         {
             this.targetMemberExpression = targetMemberExpression;
             this.assignmentLambda = assignmentLambda;

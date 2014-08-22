@@ -22,6 +22,9 @@ namespace ReactGraph.Tests
             var propertyNode = subExpressions.Single();
             propertyNode.Root.ShouldBeSameAs(notifies);
             propertyNode.Path.ShouldBe("notifies.Total");
+            propertyNode.SourcePaths.Count.ShouldBe(1);
+            var notifiesNode = propertyNode.SourcePaths[0];
+            notifiesNode.Path.ShouldBe("notifies");
         }
 
         [Fact]
