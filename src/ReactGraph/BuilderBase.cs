@@ -23,26 +23,26 @@ namespace ReactGraph
         }
 
         // TODO this needs to go somewhere else, some factory
-        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId, bool calculateChildren, object root)
+        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId, bool calculateChildren)
         {
             var parameterExpression = Expression.Parameter(typeof(T));
             var targetAssignmentLambda = Expression.Lambda<Action<T>>(Expression.Assign(expression.Body, parameterExpression), parameterExpression);
 
-            var memberDefinition = new MemberDefinition<T>(expression, targetAssignmentLambda, nodeId, root);
+            var memberDefinition = new MemberDefinition<T>(expression, targetAssignmentLambda, nodeId);
             if (calculateChildren)
             {
-                var sourceDefinitions = ExpressionParser.GetChildSources(expression, memberDefinition.Root);
+                var sourceDefinitions = ExpressionParser.GetChildSources(expression);
                 // Property expressions always return themselves as a child, so skip
                 memberDefinition.SourcePaths.AddRange(sourceDefinitions.Single().SourcePaths);
             }
             return memberDefinition;
         }
 
-        public static ISourceDefinition<T> CreateFormulaDefinition<T>(Expression<Func<T>> sourceExpression, string nodeId, bool calculateChildren, object root)
+        public static ISourceDefinition<T> CreateFormulaDefinition<T>(Expression<Func<T>> sourceExpression, string nodeId, bool calculateChildren)
         {
-            var formulaDefinition = new FormulaDefinition<T>(sourceExpression, nodeId, root);
+            var formulaDefinition = new FormulaDefinition<T>(sourceExpression, nodeId);
             if (calculateChildren)
-                formulaDefinition.SourcePaths.AddRange(ExpressionParser.GetChildSources(sourceExpression, formulaDefinition.Root));
+                formulaDefinition.SourcePaths.AddRange(ExpressionParser.GetChildSources(sourceExpression));
 
             return formulaDefinition;
         }

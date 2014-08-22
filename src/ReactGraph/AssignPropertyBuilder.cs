@@ -27,7 +27,7 @@ namespace ReactGraph
                 throw new ArgumentException("Field cannot be read-only", "targetMemberExpression");
 
             this.engine = engine;
-            targetMemberDefinition = CreateMemberDefinition(targetMemberExpression, nodeId, true, ExpressionParser.GetRootOf(memberExpression));
+            targetMemberDefinition = CreateMemberDefinition(targetMemberExpression, nodeId, true);
         }
 
         public WhenFormulaChangesBuilder<T> From(Expression<Func<T>> sourceExpression, Action<Exception> onError, string nodeId = null)
@@ -35,11 +35,11 @@ namespace ReactGraph
             ISourceDefinition<T> sourceDefinition;
             if (IsWritable(sourceExpression))
             {
-                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true, ExpressionParser.GetRootOf(sourceExpression));
+                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true);
             }
             else
             {
-                sourceDefinition = CreateFormulaDefinition(sourceExpression, nodeId, true, ExpressionParser.GetRootOf(sourceExpression));
+                sourceDefinition = CreateFormulaDefinition(sourceExpression, nodeId, true);
             }
 
             engine.AddExpression(sourceDefinition, targetMemberDefinition, onError);

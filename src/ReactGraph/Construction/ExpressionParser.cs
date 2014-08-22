@@ -8,53 +8,9 @@ namespace ReactGraph.Construction
 {
     public static class ExpressionParser
     {
-        public static object GetRootOf(Expression expression)
+        public static List<ISourceDefinition> GetChildSources(Expression expr)
         {
-            return new GetRootVisitor().GetRoot(expression);
-        }
-
-        public static List<ISourceDefinition> GetChildSources(Expression expr, object root)
-        {
-            return new GetNodeVisitor().GetSubExpressions(expr, root);
-        }
-
-        class GetRootVisitor : ExpressionVisitor
-        {
-            object root;
-            MemberExpression lastMember;
-
-            public object GetRoot(Expression expression)
-            {
-                Visit(expression);
-                return root;
-            }
-
-            protected override Expression VisitMember(MemberExpression node)
-            {
-                lastMember = node;
-                return base.VisitMember(node);
-            }
-
-            protected override Expression VisitConstant(ConstantExpression node)
-            {
-                if (lastMember == null)
-                    root = node.Value;
-                else
-                {
-                    var info = lastMember.Member as FieldInfo;
-                    if (info != null)
-                        root = info.GetValue(node.Value);
-                    else
-                    {
-                        var member = lastMember.Member as PropertyInfo;
-                        if (member != null)
-                            root = member.GetValue(node.Value, null);
-                    }
-                    lastMember = null;
-                }
-
-                return base.VisitConstant(node);
-            }
+            return new GetNodeVisitor().GetSubExpressions(expr);
         }
 
         class GetNodeVisitor : ExpressionVisitor
@@ -69,11 +25,9 @@ namespace ReactGraph.Construction
             readonly List<ISourceDefinition> subExpressions = new List<ISourceDefinition>();
             ISourceDefinition currentTopLevelDefinition;
             ISourceDefinition current;
-            object root;
 
-            public List<ISourceDefinition> GetSubExpressions(Expression target, object root)
+            public List<ISourceDefinition> GetSubExpressions(Expression target)
             {
-                this.root = root;
                 Visit(target);
                 return subExpressions;
             }
@@ -114,7 +68,7 @@ namespace ReactGraph.Construction
             ISourceDefinition ToPath<T>(MemberExpression node)
             {
                 var getter = Expression.Lambda<Func<T>>(node);
-                return BuilderBase.CreateMemberDefinition(getter, null, false, root);
+                return BuilderBase.CreateMemberDefinition(getter, null, false);
             }
         }
     }

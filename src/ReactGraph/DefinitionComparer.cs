@@ -7,16 +7,14 @@ namespace ReactGraph
         public bool Equals(IDefinitionIdentity x, IDefinitionIdentity y)
         {
             if (ReferenceEquals(x, y)) return true;
-            return string.Equals(x.Path, y.Path) && Equals(x.Root, y.Root);
+            return string.Equals(x.Path, y.Path);
         }
 
         public int GetHashCode(IDefinitionIdentity obj)
         {
             unchecked
             {
-                return (
-                    (obj.Path != null ? obj.Path.GetHashCode() : 0) * 397) ^
-                       (obj.Root != null ? obj.Root.GetHashCode() : 0);
+                return obj.Path != null ? obj.Path.GetHashCode() : 0;
             }
         }
     }

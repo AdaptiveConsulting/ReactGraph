@@ -13,14 +13,14 @@ namespace ReactGraph
         {
             this.dependencyEngine = dependencyEngine;
             if (IsWritable(sourceFunction))
-                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true, ExpressionParser.GetRootOf(sourceFunction));
+                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true);
             else
-                sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true, ExpressionParser.GetRootOf(sourceFunction));
+                sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true);
         }
 
         public void Do(Expression<Action<T>> action, Action<Exception> onError, string actionId = null)
         {
-            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId, ExpressionParser.GetRootOf(action)), onError);
+            dependencyEngine.AddExpression(sourceDefinition, new ActionDefinition<T>(action, actionId), onError);
         }
     }
 }
