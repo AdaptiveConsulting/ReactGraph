@@ -39,10 +39,19 @@ namespace ReactGraph.Construction
             {
                 if (lastMember == null)
                     root = node.Value;
-                else if (lastMember.Member is FieldInfo)
-                    root = ((FieldInfo)lastMember.Member).GetValue(node.Value);
-                else if (lastMember.Member is PropertyInfo)
-                    root = ((PropertyInfo)lastMember.Member).GetValue(node.Value, null);
+                else
+                {
+                    var info = lastMember.Member as FieldInfo;
+                    if (info != null)
+                        root = info.GetValue(node.Value);
+                    else
+                    {
+                        var member = lastMember.Member as PropertyInfo;
+                        if (member != null)
+                            root = member.GetValue(node.Value, null);
+                    }
+                    lastMember = null;
+                }
 
                 return base.VisitConstant(node);
             }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using ReactGraph.Graph;
-using ReactGraph.Tests.TestObjects;
 using Shouldly;
 using Xunit;
 
@@ -130,7 +129,6 @@ namespace ReactGraph.Tests
              *  E   D
              */
             var instrumentation = new TestInstrumentation();
-            engine = new DependencyEngine();
             engine.AddInstrumentation(instrumentation);
 
             var a = new SinglePropertyType();
