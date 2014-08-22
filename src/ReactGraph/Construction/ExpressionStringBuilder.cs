@@ -22,7 +22,10 @@ namespace ReactGraph.Construction
         {
             var visitor = new ExpressionStringBuilder();
             visitor.Visit(expression);
-            return visitor.builder.ToString();
+            var s = visitor.builder.ToString();
+            if (s.StartsWith("(") && s.EndsWith(")"))
+                return s.Substring(1, s.Length - 2);
+            return s;
         }
 
         protected override Expression VisitLambda<T>(Expression<T> node)
