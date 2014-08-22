@@ -118,9 +118,13 @@ namespace ReactGraph
             foreach (var cycle in cycles)
             {
                 var nodes = cycle.Reverse().ToList();
-                nodes.Add(nodes.First());
+                var vertex = nodes.First();
+                if (vertex.Data.Type == NodeType.Member)
+                    nodes.Add(vertex);
+                else
+                    nodes.Insert(0, nodes.Last());
 
-                sb.AppendLine(string.Join(" --> ", nodes.Select(v => v.Data.ToString().Replace("() => ", string.Empty))));
+                sb.AppendLine(string.Join(" --> ", nodes.Select(v => v.Data.ToString())));
             }
 
             throw new CycleDetectedException(sb.ToString().Trim());

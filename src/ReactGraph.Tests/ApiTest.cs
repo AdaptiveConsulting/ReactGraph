@@ -172,7 +172,7 @@ namespace ReactGraph.Tests
 
             Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
                   .Message.ShouldBe(@"1 cycles found:
-a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value");
+a.Value --> a.Value * 2 --> b.Value --> b.Value - 2 --> a.Value");
         }
 
         [Fact]
@@ -192,8 +192,8 @@ a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value");
 
             Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
                   .Message.ShouldBe(@"2 cycles found:
-a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value
-c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
+a.Value --> a.Value * 2 --> b.Value --> b.Value - 2 --> a.Value
+c.Value --> c.Value * 2 --> d.Value --> d.Value - 2 --> c.Value");
         }
 
         [Fact]
