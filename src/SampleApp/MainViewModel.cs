@@ -1,14 +1,17 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using PropertyChanged;
 using ReactGraph;
+using ReactGraph.Properties;
 using ReactGraph.Visualisation;
 
 namespace SampleApp
 {
     [ImplementPropertyChanged]
-    public class MainViewModel
+    public class MainViewModel : INotifyPropertyChanged
     {
         readonly DependencyEngine engine;
         int a;
@@ -81,5 +84,13 @@ namespace SampleApp
         }
 
         public int E { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

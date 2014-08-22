@@ -1,0 +1,133 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+using System;
+using ReactGraph;
+using ReactGraph.Visualisation;
+using System.Runtime.CompilerServices;
+using System.ComponentModel;
+
+namespace ReactGraph.PerfTests
+{
+	<# const int Depth = 500; #>
+
+	public class Data : INotifyPropertyChanged
+	{
+		public Data()
+		{
+<# for (int i = 0; i < Depth; i++) { #>
+			__<#= i #>_1 = 1;
+			__<#= i #>_2 = 1;
+<# } #>	
+		}
+
+<# for (int i = 0; i < Depth; i++) { #>
+		private int __<#= i #>_1;
+		private int __<#= i #>_2;
+
+		public int _<#= i #>_1 
+		{ 
+			get { return __<#= i #>_1; } 
+			set
+			{  
+				if(__<#= i #>_1 != value) 
+				{
+					__<#= i #>_1 = value;
+					OnPropertyChanged("_<#= i #>_1");
+				}
+			}
+		}
+		public int _<#= i #>_2
+		{
+			get { return __<#= i #>_2; } 
+			set
+			{  
+				if(__<#= i #>_2 != value) 
+				{
+					__<#= i #>_2 = value;
+					OnPropertyChanged("_<#= i #>_2");
+				}
+			}
+		}
+<# } #>		
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+	}
+
+	public class AlgoGraph
+	{
+        private readonly DependencyEngine engine;
+        private readonly Data data;
+
+		public AlgoGraph(Data data)
+		{
+			this.data = data;
+			engine = new DependencyEngine();
+<# for (int i = 0; i < Depth - 1; i++) { #>
+			engine.Expr(() => Add(data._<#= i #>_1, data._<#= i #>_2)).Bind(() => data._<#= i+1 #>_1, e => {});
+<# } #>		
+		}
+
+		public void Run() 
+		{
+			data._0_1 = 2;
+			engine.ValueHasChanged(data, "_0_1");
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private int Add(int i, int j) 
+		{
+			return i + j;
+		}
+
+		public Data Data { get { return data; } }
+	}
+
+	public class AlgoManual
+	{
+        private readonly Data data;
+
+		public AlgoManual(Data data)
+		{
+			this.data = data;
+<# for (int i = 0; i < Depth - 1; i++) { #>
+			data.PropertyChanged += (s, e) => {
+				if( e.PropertyName == "_<#= i #>_1") 
+				{
+					data._<#= i+1 #>_1 = Add(data._<#= i #>_1, data._<#= i #>_2);
+				}
+			};
+			data.PropertyChanged += (s, e) => {
+				if( e.PropertyName == "_<#= i #>_2") 
+				{
+					data._<#= i+1 #>_1 = Add(data._<#= i #>_1, data._<#= i #>_2);
+				}
+			};
+<# } #>		
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		public void Run() 
+		{
+			data._0_1 = 2;
+		}
+
+		[MethodImpl(MethodImplOptions.NoInlining)]
+		private int Add(int i, int j) 
+		{
+			return i + j;
+		}
+
+		public Data Data { get { return data; } }
+	}
+}
