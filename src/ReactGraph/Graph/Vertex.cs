@@ -44,5 +44,10 @@ namespace ReactGraph.Graph
         {
             predecessors.Remove(edge);
         }
+
+        public override string ToString()
+        {
+            return Data.ToString();
+        }
     }
 }

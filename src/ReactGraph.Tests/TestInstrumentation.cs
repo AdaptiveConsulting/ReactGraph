@@ -44,6 +44,11 @@ namespace ReactGraph.Tests
                 UpdatedNode = updatedNode;
                 Result = result;
             }
+
+            public override string ToString()
+            {
+                return UpdatedNode + "(" + Result + ")";
+            }
         }
 
         public void AssertSetCount(string property, int count)
