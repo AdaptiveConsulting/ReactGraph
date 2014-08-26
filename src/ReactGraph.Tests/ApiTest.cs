@@ -151,11 +151,12 @@ namespace ReactGraph.Tests
             a.Value = 2;
             engine.ValueHasChanged(a, "Value");
 
-            Console.WriteLine(engine.ToString());
+            var dotFormat = engine.ToDotFormat("Title");
+            Console.WriteLine(dotFormat);
 
             instrumentation.WalkIndexStart.ShouldBe(1);
             instrumentation.WalkIndexEnd.ShouldBe(1);
-            instrumentation.NodeEvaluations.Count.ShouldBe(8);
+            instrumentation.NodeEvaluations.Count.ShouldBe(5);
         }
 
         [Fact]
