@@ -23,7 +23,7 @@ namespace ReactGraph.Construction
             var visitor = new ExpressionStringBuilder();
             visitor.Visit(expression);
             var s = visitor.builder.ToString();
-            if (s.StartsWith("(") && s.EndsWith(")"))
+            if (s.StartsWith("(") && s.EndsWith(")") && s.Count(c => c == '(' || c == ')') == 2)
                 return s.Substring(1, s.Length - 2);
             return s;
         }

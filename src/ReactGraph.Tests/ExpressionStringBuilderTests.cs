@@ -27,7 +27,7 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
             var mortgateCalculatorViewModel = new MortgateCalculatorViewModel();
-            VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "notifies.SubTotal * (1 + (notifies.TaxPercentage / 100))");
+            VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "(notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))");
             VerifyExpression(() => InstanceMethodCall(), "InstanceMethodCall()");
             VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
         }
