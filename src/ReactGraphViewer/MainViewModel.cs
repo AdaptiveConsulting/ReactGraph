@@ -73,7 +73,15 @@ namespace ReactGraphViewer
             var fileName = ConfigurationManager.AppSettings["fileName"];
             var watcher = new FileSystemWatcher(logDirectory, fileName);
 
-            filePath = Path.Combine(logDirectory, fileName);
+            if (Path.IsPathRooted(logDirectory))
+            {
+                filePath = Path.Combine(logDirectory, fileName);
+            }
+            else
+            {
+                filePath = Path.Combine(Environment.CurrentDirectory, logDirectory, fileName);
+            }
+
             watcher.Created += FileCreated;
             watcher.Changed += FileChanged;
             watcher.Deleted += FileDeleted;

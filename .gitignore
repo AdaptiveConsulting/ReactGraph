@@ -177,3 +177,4 @@ Artifacts/*
 
 *.received.txt
 src/lib/GraphViz/*
+src/Output/
