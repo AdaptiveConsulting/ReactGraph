@@ -42,6 +42,8 @@ namespace ReactGraph.Visualisation
                         properties.AddCustomProperty("style", "filled");
                         properties.Color = "green";
                         break;
+                    case NodeType.RootMember:
+                        continue;
                 }
 
                 if (overrideVisualProperties != null)
@@ -55,8 +57,14 @@ namespace ReactGraph.Visualisation
 
             foreach (var edge in graph.Edges)
             {
+                if (edge.Source.Data.NodeType == NodeType.RootMember ||
+                    edge.Target.Data.NodeType == NodeType.RootMember)
+                    continue;
+                    
                 graphDefinition.Append(indent ? "    " : string.Empty).AppendFormat("{0} -> {1};", edge.Source.Id, edge.Target.Id);
                 if (indent) graphDefinition.AppendLine();
+
+
             }
 
             if (indent)

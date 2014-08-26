@@ -9,10 +9,12 @@ namespace ReactGraph.NodeInfo
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
+        readonly NodeType type;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type)
         {
             Path = path;
+            this.type = type;
             this.setValue = setValue;
             this.getValue = getValue;
             ValueChanged();
@@ -39,7 +41,7 @@ namespace ReactGraph.NodeInfo
             return Path;
         }
 
-        public NodeType Type { get { return NodeType.Member; } }
+        public NodeType Type { get { return type; } }
 
         public ReevaluationResult Reevaluate()
         {

@@ -1,10 +1,10 @@
 ﻿digraph  {
-     __1 [label="notifies.SubTotal", shape="box", style="filled,rounded"];
-     __2 [label="() => (notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))", fillcolor="lightblue", style="filled", shape="octagon"];
-     __4 [label="notifies.Total", shape="box", style="filled,rounded"];
-     __3 [label="notifies.TaxPercentage", shape="box", style="filled,rounded"];
+     __1 [label="notifies.SubTotal * (1 + (notifies.TaxPercentage / 100))", fillcolor="lightblue", style="filled", shape="octagon"];
+     __2 [label="notifies.Total", shape="box", style="filled,rounded"];
+     __3 [label="notifies.SubTotal", shape="box", style="filled,rounded"];
+     __5 [label="notifies.TaxPercentage", shape="box", style="filled,rounded"];
 
     __1 -> __2;
-    __2 -> __4;
-    __3 -> __2;
+     __2 -> __4;
+     __3 -> __2;
 })

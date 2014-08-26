@@ -107,7 +107,7 @@ namespace ReactGraph
                     // TODO Figure out how to remove cast
                     var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
                     var setValueDelegate = target.CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path);
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path, NodeType.Member);
                 case NodeType.Action:
                     return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.Path);
                 default:
@@ -126,7 +126,8 @@ namespace ReactGraph
                     // TODO Figure out how to remove cast
                     var getValueDelegate = source.CreateGetValueDelegate();
                     var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path);
+                    var type = source.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path, type);
                 default:
                     throw new ArgumentOutOfRangeException();
             }

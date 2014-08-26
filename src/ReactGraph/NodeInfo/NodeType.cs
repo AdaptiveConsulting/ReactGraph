@@ -4,6 +4,7 @@ namespace ReactGraph.NodeInfo
     {
         Formula,
         Member,
-        Action
+        Action,
+        RootMember
     }
 }
