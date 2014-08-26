@@ -59,25 +59,32 @@ namespace ReactGraph
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
-                    var results = vertex.Data.Reevaluate();
+                    var reevaluationResult = vertex.Data.Reevaluate();
 
-                    switch (results)
+                    switch (reevaluationResult)
                     {
                         case ReevaluationResult.NoChange:
+                            engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), vertex.Id, reevaluationResult);
                             break;
                         case ReevaluationResult.Error:
                             var nodesRelatedToError = graph.TopologicalSort(vertex.Data).ToDictionary(k => k.Data);
+
+                            foreach (var vertex1 in nodesRelatedToError)
+                            {
+                                engineInstrumenter.NodeEvaluated(vertex1.Value.Data.ToString(), vertex1.Value.Id, ReevaluationResult.Error);
+                            }
+
                             var newListToProcess = orderToReeval
                                 .Where(remaining => !nodesRelatedToError.ContainsKey(remaining.Data))
                                 .ToArray();
                             orderToReeval = new Queue<Vertex<INodeInfo>>(newListToProcess);
                             break;
                         case ReevaluationResult.Changed:
+                            engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), vertex.Id, reevaluationResult);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-                    engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), vertex.Id, results);
 
                     NotificationStratgegyValueUpdate(vertex);
                 }

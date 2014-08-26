@@ -176,3 +176,4 @@ FakesAssemblies/
 Artifacts/*
 
 *.received.txt
+src/lib/GraphViz/*

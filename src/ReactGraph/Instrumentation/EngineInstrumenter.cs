@@ -30,7 +30,7 @@ namespace ReactGraph.Instrumentation
         {
             foreach (var engineInstrumentation in instrumentations)
             {
-                engineInstrumentation.OnDepdendencyWalkEnd(walkIndex);
+                engineInstrumentation.OnDependendencyWalkEnd(walkIndex);
             }
         }
 

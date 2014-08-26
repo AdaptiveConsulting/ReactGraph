@@ -27,7 +27,7 @@ namespace ReactGraph.Tests
             NodeEvaluations.Add(new NodeEval(walkIndex, updatedNode, result));
         }
 
-        public void OnDepdendencyWalkEnd(long walkIndex)
+        public void OnDependendencyWalkEnd(long walkIndex)
         {
             WalkIndexEnd = walkIndex;
         }

@@ -4,7 +4,7 @@
      __4 [label="notifies.Total", shape="box", style="filled,rounded"];
      __3 [label="notifies.TaxPercentage", shape="box", style="filled,rounded"];
 
-     __1 -> __2;
-     __2 -> __4;
-     __3 -> __2;
+    __1 -> __2;
+    __2 -> __4;
+    __3 -> __2;
 })

@@ -14,7 +14,7 @@ namespace ReactGraph.Visualisation
             this.graph = graph;
         }
 
-        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null)
+        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null, bool indent = true)
         {
             var labels = new StringBuilder();
             var graphDefinition = new StringBuilder();
@@ -49,19 +49,23 @@ namespace ReactGraph.Visualisation
                     properties = overrideVisualProperties(properties);
                 }
 
-                labels.AppendLine(properties.ToString());
+                labels.Append(properties);
+                if (indent) labels.AppendLine();
             }
 
             foreach (var edge in graph.Edges)
             {
-                graphDefinition.AppendFormat("     {0} -> {1};",
-                    edge.Source.Id, edge.Target.Id)
-                    .AppendLine();
+                graphDefinition.Append(indent ? "    " : string.Empty).AppendFormat("{0} -> {1};", edge.Source.Id, edge.Target.Id);
+                if (indent) graphDefinition.AppendLine();
             }
 
-            return string.Format(@"digraph {0} {{
+            if (indent)
+            {
+                return string.Format(@"digraph {0} {{
 {1}
 {2}}})", title, labels, graphDefinition);
+            }
+            return string.Format(@"digraph {0} {{ {1} {2}}})", title, labels, graphDefinition);
         }
     }
 }

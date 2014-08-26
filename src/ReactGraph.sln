@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactGraph.Tests", "ReactGr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactGraph.Visualisation", "ReactGraph.Visualisation\ReactGraph.Visualisation.csproj", "{378465C5-CB16-4015-9D8C-E5D7C29AFD56}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReactGraphViewer", "ReactGraphViewer\ReactGraphViewer.csproj", "{2777ED2D-57DF-414B-BF33-272312A6A2FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "SampleApp\SampleApp.csproj", "{BDAF9773-22DE-4B54-B10D-1C189C1477CD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{378465C5-CB16-4015-9D8C-E5D7C29AFD56}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{378465C5-CB16-4015-9D8C-E5D7C29AFD56}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{378465C5-CB16-4015-9D8C-E5D7C29AFD56}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2777ED2D-57DF-414B-BF33-272312A6A2FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2777ED2D-57DF-414B-BF33-272312A6A2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2777ED2D-57DF-414B-BF33-272312A6A2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2777ED2D-57DF-414B-BF33-272312A6A2FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDAF9773-22DE-4B54-B10D-1C189C1477CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDAF9773-22DE-4B54-B10D-1C189C1477CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDAF9773-22DE-4B54-B10D-1C189C1477CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDAF9773-22DE-4B54-B10D-1C189C1477CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,25 +5,31 @@ namespace ReactGraph.Visualisation
 {
     public class TransitionFileLogger : IDisposable
     {
+        readonly string filePath;
         readonly DependencyEngineListener listener;
-        readonly StreamWriter streamWriter;
 
         public TransitionFileLogger(DependencyEngine dependencyEngine, string filePath)
         {
-            var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.Read);
-            streamWriter = new StreamWriter(fileStream);
-            listener = new DependencyEngineListener(dependencyEngine, OnTransition);
+            this.filePath = filePath;
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            listener = new DependencyEngineListener(dependencyEngine, OnTransition, false);
         }
 
         void OnTransition(string dotRepresentation)
         {
-            streamWriter.WriteLine(dotRepresentation.Replace(Environment.NewLine, " "));
+            using(var fileStream = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
+            using (var streamWriter = new StreamWriter(fileStream))
+            {
+                streamWriter.WriteLine(dotRepresentation);
+            }
         }
 
         public void Dispose()
         {
             listener.Dispose();
-            streamWriter.Dispose();
         }
     }
 }
