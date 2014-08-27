@@ -30,16 +30,6 @@ namespace ReactGraph
 
             targetNode.SetSource(sourceNode, onError);
             graph.AddEdge(sourceNode, targetNode, source.NodeName, target.NodeName);
-            if (!source.SourcePaths.Any())
-            {
-                var value = sourceNode.GetValue();
-                if (value.HasValue)
-                {
-                    var instance = value.Value;
-                    nodeRepository.AddLookup(instance, sourceNode);
-                }
-            }
-
             AddSourcePathExpressions(source, sourceNode);
         }
 
@@ -50,17 +40,10 @@ namespace ReactGraph
                 IValueSource pathNode;
                 if (definitionToNodeLookup.ContainsKey(sourcePath))
                     pathNode = (IValueSource) definitionToNodeLookup[sourcePath];
-                else 
-                    pathNode = CreateSourceNode(sourcePath);
+                else
+                    pathNode = CreateSourceNode(sourcePath, true);
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
-                // TODO We need some sort of value source, which notifications can hook into as well as lookups?
-                var value = pathNode.GetValue();
-                if (value.HasValue)
-                {
-                    var instance = value.Value;
-                    nodeRepository.AddLookup(instance, pathNode);
-                }
                 AddSourcePathExpressions(sourcePath, pathNode);
             }
         }
@@ -71,10 +54,11 @@ namespace ReactGraph
             if (definitionToNodeLookup.ContainsKey(source))
             {
                 sourceNode = (IValueSource<T>)definitionToNodeLookup[source];
+                sourceNode.TrackChanges();
             }
             else
             {
-                sourceNode = CreateSourceNode(source);
+                sourceNode = CreateSourceNode(source, !source.SourcePaths.Any());
                 definitionToNodeLookup.Add(source, sourceNode);
             }
 
@@ -90,14 +74,14 @@ namespace ReactGraph
             }
             else
             {
-                targetNode = CreateTargetNode(target);
+                targetNode = CreateTargetNode(target, false);
                 definitionToNodeLookup.Add(target, targetNode);
             }
 
             return targetNode;
         }
 
-        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target)
+        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target, bool shouldTrackChanges)
         {
             switch (target.NodeType)
             {
@@ -107,7 +91,7 @@ namespace ReactGraph
                     // TODO Figure out how to remove cast
                     var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
                     var setValueDelegate = target.CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path, NodeType.Member);
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path, NodeType.Member, nodeRepository, shouldTrackChanges);
                 case NodeType.Action:
                     return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.Path);
                 default:
@@ -115,28 +99,28 @@ namespace ReactGraph
             }
         }
 
-        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source)
+        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source, bool shouldTrackChanges)
         {
             switch (source.NodeType)
             {
                 case NodeType.Formula:
                 case NodeType.Action:
-                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegate(), source.Path);
+                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegate(), source.Path, nodeRepository, shouldTrackChanges);
                 case NodeType.Member:
                     // TODO Figure out how to remove cast
                     var getValueDelegate = source.CreateGetValueDelegate();
                     var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
                     var type = source.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path, type);
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path, type, nodeRepository, shouldTrackChanges);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        IValueSource CreateSourceNode(ISourceDefinition source)
+        IValueSource CreateSourceNode(ISourceDefinition source, bool shouldTrackChanges)
         {
             var method = createSourceInfo.MakeGenericMethod(source.SourceType);
-            return (IValueSource)method.Invoke(this, new object[] { source });
+            return (IValueSource)method.Invoke(this, new object[] { source, shouldTrackChanges });
         }
     }
 }

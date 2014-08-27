@@ -5,16 +5,20 @@ namespace ReactGraph.NodeInfo
     class ReadWriteNode<T> : ITakeValue<T>, IValueSource<T>
     {
         readonly Maybe<T> currentValue = new Maybe<T>();
-        readonly Func<T> getValue;
+        readonly NodeRepository nodeRepository;
+        bool shouldTrackChanges;
         readonly Action<T> setValue;
+        readonly Func<T> getValue;
+        readonly NodeType type;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
-        readonly NodeType type;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
             this.type = type;
+            this.nodeRepository = nodeRepository;
+            this.shouldTrackChanges = shouldTrackChanges;
             this.setValue = setValue;
             this.getValue = getValue;
             ValueChanged();
@@ -34,6 +38,11 @@ namespace ReactGraph.NodeInfo
         public Maybe<T> GetValue()
         {
             return currentValue;
+        }
+
+        public void TrackChanges()
+        {
+            shouldTrackChanges = true;
         }
 
         public override string ToString()
@@ -67,7 +76,11 @@ namespace ReactGraph.NodeInfo
         {
             try
             {
+                if (shouldTrackChanges && currentValue.HasValue)
+                    nodeRepository.RemoveLookup(currentValue.Value);
                 currentValue.NewValue(getValue());
+                if (shouldTrackChanges && currentValue.HasValue)
+                    nodeRepository.AddLookup(currentValue.Value, this);
             }
             catch (Exception ex)
             {

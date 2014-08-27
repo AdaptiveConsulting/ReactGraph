@@ -5,18 +5,27 @@ namespace ReactGraph.NodeInfo
     class ReadOnlyNodeInfo<T> : IValueSource<T>
     {
         readonly Maybe<T> currentValue = new Maybe<T>();
+        readonly NodeRepository nodeRepository;
         readonly Func<T> getValue;
+        bool shouldTrackChanges;
 
-        public ReadOnlyNodeInfo(Func<T> getValue, string path)
+        public ReadOnlyNodeInfo(Func<T> getValue, string path, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
             this.getValue = getValue;
+            this.nodeRepository = nodeRepository;
+            this.shouldTrackChanges = shouldTrackChanges;
             ValueChanged();
         }
 
         public Maybe<T> GetValue()
         {
             return currentValue;
+        }
+
+        public void TrackChanges()
+        {
+            shouldTrackChanges = true;
         }
 
         public NodeType Type { get { return NodeType.Formula; } }
@@ -35,7 +44,11 @@ namespace ReactGraph.NodeInfo
         {
             try
             {
+                if (shouldTrackChanges && currentValue.HasValue)
+                    nodeRepository.RemoveLookup(currentValue.Value);
                 currentValue.NewValue(getValue());
+                if (shouldTrackChanges && currentValue.HasValue)
+                    nodeRepository.AddLookup(currentValue.Value, this);
             }
             catch (Exception ex)
             {
@@ -57,7 +70,7 @@ namespace ReactGraph.NodeInfo
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((ReadOnlyNodeInfo<T>) obj);
         }
 
