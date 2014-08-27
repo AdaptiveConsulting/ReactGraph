@@ -59,7 +59,6 @@
   <ItemGroup>
     <Compile Include="ActionTarget.cs" />
     <Compile Include="ApiTest.cs" />
-    <Compile Include="EngineTests.cs" />
     <Compile Include="ExpressionStringBuilderTests.cs" />
     <Compile Include="TestInstrumentation.cs" />
     <Compile Include="ExpressionParserTest.cs" />

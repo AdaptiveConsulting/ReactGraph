@@ -25,7 +25,6 @@ namespace ReactGraph.Tests
             actionInvoked.ShouldBe(0);
 
             simple.Value = 2;
-            engine.ValueHasChanged(simple, "Value");
 
             actionInvoked.ShouldBe(1);
             Console.WriteLine(engine.ToString());

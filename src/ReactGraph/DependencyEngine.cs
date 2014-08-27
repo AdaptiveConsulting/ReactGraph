@@ -19,7 +19,7 @@ namespace ReactGraph
         public DependencyEngine()
         {
             graph = new DirectedGraph<INodeInfo>();
-            nodeRepository = new NodeRepository();
+            nodeRepository = new NodeRepository(this);
             expressionAdder = new ExpressionAdder(graph, nodeRepository);
             engineInstrumenter = new EngineInstrumenter();
         }
