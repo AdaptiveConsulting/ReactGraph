@@ -47,12 +47,12 @@ namespace ReactGraph.NodeInfo
         {
             if (valueSource != null)
             {
-                ValueChanged();
                 var value = valueSource.GetValue();
                 if (value.HasValue)
                 {
                     // TODO Don't set and return NoChange when value has not changed
                     setValue(value.Value);
+                    ValueChanged();
                     return ReevaluationResult.Changed;
                 }
 

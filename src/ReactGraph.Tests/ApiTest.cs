@@ -112,6 +112,9 @@ namespace ReactGraph.Tests
             a.Value = 2;
             engine.ValueHasChanged(a, "Value");
 
+            var dotFormat = engine.ToDotFormat("Title");
+            Console.WriteLine(dotFormat);
+
             skipped.ValueSet.ShouldBe(0);
             d.ValueSet.ShouldBe(0);
             c.Value.ShouldBe(2);
@@ -156,7 +159,7 @@ namespace ReactGraph.Tests
 
             instrumentation.WalkIndexStart.ShouldBe(1);
             instrumentation.WalkIndexEnd.ShouldBe(1);
-            instrumentation.NodeEvaluations.Count.ShouldBe(5);
+            instrumentation.NodeEvaluations.Count.ShouldBe(8);
         }
 
         [Fact]
