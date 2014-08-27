@@ -45,21 +45,11 @@ namespace ReactGraph
 
             var changedInstance = nodeRepository.Get(instance);
 
-            // The idea of this is for a expression viewModel.Foo.Bar
-            // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
-            // Then get the successors and filter by path to get the intended changed node.
-            var successors = graph.SuccessorsOf(changedInstance)
-                .Where(v => v.Data.Path.EndsWith(pathToChangedValue))
-                .ToArray();
-            // TODO Should make this visible via instrumentation
-
             INodeInfo node;
-            if (successors.Length > 1)
-                node = changedInstance;
-            else if (successors.Length == 1)
-                node = successors[0].Data;
-            else
+            if (!FindChangedNode(pathToChangedValue, changedInstance, out node))
+            {
                 return false;
+            }
 
             try
             {
@@ -105,6 +95,40 @@ namespace ReactGraph
                 engineInstrumenter.DependencyWalkEnded();
             }
 
+            return true;
+        }
+
+        bool FindChangedNode(string pathToChangedValue, INodeInfo changedInstance, out INodeInfo node)
+        {
+            // The idea of this is for a expression viewModel.Foo.Bar
+            // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
+            // Then get the successors and filter by path to get the intended changed node.
+            var successors = graph.SuccessorsOf(changedInstance)
+                .Where(v => v.Data.Path.EndsWith(pathToChangedValue))
+                .ToArray();
+            // TODO Should make this visible via instrumentation
+
+            if (successors.Length > 1)
+                node = changedInstance;
+            else if (successors.Length == 1)
+                node = successors[0].Data;
+            else
+            {
+                // When path is contained in a formula, i.e Foo.Bar and Bar changes but
+                // Formula is Calc(Foo)
+                successors = graph.SuccessorsOf(changedInstance)
+                    .Where(v => v.Data.Path.Contains(changedInstance.Path))
+                    .ToArray();
+                if (successors.Length > 1)
+                    node = changedInstance;
+                else if (successors.Length == 1)
+                    node = successors[0].Data;
+                else
+                {
+                    node = null;
+                    return false;
+                }
+            }
             return true;
         }
 

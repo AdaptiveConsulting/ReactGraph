@@ -61,7 +61,8 @@ namespace ReactGraph
             }
             else
             {
-                sourceNode = CreateSourceNode(source, !source.SourcePaths.Any());
+                var shouldTrackChanges = !source.SourceType.IsValueType;
+                sourceNode = CreateSourceNode(source, shouldTrackChanges);
                 definitionToNodeLookup.Add(source, sourceNode);
             }
 
