@@ -1,5 +1,6 @@
 ﻿using System;
 using ReactGraph.Tests.TestObjects;
+using ReactGraph.Visualisation;
 using Shouldly;
 using Xunit;
 
@@ -82,7 +83,7 @@ namespace ReactGraph.Tests
             engine.Assign(() => three.Value)
                   .From(() => one.Value, e => { });
 
-            Console.WriteLine(engine.ToString());
+            Console.WriteLine(engine.ToDotFormat(string.Empty));
 
             one.Value = 1;
 
@@ -98,6 +99,8 @@ namespace ReactGraph.Tests
 
             engine.Assign(() => Foo)
                   .From(() => CalcSomethingToDoWithSchedule(viewModel.PaymentSchedule), e => { });
+
+            Console.WriteLine(engine.ToDotFormat(string.Empty));
 
             Foo.ShouldNotBe(42);
             viewModel.PaymentSchedule.HasValidationError = false;
