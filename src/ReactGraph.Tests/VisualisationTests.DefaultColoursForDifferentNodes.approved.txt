@@ -5,6 +5,6 @@
      __5 [label="notifies.TaxPercentage", shape="box", style="filled,rounded"];
 
     __1 -> __2;
-     __2 -> __4;
-     __3 -> __2;
+    __3 -> __1;
+    __5 -> __1;
 })

@@ -23,8 +23,8 @@ namespace SampleApp
         {
             engine = new DependencyEngine();
 
-            engine.Expr(() => Add(A, B)).Bind(() => C, e => {});
-            engine.Expr(() => Multiply(C, D)).Bind(() => E, e => { });
+            engine.Assign(() => C).From(() => Add(A, B), e => { });
+            engine.Assign(() => E).From(() => Multiply(C, D), e => { });
 
             A = 2;
             B = 3;
