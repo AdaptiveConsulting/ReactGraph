@@ -41,7 +41,10 @@ namespace ReactGraph
                 if (definitionToNodeLookup.ContainsKey(sourcePath))
                     pathNode = (IValueSource) definitionToNodeLookup[sourcePath];
                 else
+                {
                     pathNode = CreateSourceNode(sourcePath, true);
+                    definitionToNodeLookup.Add(sourcePath, pathNode);
+                }
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
                 AddSourcePathExpressions(sourcePath, pathNode);
