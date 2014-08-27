@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
-using ReactGraph.Api;
-using ReactGraph.Construction;
 using ReactGraph.Graph;
 using ReactGraph.Instrumentation;
 using ReactGraph.NodeInfo;
@@ -13,17 +10,17 @@ namespace ReactGraph
 {
     public class DependencyEngine
     {
-        private readonly DirectedGraph<INodeInfo> graph;
-        private readonly ExpressionParser expressionParser;
-        private readonly NodeRepository nodeRepository;
-        private readonly EngineInstrumenter engineInstrumenter;
-        private bool isExecuting;
+        readonly DirectedGraph<INodeInfo> graph;
+        readonly NodeRepository nodeRepository;
+        readonly EngineInstrumenter engineInstrumenter;
+        readonly ExpressionAdder expressionAdder;
+        bool isExecuting;
 
         public DependencyEngine()
         {
             graph = new DirectedGraph<INodeInfo>();
             nodeRepository = new NodeRepository(this);
-            expressionParser = new ExpressionParser();
+            expressionAdder = new ExpressionAdder(graph, nodeRepository);
             engineInstrumenter = new EngineInstrumenter();
         }
 
@@ -40,22 +37,37 @@ namespace ReactGraph
         public DirectedGraph<INodeMetadata> GetGraphSnapshot()
         {
             return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.Type, vertex.Data.ToString(), vertex.Id));
-        } 
+        }
 
-        public bool ValueHasChanged(object instance, string key)
+        public bool ValueHasChanged(object instance, string pathToChangedValue)
         {
-            if (!nodeRepository.Contains(instance, key) || isExecuting) return false;
+            if (!nodeRepository.Contains(instance) || isExecuting) return false;
 
-            var node = nodeRepository.Get(instance, key);
+            var changedInstance = nodeRepository.Get(instance);
+
+            // The idea of this is for a expression viewModel.Foo.Bar
+            // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
+            // Then get the successors and filter by path to get the intended changed node.
+            var successors = graph.SuccessorsOf(changedInstance)
+                .Where(v => v.Data.Path.EndsWith(pathToChangedValue))
+                .ToArray();
+            // TODO Should make this visible via instrumentation
+
+            INodeInfo node;
+            if (successors.Length > 1)
+                node = changedInstance;
+            else if (successors.Length == 1)
+                node = successors[0].Data;
+            else
+                return false;
 
             try
             {
                 isExecuting = true;
                 var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
                 var firstVertex = orderToReeval.Dequeue();
-                engineInstrumenter.DependecyWalkStarted(key, firstVertex.Id);
+                engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
                 node.ValueChanged();
-                NotificationStratgegyValueUpdate(firstVertex);
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
@@ -85,8 +97,6 @@ namespace ReactGraph
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-
-                    NotificationStratgegyValueUpdate(vertex);
                 }
             }
             finally
@@ -96,20 +106,6 @@ namespace ReactGraph
             }
 
             return true;
-        }
-
-        static void NotificationStratgegyValueUpdate(Vertex<INodeInfo> firstVertex)
-        {
-            foreach (var successor in firstVertex.Successors)
-            {
-                firstVertex.Data.UpdateSubscriptions(successor.Source.Data.GetValue());
-            }
-        }
-
-        public IExpressionDefinition<TProp> Expr<TProp>(Expression<Func<TProp>> sourceFunction, string expressionId = null)
-        {
-            var formulaNode = expressionParser.GetFormulaInfo(sourceFunction);
-            return new ExpressionDefinition<TProp>(formulaNode, expressionId, expressionParser, graph, nodeRepository);
         }
 
         public void CheckCycles()
@@ -122,12 +118,21 @@ namespace ReactGraph
             foreach (var cycle in cycles)
             {
                 var nodes = cycle.Reverse().ToList();
-                nodes.Add(nodes.First());
+                var vertex = nodes.First();
+                if (vertex.Data.Type == NodeType.Member)
+                    nodes.Add(vertex);
+                else
+                    nodes.Insert(0, nodes.Last());
 
-                sb.AppendLine(string.Join(" --> ", nodes.Select(v => v.Data.ToString().Replace("() => ", string.Empty))));
+                sb.AppendLine(string.Join(" --> ", nodes.Select(v => v.Data.ToString())));
             }
 
             throw new CycleDetectedException(sb.ToString().Trim());
+        }
+
+        public void AddExpression<T>(ISourceDefinition<T> source, ITargetDefinition<T> target, Action<Exception> onError)
+        {
+            expressionAdder.Add(source, target, onError);
         }
     }
 }

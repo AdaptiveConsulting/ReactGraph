@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using ReactGraph.Graph;
+using ReactGraph.Tests.TestObjects;
+using ReactGraph.Visualisation;
 using Shouldly;
 using Xunit;
 
@@ -42,15 +45,14 @@ namespace ReactGraph.Tests
             var vertex6 = new SinglePropertyType();
             var vertex7 = new SinglePropertyType();
             var vertex8 = new SinglePropertyType();
-            var engine = new DependencyEngine();
 
-            engine.Expr(() => Addition(vertex6.Value)).Bind(() => vertex0.Value, e => { });
-            engine.Expr(() => Addition(vertex0.Value, vertex5.Value, vertex4.Value)).Bind(() => vertex1.Value, e => { });
-            engine.Expr(() => Addition(vertex0.Value, vertex1.Value)).Bind(() => vertex2.Value, e => { });
-            engine.Expr(() => Addition(vertex1.Value, vertex2.Value)).Bind(() => vertex3.Value, e => { });
-            engine.Expr(() => Addition(vertex4.Value)).Bind(() => vertex5.Value, e => { });
-            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex7.Value, e => { });
-            engine.Expr(() => Addition(vertex2.Value)).Bind(() => vertex8.Value, e => { });
+            engine.Assign(() => vertex0.Value).From(() => Addition(vertex6.Value), e => { });
+            engine.Assign(() => vertex1.Value).From(() => Addition(vertex0.Value, vertex5.Value, vertex4.Value), e => { });
+            engine.Assign(() => vertex2.Value).From(() => Addition(vertex0.Value, vertex1.Value), e => { });
+            engine.Assign(() => vertex3.Value).From(() => Addition(vertex1.Value, vertex2.Value), e => { });
+            engine.Assign(() => vertex5.Value).From(() => Addition(vertex4.Value), e => { });
+            engine.Assign(() => vertex7.Value).From(() => Addition(vertex2.Value), e => { });
+            engine.Assign(() => vertex8.Value).From(() => Addition(vertex2.Value), e => { });
                 
             Console.WriteLine(engine.ToString());
 
@@ -63,27 +65,14 @@ namespace ReactGraph.Tests
         }
 
         [Fact]
-        public void ThrowsForTypeMismatch()
-        {
-            var a = new SinglePropertyType();
-            var b = new SinglePropertyType();
-
-            var ex = Should.Throw<ArgumentException>(() => 
-                engine.Expr(() => (object) a.Value)
-                      .Bind(() => b.Value, e => { }));
-
-            ex.Message.ShouldBe("Cannot bind target of type System.Int32 to source of type System.Object");
-        }
-
-        [Fact]
         public void ExceptionsArePassedToHandlers()
         {
             var a = new SinglePropertyType();
             var b = new SinglePropertyType();
 
             Exception ex;
-            engine.Expr(() => ThrowsInvalidOperationException(a.Value))
-                  .Bind(() => b.Value, e => ex = e);
+            engine.Assign(() => b.Value)
+                  .From(() => ThrowsInvalidOperationException(a.Value), e => ex = e);
 
             ex = null;
             a.Value = 2;
@@ -113,15 +102,18 @@ namespace ReactGraph.Tests
             var throws = new SinglePropertyType();
             var skipped = new SinglePropertyType();
 
-            engine.Expr(() => a.Value).Bind(() => b.Value, ex => { });
-            engine.Expr(() => b.Value).Bind(() => c.Value, ex => { });
-            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, ex => { });
-            engine.Expr(() => throws.Value).Bind(() => skipped.Value, ex => { });
-            engine.Expr(() => c.Value + skipped.Value).Bind(() => d.Value, ex => { });
-            engine.Expr(() => c.Value).Bind(() => e.Value, ex => { });
+            engine.Assign(() => b.Value).From(() => a.Value, ex => { });
+            engine.Assign(() => c.Value).From(() => b.Value, ex => { });
+            engine.Assign(() => throws.Value).From(() => ThrowsInvalidOperationException(a.Value), ex => { });
+            engine.Assign(() => skipped.Value).From(() => throws.Value, ex => { });
+            engine.Assign(() => d.Value).From(() => c.Value + skipped.Value, ex => { });
+            engine.Assign(() => e.Value).From(() => c.Value, ex => { });
 
             a.Value = 2;
             engine.ValueHasChanged(a, "Value");
+
+            var dotFormat = engine.ToDotFormat("Title");
+            Console.WriteLine(dotFormat);
 
             skipped.ValueSet.ShouldBe(0);
             d.ValueSet.ShouldBe(0);
@@ -142,7 +134,6 @@ namespace ReactGraph.Tests
              *  E   D
              */
             var instrumentation = new TestInstrumentation();
-            engine = new DependencyEngine();
             engine.AddInstrumentation(instrumentation);
 
             var a = new SinglePropertyType();
@@ -153,17 +144,18 @@ namespace ReactGraph.Tests
             var throws = new SinglePropertyType();
             var skipped = new SinglePropertyType();
 
-            engine.Expr(() => a.Value).Bind(() => b.Value, ex => { });
-            engine.Expr(() => b.Value).Bind(() => c.Value, ex => { });
-            engine.Expr(() => ThrowsInvalidOperationException(a.Value)).Bind(() => throws.Value, ex => { });
-            engine.Expr(() => throws.Value).Bind(() => skipped.Value, ex => { });
-            engine.Expr(() => c.Value + skipped.Value).Bind(() => d.Value, ex => { });
-            engine.Expr(() => c.Value).Bind(() => e.Value, ex => { });
+            engine.Assign(() => b.Value).From(() => a.Value, ex => { });
+            engine.Assign(() => c.Value).From(() => b.Value, ex => { });
+            engine.Assign(() => throws.Value).From(() => ThrowsInvalidOperationException(a.Value), ex => { });
+            engine.Assign(() => skipped.Value).From(() => throws.Value, ex => { });
+            engine.Assign(() => d.Value).From(() => c.Value + skipped.Value, ex => { });
+            engine.Assign(() => e.Value).From(() => c.Value, ex => { });
 
             a.Value = 2;
             engine.ValueHasChanged(a, "Value");
 
-            Console.WriteLine(engine.ToString());
+            var dotFormat = engine.ToDotFormat("Title");
+            Console.WriteLine(dotFormat);
 
             instrumentation.WalkIndexStart.ShouldBe(1);
             instrumentation.WalkIndexEnd.ShouldBe(1);
@@ -177,14 +169,15 @@ namespace ReactGraph.Tests
             var a = new SinglePropertyType();
             var b = new SinglePropertyType();
 
-            engine.Expr(() => a.Value*2).Bind(() => b.Value, ex => { });
-            engine.Expr(() => b.Value-2).Bind(() => a.Value, ex => { });
+            engine.Assign(() => b.Value).From(() => a.Value * 2, ex => { });
+            engine.Assign(() => a.Value).From(() => b.Value - 2, ex => { });
+
+            var dot = engine.ToDotFormat("Title");
 
             Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
                   .Message.ShouldBe(@"1 cycles found:
-a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value");
+a.Value --> a.Value * 2 --> b.Value --> b.Value - 2 --> a.Value");
         }
-
 
         [Fact]
         public void CheckCyclesShouldThrowWhenThereAreTwoCycles()
@@ -195,16 +188,16 @@ a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value");
             var c = new SinglePropertyType();
             var d = new SinglePropertyType();
 
-            engine.Expr(() => a.Value * 2).Bind(() => b.Value, ex => { });
-            engine.Expr(() => b.Value - 2).Bind(() => a.Value, ex => { });
+            engine.Assign(() => b.Value).From(() => a.Value * 2, ex => { });
+            engine.Assign(() => a.Value).From(() => b.Value - 2, ex => { });
 
-            engine.Expr(() => c.Value * 2).Bind(() => d.Value, ex => { });
-            engine.Expr(() => d.Value - 2).Bind(() => c.Value, ex => { });
+            engine.Assign(() => d.Value).From(() => c.Value * 2, ex => { });
+            engine.Assign(() => c.Value).From(() => d.Value - 2, ex => { });
 
             Should.Throw<CycleDetectedException>(() => engine.CheckCycles())
                   .Message.ShouldBe(@"2 cycles found:
-a.Value --> (a.Value * 2) --> b.Value --> (b.Value - 2) --> a.Value
-c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
+a.Value --> a.Value * 2 --> b.Value --> b.Value - 2 --> a.Value
+c.Value --> c.Value * 2 --> d.Value --> d.Value - 2 --> c.Value");
         }
 
         [Fact]
@@ -214,11 +207,70 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
             var a = new SinglePropertyType();
             var b = new SinglePropertyType();
 
-            engine.Expr(() => a.Value * 2).Bind(() => b.Value, ex => { });
+            engine.Assign(() => b.Value).From(() => a.Value * 2, ex => { });
 
             Should.NotThrow(() => engine.CheckCycles());
         }
 
+        [Fact]
+        public void TracksNestedProperties()
+        {
+            var mortgateCalculator = new MortgateCalculatorViewModel();
+            mortgateCalculator.RegeneratePaymentSchedule(false);
+
+            engine
+                .Assign(() => Prop)
+                .From(() => mortgateCalculator.PaymentSchedule.HasValidationError, ex => { });
+
+            mortgateCalculator.PaymentSchedule.HasValidationError = true;
+
+            engine.ValueHasChanged(mortgateCalculator.PaymentSchedule, "HasValidationError");
+            Prop.ShouldBe(true);
+        }
+
+        public bool Prop { get; set; }
+
+        [Fact]
+        public void CanUseCurrentValueWhenRecalculating()
+        {
+            //TODO Fix test
+            //var optionsViewModel = new OptionsViewModel
+            //{
+            //    Options = new ObservableCollection<string>
+            //    {
+            //        "Item 1",
+            //        "Item 2",
+            //        "Item 3"
+            //    },
+            //    SelectedOption = "Item 1"
+            //};
+
+            //engine
+            //    .Assign(() => optionsViewModel.SelectedOption)
+            //    .From(currentValue => UnselectInvalidOption(currentValue, optionsViewModel.Options), ex => { });
+
+            //optionsViewModel.Options = new ObservableCollection<string>
+            //{
+            //    "Item 1",
+            //    "Item 2"
+            //};
+            //optionsViewModel.SelectedOption.ShouldBe("Item 1");
+
+            //optionsViewModel.Options = new ObservableCollection<string>
+            //{
+            //    "Item 2",
+            //    "Item 3"
+            //};
+            //optionsViewModel.SelectedOption.ShouldBe(null);
+        }
+
+        string UnselectInvalidOption(string currentValue, ObservableCollection<string> options)
+        {
+            if (!options.Contains(currentValue))
+                return null;
+
+            return currentValue;
+        }
 
         int ThrowsInvalidOperationException(int value)
         {

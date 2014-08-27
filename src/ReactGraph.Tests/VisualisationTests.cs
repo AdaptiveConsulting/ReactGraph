@@ -35,8 +35,8 @@ namespace ReactGraph.Tests
 
             const string additionId = "Addition";
             const string propertyId = "C";
-            engine.Expr(() => Addition(a.Value, b.Value), additionId)
-                  .Bind(() => c.Value, e => { }, propertyId);
+            engine.Assign(() => c.Value, propertyId)
+                  .From(() => Addition(a.Value, b.Value), e => { }, additionId);
 
             var dotFormat = engine.ToDotFormat("Foo",
                 prop =>
@@ -73,8 +73,8 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
 
-            engine.Expr(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))))
-                  .Bind(() => notifies.Total, e => { });
+            engine.Assign(() => notifies.Total)
+                  .From(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), e => { });
 
             var dotFormat = engine.ToDotFormat(string.Empty);
 
@@ -86,10 +86,10 @@ namespace ReactGraph.Tests
         {
             var foo = new Foo();
 
-            engine.Expr(() => foo.A + foo.B)
-                  .Bind(() => foo.C, e => { });
-            engine.Expr(() => foo.A + foo.C)
-                  .Bind(() => foo.D, e => { });
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
 
             var temp = string.Empty;
             var disposable = engine.OnWalkComplete(s => { temp = s; });
@@ -113,10 +113,10 @@ namespace ReactGraph.Tests
         {
             var foo = new Foo();
 
-            engine.Expr(() => foo.A + foo.B)
-                  .Bind(() => foo.C, e => { });
-            engine.Expr(() => foo.A + foo.C)
-                  .Bind(() => foo.D, e => { });
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
 
             var path = Path.Combine(Environment.CurrentDirectory, "Transitions.log");
             if (File.Exists(path))

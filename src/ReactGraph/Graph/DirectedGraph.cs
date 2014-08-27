@@ -249,5 +249,11 @@ namespace ReactGraph.Graph
                 if (scc.Count > 1) result.Add(scc);
             }
         }
+
+        public IEnumerable<Vertex<T>> SuccessorsOf(T data)
+        {
+            var vertex = verticies[data];
+            return vertex.Successors.Select(e => e.Target);
+        }
     }
 }

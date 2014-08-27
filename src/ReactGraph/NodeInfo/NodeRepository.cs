@@ -1,53 +1,56 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using ReactGraph.Notification;
+using System.ComponentModel;
 
 namespace ReactGraph.NodeInfo
 {
     class NodeRepository
     {
-        private readonly Dictionary<Tuple<object, string>, INodeInfo> nodeLookup;
-        private readonly List<INotificationStrategy> notificationStrategies;
+        // HACK this is a very quick hack to get INotifyPropertyChanged support
+        readonly DependencyEngine engine;
+        private readonly Dictionary<object, INodeInfo> nodeLookup;
 
-        public NodeRepository(DependencyEngine dependencyEngine)
+        public NodeRepository(DependencyEngine engine)
         {
-            nodeLookup = new Dictionary<Tuple<object, string>, INodeInfo>();
-            notificationStrategies = new List<INotificationStrategy>
+            this.engine = engine;
+            nodeLookup = new Dictionary<object, INodeInfo>();
+        }
+
+        public bool Contains(object instance)
+        {
+            return nodeLookup.ContainsKey(instance);
+        }
+
+        public INodeInfo Get(object instance)
+        {
+            return nodeLookup[instance];
+        }
+
+        public void RemoveLookup(object instance)
+        {
+            if (instance != null && nodeLookup.ContainsKey(instance))
             {
-                new NotifyPropertyChangedStrategy(dependencyEngine)
-            };
+                var notifyPropertyChanged = instance as INotifyPropertyChanged;
+                if (notifyPropertyChanged != null)
+                    notifyPropertyChanged.PropertyChanged -= NotifyPropertyChangedOnPropertyChanged;
+                nodeLookup.Remove(instance);
+            }
         }
 
-        public INotificationStrategy[] GetStrategies(Type type)
+        void NotifyPropertyChangedOnPropertyChanged(object sender, PropertyChangedEventArgs propertyChangedEventArgs)
         {
-            return notificationStrategies
-                .Where(notificationStrategy => notificationStrategy.AppliesTo(type))
-                .ToArray();
+            engine.ValueHasChanged(sender, propertyChangedEventArgs.PropertyName);
         }
 
-        public bool Contains(object instance, string key)
+        public void AddLookup(object instance, INodeInfo nodeInfo)
         {
-            return nodeLookup.ContainsKey(Tuple.Create(instance, key));
-        }
-
-        public INodeInfo Get(object instance, string key)
-        {
-            return nodeLookup[Tuple.Create(instance, key)];
-        }
-
-        public void RemoveLookup(object instance, string key)
-        {
-            var tuple = Tuple.Create(instance, key);
-            if (nodeLookup.ContainsKey(tuple))
-                nodeLookup.Remove(tuple);
-        }
-
-        public void AddLookup(object instance, string key, INodeInfo nodeInfo)
-        {
-            var tuple = Tuple.Create(instance, key);
-            if (!nodeLookup.ContainsKey(tuple))
-                nodeLookup.Add(tuple, nodeInfo);
+            if (instance != null && !nodeLookup.ContainsKey(instance))
+            {
+                var notifyPropertyChanged = instance as INotifyPropertyChanged;
+                if (notifyPropertyChanged != null)
+                    notifyPropertyChanged.PropertyChanged += NotifyPropertyChangedOnPropertyChanged;
+                nodeLookup.Add(instance, nodeInfo);
+            }
         }
     }
 }

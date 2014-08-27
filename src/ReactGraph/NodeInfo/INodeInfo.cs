@@ -1,13 +1,13 @@
 namespace ReactGraph.NodeInfo
 {
-    interface INodeInfo : IValueSource
+    interface INodeInfo
     {
         NodeType Type { get; }
+
+        string Path { get; }
 
         ReevaluationResult Reevaluate();
 
         void ValueChanged();
-
-        void UpdateSubscriptions(IMaybe newParent);
     }
 }

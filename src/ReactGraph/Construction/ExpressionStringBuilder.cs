@@ -22,14 +22,20 @@ namespace ReactGraph.Construction
         {
             var visitor = new ExpressionStringBuilder();
             visitor.Visit(expression);
-            return visitor.builder.ToString();
+            var s = visitor.builder.ToString();
+            if (s.StartsWith("(") && s.EndsWith(")") && s.Count(c => c == '(' || c == ')') == 2)
+                return s.Substring(1, s.Length - 2);
+            return s;
         }
 
         protected override Expression VisitLambda<T>(Expression<T> node)
         {
-            Out("(");
-            Out(String.Join(",", node.Parameters.Select(n => n.Name)));
-            Out(") => ");
+            if (node.Parameters.Any())
+            {
+                Out("(");
+                Out(String.Join(",", node.Parameters.Select(n => n.Name)));
+                Out(") => ");
+            }
             Visit(node.Body);
             return node;
         }

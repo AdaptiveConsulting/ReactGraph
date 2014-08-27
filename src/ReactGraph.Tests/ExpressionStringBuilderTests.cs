@@ -14,9 +14,9 @@ namespace ReactGraph.Tests
         {
             var viewModel = new SimpleWithNotification();
             var mortgateCalculatorViewModel = new MortgateCalculatorViewModel();
-            VerifyExpression(() => Foo, "() => Foo");
-            VerifyExpression(() => viewModel.Value, "() => viewModel.Value");
-            VerifyExpression(() => mortgateCalculatorViewModel.PaymentSchedule.HasValidationError, "() => mortgateCalculatorViewModel.PaymentSchedule.HasValidationError");
+            VerifyExpression(() => Foo, "Foo");
+            VerifyExpression(() => viewModel.Value, "viewModel.Value");
+            VerifyExpression(() => mortgateCalculatorViewModel.PaymentSchedule.HasValidationError, "mortgateCalculatorViewModel.PaymentSchedule.HasValidationError");
         }
 
         [Fact]
@@ -27,16 +27,16 @@ namespace ReactGraph.Tests
                 TaxPercentage = 20
             };
             var mortgateCalculatorViewModel = new MortgateCalculatorViewModel();
-            VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "() => (notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))");
-            VerifyExpression(() => InstanceMethodCall(), "() => InstanceMethodCall()");
-            VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
+            VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "(notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))");
+            VerifyExpression(() => InstanceMethodCall(), "InstanceMethodCall()");
+            VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
         }
 
         [Fact]
         public void VerifyAction()
         {
             Action action = () => { };
-            VerifyExpression(() => action(), "() => action()");
+            VerifyExpression(() => action(), "action()");
         }
 
         object InstanceMethodCall()
