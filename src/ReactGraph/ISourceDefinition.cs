@@ -10,8 +10,8 @@ namespace ReactGraph
         Type SourceType { get; }
     }
 
-    public interface ISourceDefinition<out T> : ISourceDefinition
+    public interface ISourceDefinition<T> : ISourceDefinition
     {
-        Func<T> CreateGetValueDelegate();
+        Func<T, T> CreateGetValueDelegate();
     }
 }

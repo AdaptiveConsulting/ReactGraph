@@ -6,10 +6,10 @@ namespace ReactGraph.NodeInfo
     {
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly NodeRepository nodeRepository;
-        readonly Func<T> getValue;
+        readonly Func<T, T> getValue;
         bool shouldTrackChanges;
 
-        public ReadOnlyNodeInfo(Func<T> getValue, string path, NodeRepository nodeRepository, bool shouldTrackChanges)
+        public ReadOnlyNodeInfo(Func<T, T> getValue, string path, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
             this.getValue = getValue;
@@ -46,7 +46,7 @@ namespace ReactGraph.NodeInfo
             {
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.RemoveLookup(currentValue.Value);
-                currentValue.NewValue(getValue());
+                currentValue.NewValue(getValue(currentValue.HasValue ? currentValue.Value : default(T)));
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.AddLookup(currentValue.Value, this);
             }

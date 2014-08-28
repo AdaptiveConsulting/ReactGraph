@@ -18,9 +18,10 @@ namespace ReactGraph
             SourcePaths = new List<ISourceDefinition>();
         }
 
-        public Func<T> CreateGetValueDelegate()
+        public Func<T, T> CreateGetValueDelegate()
         {
-            return targetMemberExpression.Compile();
+            var compile = targetMemberExpression.Compile();
+            return currentValue => compile();
         }
 
         public Action<T> CreateSetValueDelegate()
