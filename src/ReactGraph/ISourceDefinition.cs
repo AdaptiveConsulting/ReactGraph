@@ -12,6 +12,7 @@ namespace ReactGraph
 
     public interface ISourceDefinition<T> : ISourceDefinition
     {
-        Func<T, T> CreateGetValueDelegate();
+        Func<T, T> CreateGetValueDelegateWithCurrentValue();
+        Func<T> CreateGetValueDelegate();
     }
 }

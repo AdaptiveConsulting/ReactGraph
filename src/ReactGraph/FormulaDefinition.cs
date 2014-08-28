@@ -5,7 +5,7 @@ using ReactGraph.NodeInfo;
 
 namespace ReactGraph
 {
-    public class FormulaDefinition<T> : ExpressionDefinition<T>, ISourceDefinition<T>
+    public class FormulaDefinition<T> : ExpressionDefinition, ISourceDefinition<T>
     {
         readonly Expression<Func<T, T>> sourceExpression;
 
@@ -16,7 +16,12 @@ namespace ReactGraph
             SourcePaths = new List<ISourceDefinition>();
         }
 
-        public Func<T, T> CreateGetValueDelegate()
+        public Func<T> CreateGetValueDelegate()
+        {
+            throw new NotSupportedException("Formulas should always be re-evaluated with a provided current value.");
+        }
+
+        public Func<T, T> CreateGetValueDelegateWithCurrentValue()
         {
             return sourceExpression.Compile();
         }

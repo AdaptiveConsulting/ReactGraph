@@ -46,7 +46,6 @@
     <Compile Include="ExpressionDefinition.cs" />
     <Compile Include="FormulaDefinition.cs" />
     <Compile Include="Graph\CycleDetectedException.cs" />
-    <Compile Include="Construction\ExpressionDescriptor.cs" />
     <Compile Include="Construction\FormulaNullReferenceException.cs" />
     <Compile Include="Construction\NullCheckRewriter.cs" />
     <Compile Include="NodeInfo\INodeMetadata.cs" />

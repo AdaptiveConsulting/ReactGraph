@@ -27,7 +27,7 @@ namespace ReactGraph.Construction
 
         protected override Expression VisitLambda<T>(Expression<T> node)
         {
-            if (node.Parameters.Any())
+            if (node.Parameters.Any(p => p.Name != null))
             {
                 Out("(");
                 Out(String.Join(",", node.Parameters.Select(n => n.Name)));

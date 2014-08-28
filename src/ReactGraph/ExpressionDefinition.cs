@@ -4,7 +4,7 @@ using ReactGraph.NodeInfo;
 
 namespace ReactGraph
 {
-    public class ExpressionDefinition<T> : IDefinitionIdentity
+    public class ExpressionDefinition : IDefinitionIdentity
     {
         public ExpressionDefinition(Expression expression, NodeType nodeType, string nodeName)
         {

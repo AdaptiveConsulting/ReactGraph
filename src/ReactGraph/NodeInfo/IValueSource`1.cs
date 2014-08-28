@@ -4,5 +4,6 @@ namespace ReactGraph.NodeInfo
     {
         new Maybe<T> GetValue();
         void TrackChanges();
+        void SetTarget(ITakeValue<T> targetNode);
     }
 }

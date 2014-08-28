@@ -28,6 +28,16 @@ namespace ReactGraph.NodeInfo
             shouldTrackChanges = true;
         }
 
+        public void SetTarget(ITakeValue<T> targetNode)
+        {
+            // we know that the target is a ReadWriteNode (ie. a member or property)
+            var initialValue = ((ReadWriteNode<T>) targetNode).GetValue();
+            if (initialValue.HasValue)
+            {
+                currentValue.NewValue(initialValue.Value);                
+            }
+        }
+
         public NodeType Type { get { return NodeType.Formula; } }
 
         public string Path { get; private set; }
@@ -46,7 +56,15 @@ namespace ReactGraph.NodeInfo
             {
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.RemoveLookup(currentValue.Value);
-                currentValue.NewValue(getValue(currentValue.HasValue ? currentValue.Value : default(T)));
+
+                // this is the current value for this formula
+                // TODO: Jake, what do we do here if the current value contains an exception??
+                var currentVal = currentValue.HasValue ? currentValue.Value : default(T);
+                // evaluate this formula, passing the current value
+                var newValue = getValue(currentVal);
+                // store the new value as current value
+                currentValue.NewValue(newValue);
+
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.AddLookup(currentValue.Value, this);
             }

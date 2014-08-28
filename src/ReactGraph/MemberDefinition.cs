@@ -5,7 +5,7 @@ using ReactGraph.NodeInfo;
 
 namespace ReactGraph
 {
-    public class MemberDefinition<T> : ExpressionDefinition<T>, ISourceDefinition<T>, ITargetDefinition<T>
+    public class MemberDefinition<T> : ExpressionDefinition, ISourceDefinition<T>, ITargetDefinition<T>
     {
         readonly Expression<Func<T>> targetMemberExpression;
         readonly Expression<Action<T>> assignmentLambda;
@@ -18,10 +18,14 @@ namespace ReactGraph
             SourcePaths = new List<ISourceDefinition>();
         }
 
-        public Func<T, T> CreateGetValueDelegate()
+        public Func<T, T> CreateGetValueDelegateWithCurrentValue()
         {
-            var compile = targetMemberExpression.Compile();
-            return currentValue => compile();
+            throw new NotSupportedException("Members should not be re-evaluated with a current value.");
+        }
+
+        public Func<T> CreateGetValueDelegate()
+        {
+            return targetMemberExpression.Compile();
         }
 
         public Action<T> CreateSetValueDelegate()
