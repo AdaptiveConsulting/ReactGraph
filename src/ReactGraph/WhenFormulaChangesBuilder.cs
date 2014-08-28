@@ -9,7 +9,7 @@ namespace ReactGraph
         readonly ISourceDefinition<T> sourceDefinition;
         readonly DependencyEngine dependencyEngine;
 
-        public WhenFormulaChangesBuilder(Expression<Func<T>> sourceFunction, string nodeId, DependencyEngine dependencyEngine)
+        public WhenFormulaChangesBuilder(Expression<Func<T, T>> sourceFunction, string nodeId, DependencyEngine dependencyEngine)
         {
             this.dependencyEngine = dependencyEngine;
             if (IsWritable(sourceFunction))

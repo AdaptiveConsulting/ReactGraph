@@ -32,6 +32,13 @@ namespace ReactGraph
 
         public WhenFormulaChangesBuilder<T> From(Expression<Func<T>> sourceExpression, Action<Exception> onError, string nodeId = null)
         {
+            var parameterExpression = Expression.Parameter(typeof(T));
+            var wrapped = Expression.Lambda<Func<T, T>>(sourceExpression.Body, new[] { parameterExpression });
+            return From(wrapped, onError, nodeId);
+        }
+
+        public WhenFormulaChangesBuilder<T> From(Expression<Func<T, T>> sourceExpression, Action<Exception> onError, string nodeId = null)
+        {
             ISourceDefinition<T> sourceDefinition;
             if (IsWritable(sourceExpression))
             {

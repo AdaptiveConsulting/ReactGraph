@@ -7,16 +7,16 @@ namespace ReactGraph
 {
     public class FormulaDefinition<T> : ExpressionDefinition<T>, ISourceDefinition<T>
     {
-        readonly Expression<Func<T>> sourceExpression;
+        readonly Expression<Func<T, T>> sourceExpression;
 
-        public FormulaDefinition(Expression<Func<T>> sourceExpression, string nodeId) : 
+        public FormulaDefinition(Expression<Func<T, T>> sourceExpression, string nodeId) : 
             base(sourceExpression, NodeType.Formula, nodeId)
         {
             this.sourceExpression = sourceExpression;
             SourcePaths = new List<ISourceDefinition>();
         }
 
-        public Func<T> CreateGetValueDelegate()
+        public Func<T, T> CreateGetValueDelegate()
         {
             return sourceExpression.Compile();
         }

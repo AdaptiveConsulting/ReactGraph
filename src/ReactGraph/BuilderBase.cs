@@ -8,7 +8,7 @@ namespace ReactGraph
 {
     public class BuilderBase
     {
-        protected bool IsWritable<T>(Expression<Func<T>> expression)
+        protected bool IsWritable(LambdaExpression expression)
         {
             var memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null) return false;
@@ -23,7 +23,8 @@ namespace ReactGraph
         }
 
         // TODO this needs to go somewhere else, some factory
-        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId, bool calculateChildren)
+        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId,
+            bool calculateChildren)
         {
             var parameterExpression = Expression.Parameter(typeof(T));
             var targetAssignmentLambda = Expression.Lambda<Action<T>>(Expression.Assign(expression.Body, parameterExpression), parameterExpression);
@@ -38,7 +39,21 @@ namespace ReactGraph
             return memberDefinition;
         }
 
-        public static ISourceDefinition<T> CreateFormulaDefinition<T>(Expression<Func<T>> sourceExpression, string nodeId, bool calculateChildren)
+        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T, T>> expression, string nodeId, bool calculateChildren)
+        {
+            var memberAccessor = Expression.Lambda<Func<T>>(expression.Body);
+            return CreateMemberDefinition(memberAccessor, nodeId, calculateChildren);
+        }
+
+        public static ISourceDefinition<T> CreateFormulaDefinition<T>(Expression<Func<T>> sourceExpression,
+            string nodeId, bool calculateChildren)
+        {
+            var parameterExpression = Expression.Parameter(typeof(T));
+            var wrapped = Expression.Lambda<Func<T, T>>(sourceExpression.Body, new[] {parameterExpression});
+            return CreateFormulaDefinition(wrapped, nodeId, calculateChildren);
+        }
+
+        public static ISourceDefinition<T> CreateFormulaDefinition<T>(Expression<Func<T, T>> sourceExpression, string nodeId, bool calculateChildren)
         {
             var formulaDefinition = new FormulaDefinition<T>(sourceExpression, nodeId);
             if (calculateChildren)

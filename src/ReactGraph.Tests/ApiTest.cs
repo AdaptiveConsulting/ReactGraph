@@ -233,35 +233,34 @@ c.Value --> c.Value * 2 --> d.Value --> d.Value - 2 --> c.Value");
         [Fact]
         public void CanUseCurrentValueWhenRecalculating()
         {
-            //TODO Fix test
-            //var optionsViewModel = new OptionsViewModel
-            //{
-            //    Options = new ObservableCollection<string>
-            //    {
-            //        "Item 1",
-            //        "Item 2",
-            //        "Item 3"
-            //    },
-            //    SelectedOption = "Item 1"
-            //};
+            var optionsViewModel = new OptionsViewModel
+            {
+                Options = new ObservableCollection<string>
+                {
+                    "Item 1",
+                    "Item 2",
+                    "Item 3"
+                },
+                SelectedOption = "Item 1"
+            };
 
-            //engine
-            //    .Assign(() => optionsViewModel.SelectedOption)
-            //    .From(currentValue => UnselectInvalidOption(currentValue, optionsViewModel.Options), ex => { });
+            engine
+                .Assign(() => optionsViewModel.SelectedOption)
+                .From(currentValue => UnselectInvalidOption(currentValue, optionsViewModel.Options), ex => { });
 
-            //optionsViewModel.Options = new ObservableCollection<string>
-            //{
-            //    "Item 1",
-            //    "Item 2"
-            //};
-            //optionsViewModel.SelectedOption.ShouldBe("Item 1");
+            optionsViewModel.Options = new ObservableCollection<string>
+            {
+                "Item 1",
+                "Item 2"
+            };
+            optionsViewModel.SelectedOption.ShouldBe("Item 1");
 
-            //optionsViewModel.Options = new ObservableCollection<string>
-            //{
-            //    "Item 2",
-            //    "Item 3"
-            //};
-            //optionsViewModel.SelectedOption.ShouldBe(null);
+            optionsViewModel.Options = new ObservableCollection<string>
+            {
+                "Item 2",
+                "Item 3"
+            };
+            optionsViewModel.SelectedOption.ShouldBe(null);
         }
 
         string UnselectInvalidOption(string currentValue, ObservableCollection<string> options)

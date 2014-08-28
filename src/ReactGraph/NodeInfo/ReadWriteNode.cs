@@ -8,12 +8,12 @@ namespace ReactGraph.NodeInfo
         readonly NodeRepository nodeRepository;
         bool shouldTrackChanges;
         readonly Action<T> setValue;
-        readonly Func<T> getValue;
+        readonly Func<T, T> getValue;
         readonly NodeType type;
         IValueSource<T> valueSource;
         Action<Exception> exceptionHandler;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type, NodeRepository nodeRepository, bool shouldTrackChanges)
+        public ReadWriteNode(Func<T, T> getValue, Action<T> setValue, string path, NodeType type, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
             this.type = type;
@@ -78,7 +78,7 @@ namespace ReactGraph.NodeInfo
             {
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.RemoveLookup(currentValue.Value);
-                currentValue.NewValue(getValue());
+                currentValue.NewValue(getValue(currentValue.HasValue ? currentValue.Value : default(T)));
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.AddLookup(currentValue.Value, this);
             }
