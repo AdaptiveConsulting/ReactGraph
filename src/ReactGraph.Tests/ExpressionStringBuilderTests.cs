@@ -29,7 +29,18 @@ namespace ReactGraph.Tests
             var mortgateCalculatorViewModel = new MortgateCalculatorViewModel();
             VerifyExpression(() => (int)(notifies.SubTotal * (1m + (notifies.TaxPercentage / 100m))), "(notifies.SubTotal * (1 + (notifies.TaxPercentage / 100)))");
             VerifyExpression(() => InstanceMethodCall(), "InstanceMethodCall()");
+            VerifyExpression(() => notifies.InstanceMethod(), "notifies.InstanceMethod()");
             VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
+            VerifyExpression(() => StaticMethod(notifies.SubTotal), "StaticMethod(notifies.SubTotal)");
+            VerifyExpression(() => StaticMethodLotsOfArguments(notifies.TaxPercentage, notifies.TaxPercentage, notifies.TaxPercentage, notifies.TaxPercentage), "StaticMethodLotsOfArguments(...)");
+        }
+
+        static void StaticMethod(int subTotal)
+        {
+        }
+
+        static void StaticMethodLotsOfArguments(int a, int b, int c, int d)
+        {
         }
 
         [Fact]
