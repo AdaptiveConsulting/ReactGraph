@@ -32,9 +32,14 @@ namespace ReactGraph.Tests
             VerifyExpression(() => notifies.InstanceMethod(), "notifies.InstanceMethod()");
             VerifyExpression(() => mortgateCalculatorViewModel.RegeneratePaymentSchedule(true), "mortgateCalculatorViewModel.RegeneratePaymentSchedule(true)");
             VerifyExpression(() => StaticMethod(notifies.SubTotal), "StaticMethod(notifies.SubTotal)");
+            VerifyExpression(() => StaticMethodLotsOfArguments(notifies.TaxPercentage, notifies.TaxPercentage, notifies.TaxPercentage, notifies.TaxPercentage), "StaticMethodLotsOfArguments(...)");
         }
 
         static void StaticMethod(int subTotal)
+        {
+        }
+
+        static void StaticMethodLotsOfArguments(int a, int b, int c, int d)
         {
         }
 

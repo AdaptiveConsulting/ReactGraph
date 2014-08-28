@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -180,7 +179,16 @@ namespace ReactGraph.Construction
                 skipDot = false;
             }
             Out(node.Method.Name + "(");
-            VisitArguments(node.Arguments.ToArray());
+            var args = node.Arguments.ToArray();
+            if (args.Length > 3)
+            {
+                Out("...");
+            }
+            else
+            {
+                VisitArguments(args);
+            }
+            
             Out(")");
             return node;
         }
