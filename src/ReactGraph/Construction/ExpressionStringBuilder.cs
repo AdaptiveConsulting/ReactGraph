@@ -23,8 +23,6 @@ namespace ReactGraph.Construction
             var visitor = new ExpressionStringBuilder();
             visitor.Visit(expression);
             var s = visitor.builder.ToString();
-            if (s.StartsWith("(") && s.EndsWith(")") && s.Count(c => c == '(' || c == ')') == 2)
-                return s.Substring(1, s.Length - 2);
             return s;
         }
 
@@ -176,20 +174,13 @@ namespace ReactGraph.Construction
         {
             Visit(node.Object);
 
-            IEnumerable<Expression> arguments = node.Arguments;
-            if (node.Method.IsStatic)
-            {
-                Visit(arguments.First());
-                arguments = arguments.Skip(1);
-            }
-
-            if (!skipDot)
+            if (!skipDot && !node.Method.IsStatic)
             {
                 Out(".");
                 skipDot = false;
             }
             Out(node.Method.Name + "(");
-            VisitArguments(arguments.ToArray());
+            VisitArguments(node.Arguments.ToArray());
             Out(")");
             return node;
         }

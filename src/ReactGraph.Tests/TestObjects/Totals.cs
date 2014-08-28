@@ -38,5 +38,9 @@ namespace ReactGraph.Tests.TestObjects
                 OnPropertyChanged("Total");
             }
         }
+
+        public void InstanceMethod()
+        {
+        }
     }
 }
