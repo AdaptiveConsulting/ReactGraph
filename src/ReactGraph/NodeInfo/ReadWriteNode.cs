@@ -4,20 +4,29 @@ namespace ReactGraph.NodeInfo
 {
     class ReadWriteNode<T> : ITakeValue<T>, IValueSource<T>
     {
+        // TODO why do we cache the current value? Coulnd't we read from the corresponding member directly when needed?
         readonly Maybe<T> currentValue = new Maybe<T>();
         readonly NodeRepository nodeRepository;
         bool shouldTrackChanges;
+
+        // TODO rename to indicate that this get and set to the corresponding member / property?
         readonly Action<T> setValue;
         readonly Func<T> getValue;
         readonly NodeType type;
+
+        // TODO isn't that always a formula? why do we call it valueSource? This node is related to 2 things: a property/member and a formula, source could apply to both.
         IValueSource<T> valueSource;
+
+        // TODO why is the exception handler on a ReadWriteNode?
         Action<Exception> exceptionHandler;
 
         public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
+            // TODO isn't type always "member"? 
             this.type = type;
             this.nodeRepository = nodeRepository;
+
             this.shouldTrackChanges = shouldTrackChanges;
             this.setValue = setValue;
             this.getValue = getValue;
@@ -55,8 +64,11 @@ namespace ReactGraph.NodeInfo
             return Path;
         }
 
+        // TODO always Member?
         public NodeType Type { get { return type; } }
 
+        // TODO have you considered putting that logic in the depdendency engine?
+        // it looks to me that the depdendency engine would have evaluated the source formula just before, so it could have the result and set it on this node, this would remove the need to have valueSource
         public ReevaluationResult Reevaluate()
         {
             if (valueSource != null)
@@ -66,6 +78,8 @@ namespace ReactGraph.NodeInfo
                 {
                     // TODO Don't set and return NoChange when value has not changed
                     setValue(value.Value);
+
+                    // TODO why do we need to do that? 
                     ValueChanged();
                     return ReevaluationResult.Changed;
                 }
@@ -74,6 +88,8 @@ namespace ReactGraph.NodeInfo
                 return ReevaluationResult.Error;
             }
 
+            // TODO can a member be re-evaluated and have no value source? Should we throw here?
+
             return ReevaluationResult.NoChange;
         }
 
@@ -81,6 +97,7 @@ namespace ReactGraph.NodeInfo
         {
             try
             {
+                // TODO that's for the INotifyPropertyChange tracking I guess? we unhook and rehook even when value has not changed?
                 if (shouldTrackChanges && currentValue.HasValue)
                     nodeRepository.RemoveLookup(currentValue.Value);
 
@@ -100,6 +117,7 @@ namespace ReactGraph.NodeInfo
 
         protected bool Equals(ReadWriteNode<T> other)
         {
+            // TODO is that enough to guarantee identity?
             return string.Equals(Path, other.Path);
         }
 
@@ -113,11 +131,13 @@ namespace ReactGraph.NodeInfo
 
         public override int GetHashCode()
         {
+            // TODO can the path be null?
             return (Path != null ? Path.GetHashCode() : 0);
         }
 
         IMaybe IValueSource.GetValue()
         {
+            // TODO why do we need a non generic version?
             return GetValue();
         }
     }

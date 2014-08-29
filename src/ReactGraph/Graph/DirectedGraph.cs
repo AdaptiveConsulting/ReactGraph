@@ -48,12 +48,6 @@ namespace ReactGraph.Graph
             get { return verticies.Values; }
         }
 
-
-        public Vertex<T> GetVertexById(string nodeId)
-        {
-            return Verticies.First(v => v.Id == nodeId);
-        }
-
         /// <summary>
         /// Perform a depth first seach
         /// <see cref="http://en.wikipedia.org/wiki/Depth-first_search"/>
@@ -88,6 +82,11 @@ namespace ReactGraph.Graph
         /// <returns></returns>
         public IEnumerable<Vertex<T>> FindSources()
         {
+            // TODO isn't that better? Can't remember why I wrote it like that in the first place..I think not had predecessors at this point
+            //return from v in Verticies
+            //    where !v.Predecessors.Any()
+            //    select v;
+
             var perVertexCount = new Dictionary<Vertex<T>, int>();
             foreach (var vertex in verticies.Values)
             {
@@ -104,6 +103,8 @@ namespace ReactGraph.Graph
 
         public DirectedGraph<T> SubGraph(T origin)
         {
+            // TODO Olivier: I wrote this one naively, we should check if there is not a better algo for this
+
             var dfs = DepthFirstSearch(origin);
 
             var graph = new DirectedGraph<T>();
@@ -126,6 +127,8 @@ namespace ReactGraph.Graph
         {
             var graph = new DirectedGraph<TTarget>();
 
+            // TODO Olivier: ieterate over Edges collection instead?
+
             foreach (var vertex in Verticies)
             {
                 foreach (var edge in vertex.Successors)
@@ -144,8 +147,13 @@ namespace ReactGraph.Graph
         /// <returns></returns>
         public IEnumerable<Vertex<T>> TopologicalSort(T origin)
         {
+            // TODO Olivier: review subgraph algo, it could probably be faster
+            // TODO Olivier: another problem is memory allocation, here the subgraph is a new datastructure. We probably want to profile before trying to make that allocation free..
             var subGraph = SubGraph(origin);
             var result = new List<Vertex<T>>();
+
+            // TODO Olivier: the normal topological sort needs to start from sources but here we know that the only source is origin, since we build the subgraph from there...
+            // TODO this line can probably go away
             var sources = new Stack<Vertex<T>>(subGraph.FindSources());
 
             while (sources.Count > 0)
@@ -192,23 +200,6 @@ namespace ReactGraph.Graph
             return result;
         }
 
-        private Vertex<T> AddVertex(T data, string id)
-        {
-            if (!verticies.ContainsKey(data))
-            {
-                var newVertexId = id;
-                if (string.IsNullOrEmpty(newVertexId))
-                {
-                    vertexIdCounter++;
-                    newVertexId = "__" + vertexIdCounter;
-                }
-
-                var vertex = new Vertex<T>(data, newVertexId);
-                verticies[data] = vertex;
-            }
-            return verticies[data];
-        }
-
         private static void StrongConnect(Vertex<T> v, ref int index, Stack<Vertex<T>> stack, Dictionary<Vertex<T>, int> indexes, Dictionary<Vertex<T>, int> lowlinks, List<List<Vertex<T>>> result)
         {
             // Set the depth index for vertex to the smallest unused index
@@ -248,6 +239,23 @@ namespace ReactGraph.Graph
                 
                 if (scc.Count > 1) result.Add(scc);
             }
+        }
+
+        private Vertex<T> AddVertex(T data, string id)
+        {
+            if (!verticies.ContainsKey(data))
+            {
+                var newVertexId = id;
+                if (string.IsNullOrEmpty(newVertexId))
+                {
+                    vertexIdCounter++;
+                    newVertexId = "__" + vertexIdCounter;
+                }
+
+                var vertex = new Vertex<T>(data, newVertexId);
+                verticies[data] = vertex;
+            }
+            return verticies[data];
         }
 
         public IEnumerable<Vertex<T>> SuccessorsOf(T data)

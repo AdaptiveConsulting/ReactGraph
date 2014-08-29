@@ -28,6 +28,7 @@ namespace ReactGraph.NodeInfo
 
         public override int GetHashCode()
         {
+            // TODO Jake, is the 0 intentional?
             return (Id != null ? Id.GetHashCode() : 0);
         }
     }

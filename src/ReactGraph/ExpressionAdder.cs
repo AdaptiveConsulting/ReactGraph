@@ -89,6 +89,11 @@ namespace ReactGraph
 
         ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target, bool shouldTrackChanges)
         {
+            // TODO this smells: generally when you switch on a type like that it's that you should be doing a polymorphic call somewhere else. 
+            // shouldn't it be like that instead:
+            // - an ActionDefinition know how to create a WriteOnlyNode (which could be renamed ActionNode btw)
+            // - a MemberDefinition know how to create ReadWriteNode (which could be renamed MemberNode)
+            // - a FormulaDefinition know how to create ReadOnlyNode (which could be renamed FormulaNode)
             switch (target.NodeType)
             {
                 case NodeType.Formula:
@@ -110,7 +115,7 @@ namespace ReactGraph
             switch (source.NodeType)
             {
                 case NodeType.Formula:
-                case NodeType.Action:
+                case NodeType.Action: // TODO An action can be a source node????
                     return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegateWithCurrentValue(), source.Path, nodeRepository, shouldTrackChanges);
                 case NodeType.Member:
                     // TODO Figure out how to remove cast

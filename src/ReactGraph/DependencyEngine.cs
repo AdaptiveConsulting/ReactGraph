@@ -39,6 +39,8 @@ namespace ReactGraph
             return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.Type, vertex.Data.ToString(), vertex.Id));
         }
 
+
+        // TODO we need to profile and make sure we are optimal on this code path, it's the main hot path of the library
         public bool ValueHasChanged(object instance, string pathToChangedValue)
         {
             if (!nodeRepository.Contains(instance) || isExecuting) return false;
@@ -54,13 +56,23 @@ namespace ReactGraph
             try
             {
                 isExecuting = true;
+                // TODO I need to review topological sort and speed it up, it's on the hot path
+                // TODO we may want to add another instrumentation call before the topo sort, so we can instrument the time it takes to calculate it and compare it with the time it takes to actually propagate (so we can optimize the costly part)
                 var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
                 var firstVertex = orderToReeval.Dequeue();
                 engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
+
+                // TODO I don't think the name of this method describes particulary well what it's doing
                 node.ValueChanged();
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
+
+                    // TODO here I'm wondering if it's better to manage all the nodes the same way:
+                    // - if the node is a formula, we could evaluate the formula and set the target member here (or call the target action)
+                    // - if the node is a property/member, what does it actually mean to reevaluate it?
+                    // I have the feeling that trying to make all this very generic is making the whole thing more confusing and complex than it actually is
+
                     var reevaluationResult = vertex.Data.Reevaluate();
 
                     switch (reevaluationResult)
@@ -69,6 +81,8 @@ namespace ReactGraph
                             engineInstrumenter.NodeEvaluated(vertex.Data.ToString(), vertex.Id, reevaluationResult);
                             break;
                         case ReevaluationResult.Error:
+
+                            // TODO this should be refactored, maybe some algo in the graph?
                             var nodesRelatedToError = graph.TopologicalSort(vertex.Data).ToDictionary(k => k.Data);
 
                             foreach (var vertex1 in nodesRelatedToError)
@@ -98,6 +112,9 @@ namespace ReactGraph
             return true;
         }
 
+        // TODO I tried pretty hard to understand this but couldn't. Lookups based on "Path.EndsWith(pathToChangedValue)" looks really flaky to me
+        // TODO Also looks like there is a bug (see new failing tests for repro)
+        // TODO it's also doing lots of iterations and lookups, and it's happening every single time ValueChanged is called
         bool FindChangedNode(string pathToChangedValue, INodeInfo changedInstance, out INodeInfo node)
         {
             // The idea of this is for a expression viewModel.Foo.Bar

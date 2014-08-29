@@ -11,10 +11,13 @@ namespace ReactGraph.Tests
     public class ApiTest
     {
         DependencyEngine engine;
+        int count;
 
         public ApiTest()
         {
             engine = new DependencyEngine();
+            SomeProperty = false;
+            count = 0;
         }
 
         [Fact]
@@ -228,7 +231,7 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
             Prop.ShouldBe(true);
         }
 
-        public bool Prop { get; set; }
+        bool Prop { get; set; }
 
         [Fact]
         public void CanUseCurrentValueWhenRecalculating()
@@ -248,6 +251,7 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
                 .Assign(() => optionsViewModel.SelectedOption)
                 .From(currentValue => UnselectInvalidOption(currentValue, optionsViewModel.Options), ex => { });
 
+            // change a paramter of the formula, to check the formula triggers and use correct current value
             optionsViewModel.Options = new ObservableCollection<string>
             {
                 "Item 1",
@@ -255,6 +259,7 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
             };
             optionsViewModel.SelectedOption.ShouldBe("Item 1");
 
+            // again, change a paramter of the formula, to check the formula triggers and use correct current value
             optionsViewModel.Options = new ObservableCollection<string>
             {
                 "Item 2",
@@ -269,6 +274,78 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
                 return null;
 
             return currentValue;
+        }
+
+
+        // -----------------------------------------------------------------------------------------------
+        // Issue 1 - Expression are evaluated during registration, is that intended?
+        // -----------------------------------------------------------------------------------------------
+
+        private bool SomeProperty { get; set; }
+
+        bool CountHowManyTimesCalled()
+        {
+            count++;
+            return true;
+        }
+
+        [Fact]
+        public void ExpressionsShouldNotBeEvaluatedDuringRegistration()
+        {
+            SomeProperty = false;
+
+            engine.Assign(() => SomeProperty)
+                .From(() => CountHowManyTimesCalled(), ex => { });
+
+            count.ShouldBe(0);
+        }
+
+        // -----------------------------------------------------------------------------------------------
+        // Issue 2 - changing the target property of a formula should not cause the formula to be evaluated
+        // -----------------------------------------------------------------------------------------------
+
+        [Fact]
+        public void ChangingTargetPropertyShouldNotTriggerExpressionEvaluation()
+        {
+            var optionsViewModel = new OptionsViewModel();
+
+            engine
+                .Assign(() => optionsViewModel.SelectedOption)
+                .From(() => CountHowManyTimesCalled(optionsViewModel.Options), ex => { });
+
+            // reset count to 0 (because of issue 1)
+            count = 0;
+
+            // change the target property
+            optionsViewModel.SelectedOption = "Item2";
+
+            // check that the formula was not evaluated
+            count.ShouldBe(0);
+
+            // Note: this seems to be caused by DepdendencyEngine.FindChangedNode returning the wrong node.
+            // this method is super confusing, spent some time on it and just can't understand the logic, I prefer to not touch it
+        }
+
+        private string CountHowManyTimesCalled(ObservableCollection<string> options)
+        {
+            count++;
+            return null;
+        }
+
+        // -----------------------------------------------------------------------------------------------
+        // Issue 3 - properties used in expressions should not have to be writable
+        // -----------------------------------------------------------------------------------------------
+
+        private int Count { get { return count; } }
+
+        private int TargetProperty { get; set; }
+
+        [Fact]
+        public void ShouldBeAbleToUseReadOnlyPropertiesInExpressions()
+        {
+            engine
+                .Assign(() => TargetProperty)
+                .From(() => Addition(Count), ex => { });
         }
 
         int ThrowsInvalidOperationException(int value)
