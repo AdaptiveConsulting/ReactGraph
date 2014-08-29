@@ -29,6 +29,8 @@ namespace ReactGraph
             var targetNode = GetTargetNode(target);
 
             targetNode.SetSource(sourceNode, onError);
+            sourceNode.SetTarget(targetNode);
+
             graph.AddEdge(sourceNode, targetNode, source.NodeName, target.NodeName);
             AddSourcePathExpressions(source, sourceNode);
         }
@@ -109,7 +111,7 @@ namespace ReactGraph
             {
                 case NodeType.Formula:
                 case NodeType.Action:
-                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegate(), source.Path, nodeRepository, shouldTrackChanges);
+                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegateWithCurrentValue(), source.Path, nodeRepository, shouldTrackChanges);
                 case NodeType.Member:
                     // TODO Figure out how to remove cast
                     var getValueDelegate = source.CreateGetValueDelegate();
