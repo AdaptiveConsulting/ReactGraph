@@ -5,7 +5,7 @@ namespace ReactGraph.NodeInfo
 {
     class NodeRepository
     {
-        // HACK this is a very quick hack to get INotifyPropertyChanged support
+        // TODO HACK this is a very quick hack to get INotifyPropertyChanged support
         readonly DependencyEngine engine;
         private readonly Dictionary<object, INodeInfo> nodeLookup;
 

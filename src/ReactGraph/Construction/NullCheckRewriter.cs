@@ -2,6 +2,8 @@ using System.Linq.Expressions;
 
 namespace ReactGraph.Construction
 {
+    // TODO: remove? Do we use that?
+
     class NullCheckRewriter : ExpressionVisitor
     {
         protected override Expression VisitMember(MemberExpression node)

@@ -30,6 +30,7 @@ namespace ReactGraph
 
         public ReevaluationResult Reevaluate()
         {
+            // TODO again, I think the engine should do that
             if (valueSource != null)
             {
                 ValueChanged();
