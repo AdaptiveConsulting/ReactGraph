@@ -2,6 +2,6 @@
 {
     interface IValueSource : INodeInfo
     {
-        IMaybe GetValue();
+        void UnderlyingValueHasBeenChanged();
     }
 }

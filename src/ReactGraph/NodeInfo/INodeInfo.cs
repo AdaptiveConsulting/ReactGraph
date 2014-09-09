@@ -8,8 +8,6 @@ namespace ReactGraph.NodeInfo
 
         ReevaluationResult Reevaluate();
 
-        void ValueChanged();
-
         bool PathMatches(string pathToChangedValue);
     }
 }

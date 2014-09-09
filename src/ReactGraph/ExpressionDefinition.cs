@@ -14,7 +14,9 @@ namespace ReactGraph
         }
 
         public string FullPath { get; private set; }
+
         public string NodeName { get; private set; }
+
         public NodeType NodeType { get; private set; }
 
         public override string ToString()

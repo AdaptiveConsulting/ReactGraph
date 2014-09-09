@@ -8,8 +8,7 @@ namespace ReactGraph
     public class BuilderBase
     {
         // TODO this needs to go somewhere else, some factory
-        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId,
-            bool calculateChildren)
+        public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId, bool calculateChildren)
         {
             var parameterExpression = Expression.Parameter(typeof(T));
             var targetAssignmentLambda = Expression.Lambda<Action<T>>(Expression.Assign(expression.Body, parameterExpression), parameterExpression);
