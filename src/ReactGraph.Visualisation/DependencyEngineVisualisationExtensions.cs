@@ -4,7 +4,7 @@ namespace ReactGraph.Visualisation
 {
     public static class DependencyEngineVisualisationExtensions
     {
-        public static string ToDotFormat(this DependencyEngine dependencyEngine, string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null)
+        public static string ToDotFormat(this DependencyEngine dependencyEngine, string title = null, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null)
         {
             var graphSnapshot = dependencyEngine.GetGraphSnapshot();
             var visualsaition = new DotVisualisation(graphSnapshot);

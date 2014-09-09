@@ -38,18 +38,10 @@ namespace ReactGraph
 
         public WhenFormulaChangesBuilder<T> From(Expression<Func<T, T>> sourceExpression, Action<Exception> onError, string nodeId = null)
         {
-            ISourceDefinition<T> sourceDefinition;
-            if (sourceExpression.IsWritable())
-            {
-                sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true);
-            }
-            else
-            {
-                sourceDefinition = CreateFormulaDefinition(sourceExpression, nodeId, true);
-            }
+            var sourceDefinition = sourceExpression.IsWritable() ? CreateMemberDefinition(sourceExpression, nodeId, true) : CreateFormulaDefinition(sourceExpression, nodeId, true);
 
             engine.AddExpression(sourceDefinition, targetMemberDefinition, onError);
-            return new WhenFormulaChangesBuilder<T>(sourceExpression, nodeId, engine);
+            return new WhenFormulaChangesBuilder<T>(sourceDefinition, engine);
         }
     }
 }

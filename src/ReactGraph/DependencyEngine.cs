@@ -47,7 +47,7 @@ namespace ReactGraph
 
             var changedInstance = nodeRepository.Get(instance);
 
-            INodeInfo node = FindChangedNode(pathToChangedValue, changedInstance);
+            IValueSource node = FindChangedNode(pathToChangedValue, changedInstance);
 
             try
             {
@@ -61,8 +61,7 @@ namespace ReactGraph
                 var firstVertex = orderToReeval.Dequeue();
                 engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
 
-                // TODO I don't think the name of this method describes particulary well what it's doing
-                node.ValueChanged();
+                node.UnderlyingValueHasBeenChanged();
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
@@ -113,8 +112,8 @@ namespace ReactGraph
 
         // TODO I tried pretty hard to understand this but couldn't. Lookups based on "Path.EndsWith(pathToChangedValue)" looks really flaky to me
         // TODO Also looks like there is a bug (see new failing tests for repro)
-        // TODO it's also doing lots of iterations and lookups, and it's happening every single time ValueChanged is called
-        INodeInfo FindChangedNode(string pathToChangedValue, INodeInfo changedInstance)
+        // TODO it's also doing lots of iterations and lookups, and it's happening every single time UnderlyingValueHasBeenChanged is called
+        IValueSource FindChangedNode(string pathToChangedValue, INodeInfo changedInstance)
         {
             // The idea of this is for a expression viewModel.Foo.Bar
             // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
@@ -125,9 +124,9 @@ namespace ReactGraph
             // TODO Should make this visible via instrumentation
 
             if (successors.Length == 1)
-                return successors[0].Target.Data;
+                return (IValueSource) successors[0].Target.Data;
 
-            return changedInstance;
+            return (IValueSource) changedInstance;
         }
 
         public void CheckCycles()

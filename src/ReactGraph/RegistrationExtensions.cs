@@ -9,7 +9,9 @@ namespace ReactGraph
         {
             var parameterExpression = Expression.Parameter(typeof(TProp));
             var wrapped = Expression.Lambda<Func<TProp, TProp>>(sourceFunction.Body, new[] { parameterExpression });
-            return new WhenFormulaChangesBuilder<TProp>(wrapped, expressionId, engine);
+            return new WhenFormulaChangesBuilder<TProp>(sourceFunction.IsWritable() ? 
+                BuilderBase.CreateMemberDefinition(sourceFunction, expressionId, true) : 
+                BuilderBase.CreateFormulaDefinition(sourceFunction, expressionId, true), engine);
         }
 
         public static AssignPropertyBuilder<TProp> Assign<TProp>(this DependencyEngine engine, Expression<Func<TProp>> targetMemberExpression, string expressionId = null)
