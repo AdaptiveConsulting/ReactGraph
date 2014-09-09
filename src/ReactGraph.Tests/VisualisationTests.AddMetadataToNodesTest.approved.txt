@@ -7,4 +7,4 @@
     Addition -> C;
     __1 -> Addition;
     __3 -> Addition;
-})
+}
