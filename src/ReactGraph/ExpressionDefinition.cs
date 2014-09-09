@@ -10,16 +10,16 @@ namespace ReactGraph
         {
             NodeType = nodeType;
             NodeName = nodeName;
-            Path = ExpressionStringBuilder.ToString(expression);
+            FullPath = ExpressionStringBuilder.ToString(expression);
         }
 
-        public string Path { get; private set; }
+        public string FullPath { get; private set; }
         public string NodeName { get; private set; }
         public NodeType NodeType { get; private set; }
 
         public override string ToString()
         {
-            return Path;
+            return FullPath;
         }
     }
 }

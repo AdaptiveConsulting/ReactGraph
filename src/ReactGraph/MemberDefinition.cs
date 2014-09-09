@@ -15,6 +15,7 @@ namespace ReactGraph
         {
             this.targetMemberExpression = targetMemberExpression;
             this.assignmentLambda = assignmentLambda;
+            PathToParent = ((MemberExpression) targetMemberExpression.Body).Member.Name;
             SourcePaths = new List<ISourceDefinition>();
         }
 
@@ -27,6 +28,8 @@ namespace ReactGraph
         {
             return targetMemberExpression.Compile();
         }
+
+        public string PathToParent { get; private set; }
 
         public Action<T> CreateSetValueDelegate()
         {

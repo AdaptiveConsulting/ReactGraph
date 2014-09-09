@@ -4,10 +4,12 @@ namespace ReactGraph.NodeInfo
     {
         NodeType Type { get; }
 
-        string Path { get; }
+        string FullPath { get; }
 
         ReevaluationResult Reevaluate();
 
         void ValueChanged();
+
+        bool PathMatches(string pathToChangedValue);
     }
 }

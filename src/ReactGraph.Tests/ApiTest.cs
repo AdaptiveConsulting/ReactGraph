@@ -225,6 +225,8 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
                 .Assign(() => Prop)
                 .From(() => mortgateCalculator.PaymentSchedule.HasValidationError, ex => { });
 
+            string dotFormat = engine.ToDotFormat("Foo");
+            Console.WriteLine(dotFormat);
             mortgateCalculator.PaymentSchedule.HasValidationError = true;
 
             engine.ValueHasChanged(mortgateCalculator.PaymentSchedule, "HasValidationError");
@@ -308,10 +310,12 @@ c.Value --> (c.Value * 2) --> d.Value --> (d.Value - 2) --> c.Value");
         public void ChangingTargetPropertyShouldNotTriggerExpressionEvaluation()
         {
             var optionsViewModel = new OptionsViewModel();
-
             engine
                 .Assign(() => optionsViewModel.SelectedOption)
                 .From(() => CountHowManyTimesCalled(optionsViewModel.Options), ex => { });
+
+            string dotFormat = engine.ToDotFormat("Foo");
+            Console.WriteLine(dotFormat);
 
             // reset count to 0 (because of issue 1)
             count = 0;
