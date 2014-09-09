@@ -47,11 +47,7 @@ namespace ReactGraph
 
             var changedInstance = nodeRepository.Get(instance);
 
-            INodeInfo node;
-            if (!FindChangedNode(pathToChangedValue, changedInstance, out node))
-            {
-                return false;
-            }
+            INodeInfo node = FindChangedNode(pathToChangedValue, changedInstance);
 
             try
             {
@@ -59,6 +55,9 @@ namespace ReactGraph
                 // TODO I need to review topological sort and speed it up, it's on the hot path
                 // TODO we may want to add another instrumentation call before the topo sort, so we can instrument the time it takes to calculate it and compare it with the time it takes to actually propagate (so we can optimize the costly part)
                 var orderToReeval = new Queue<Vertex<INodeInfo>>(graph.TopologicalSort(node));
+                if (orderToReeval.Count == 0)
+                    return false;
+
                 var firstVertex = orderToReeval.Dequeue();
                 engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
 
@@ -115,38 +114,20 @@ namespace ReactGraph
         // TODO I tried pretty hard to understand this but couldn't. Lookups based on "Path.EndsWith(pathToChangedValue)" looks really flaky to me
         // TODO Also looks like there is a bug (see new failing tests for repro)
         // TODO it's also doing lots of iterations and lookups, and it's happening every single time ValueChanged is called
-        bool FindChangedNode(string pathToChangedValue, INodeInfo changedInstance, out INodeInfo node)
+        INodeInfo FindChangedNode(string pathToChangedValue, INodeInfo changedInstance)
         {
             // The idea of this is for a expression viewModel.Foo.Bar
             // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
             // Then get the successors and filter by path to get the intended changed node.
             var successors = graph.SuccessorsOf(changedInstance)
-                .Where(v => v.Data.Path.EndsWith(pathToChangedValue))
+                .Where(v => v.Target.Data.PathMatches(pathToChangedValue))
                 .ToArray();
             // TODO Should make this visible via instrumentation
 
-            if (successors.Length > 1)
-                node = changedInstance;
-            else if (successors.Length == 1)
-                node = successors[0].Data;
-            else
-            {
-                // When path is contained in a formula, i.e Foo.Bar and Bar changes but
-                // Formula is Calc(Foo)
-                successors = graph.SuccessorsOf(changedInstance)
-                    .Where(v => v.Data.Path.Contains(changedInstance.Path))
-                    .ToArray();
-                if (successors.Length > 1)
-                    node = changedInstance;
-                else if (successors.Length == 1)
-                    node = successors[0].Data;
-                else
-                {
-                    node = null;
-                    return false;
-                }
-            }
-            return true;
+            if (successors.Length == 1)
+                return successors[0].Target.Data;
+
+            return changedInstance;
         }
 
         public void CheckCycles()

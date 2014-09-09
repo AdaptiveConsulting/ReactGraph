@@ -33,6 +33,9 @@ namespace ReactGraph
 
             graph.AddEdge(sourceNode, targetNode, source.NodeName, target.NodeName);
             AddSourcePathExpressions(source, sourceNode);
+            var targetAsSource = target as ISourceDefinition<T>;
+            if (targetAsSource != null)
+                AddSourcePathExpressions(targetAsSource, (IValueSource) targetNode);
         }
 
         void AddSourcePathExpressions(ISourceDefinition sourceDefinition, IValueSource sourceNode)
@@ -100,11 +103,12 @@ namespace ReactGraph
                     throw new ArgumentException("Formula nodes cannot be a value target");
                 case NodeType.Member:
                     // TODO Figure out how to remove cast
-                    var getValueDelegate = ((ISourceDefinition<T>)target).CreateGetValueDelegate();
+                    var sourceDefinition = ((ISourceDefinition<T>)target);
+                    var getValueDelegate = sourceDefinition.CreateGetValueDelegate();
                     var setValueDelegate = target.CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.Path, NodeType.Member, nodeRepository, shouldTrackChanges);
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, sourceDefinition.PathToParent, NodeType.Member, nodeRepository, shouldTrackChanges);
                 case NodeType.Action:
-                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.Path);
+                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.FullPath);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -116,13 +120,13 @@ namespace ReactGraph
             {
                 case NodeType.Formula:
                 case NodeType.Action: // TODO An action can be a source node????
-                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegateWithCurrentValue(), source.Path, nodeRepository, shouldTrackChanges);
+                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegateWithCurrentValue(), source.FullPath, source.PathToParent, nodeRepository, shouldTrackChanges);
                 case NodeType.Member:
                     // TODO Figure out how to remove cast
                     var getValueDelegate = source.CreateGetValueDelegate();
                     var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
                     var type = source.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.Path, type, nodeRepository, shouldTrackChanges);
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, source.PathToParent, type, nodeRepository, shouldTrackChanges);
                 default:
                     throw new ArgumentOutOfRangeException();
             }

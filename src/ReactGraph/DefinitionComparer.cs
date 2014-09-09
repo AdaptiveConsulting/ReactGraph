@@ -9,7 +9,7 @@ namespace ReactGraph
         public bool Equals(IDefinitionIdentity x, IDefinitionIdentity y)
         {
             if (ReferenceEquals(x, y)) return true;
-            return string.Equals(x.Path, y.Path);
+            return string.Equals(x.FullPath, y.FullPath);
         }
 
         public int GetHashCode(IDefinitionIdentity obj)
@@ -17,7 +17,7 @@ namespace ReactGraph
             unchecked
             {
                 // TODO do we allow IDefinitionIdentity implementations to have a null path? We probably shouldn't?
-                return obj.Path != null ? obj.Path.GetHashCode() : 0;
+                return obj.FullPath != null ? obj.FullPath.GetHashCode() : 0;
             }
         }
     }

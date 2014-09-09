@@ -12,15 +12,15 @@ namespace ReactGraph
         public WriteOnlyNode(Action<T> setValue, string path)
         {
             this.setValue = setValue;
-            Path = path;
+            FullPath = path;
         }
 
-        public string Path { get; private set; }
+        public string FullPath { get; private set; }
 
         public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
         {
             if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", FullPath));
 
             valueSource = sourceNode;
             exceptionHandler = errorHandler;
@@ -53,13 +53,18 @@ namespace ReactGraph
         {
         }
 
+        public bool PathMatches(string pathToChangedValue)
+        {
+            return false;
+        }
+
         public override string ToString()
         {
-            return Path;
+            return FullPath;
         }
         protected bool Equals(WriteOnlyNode<T> other)
         {
-            return string.Equals(Path, other.Path);
+            return string.Equals(FullPath, other.FullPath);
         }
 
         public override bool Equals(object obj)
@@ -72,7 +77,7 @@ namespace ReactGraph
 
         public override int GetHashCode()
         {
-            return (Path != null ? Path.GetHashCode() : 0);
+            return (FullPath != null ? FullPath.GetHashCode() : 0);
         }
     }
 }

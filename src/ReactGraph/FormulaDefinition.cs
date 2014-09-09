@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq.Expressions;
 using ReactGraph.NodeInfo;
 
@@ -13,6 +14,7 @@ namespace ReactGraph
             base(sourceExpression, NodeType.Formula, nodeId)
         {
             this.sourceExpression = sourceExpression;
+            PathToParent = null;
             SourcePaths = new List<ISourceDefinition>();
         }
 
@@ -20,6 +22,8 @@ namespace ReactGraph
         {
             throw new NotSupportedException("Formulas should always be re-evaluated with a provided current value.");
         }
+
+        public string PathToParent { get; private set; }
 
         public Func<T, T> CreateGetValueDelegateWithCurrentValue()
         {

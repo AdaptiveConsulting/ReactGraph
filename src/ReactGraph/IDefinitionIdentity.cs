@@ -4,7 +4,7 @@ namespace ReactGraph
 {
     public interface IDefinitionIdentity
     {
-        string Path { get; }
+        string FullPath { get; }
 
         string NodeName { get; }
 

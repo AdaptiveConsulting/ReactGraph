@@ -11,6 +11,7 @@ namespace ReactGraph.NodeInfo
 
         // TODO rename to indicate that this get and set to the corresponding member / property?
         readonly Action<T> setValue;
+        readonly string pathFromParent;
         readonly Func<T> getValue;
         readonly NodeType visualisationNodeType;
 
@@ -20,25 +21,26 @@ namespace ReactGraph.NodeInfo
         // TODO why is the exception handler on a ReadWriteNode?
         Action<Exception> exceptionHandler;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType visualisationNodeType, NodeRepository nodeRepository, bool shouldTrackChanges)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string fullPath, string pathFromParent, NodeType visualisationNodeType, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
-            Path = path;
+            FullPath = fullPath;
             // TODO isn't type always "member"? 
             this.visualisationNodeType = visualisationNodeType;
             this.nodeRepository = nodeRepository;
 
             this.shouldTrackChanges = shouldTrackChanges;
             this.setValue = setValue;
+            this.pathFromParent = pathFromParent;
             this.getValue = getValue;
             ValueChanged();
         }
 
-        public string Path { get; private set; }
+        public string FullPath { get; private set; }
 
         public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
         {
             if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", FullPath));
 
             valueSource = sourceNode;
             exceptionHandler = errorHandler;
@@ -61,7 +63,7 @@ namespace ReactGraph.NodeInfo
 
         public override string ToString()
         {
-            return Path;
+            return FullPath;
         }
 
         // TODO always Member?
@@ -115,10 +117,15 @@ namespace ReactGraph.NodeInfo
             }
         }
 
+        public bool PathMatches(string pathToChangedValue)
+        {
+            return pathFromParent == pathToChangedValue;
+        }
+
         protected bool Equals(ReadWriteNode<T> other)
         {
             // TODO is that enough to guarantee identity?
-            return string.Equals(Path, other.Path);
+            return string.Equals(FullPath, other.FullPath);
         }
 
         public override bool Equals(object obj)
@@ -132,7 +139,7 @@ namespace ReactGraph.NodeInfo
         public override int GetHashCode()
         {
             // TODO can the path be null?
-            return (Path != null ? Path.GetHashCode() : 0);
+            return (FullPath != null ? FullPath.GetHashCode() : 0);
         }
 
         IMaybe IValueSource.GetValue()
