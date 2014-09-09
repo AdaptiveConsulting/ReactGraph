@@ -45,21 +45,21 @@ namespace ReactGraph.Tests
                   .From(() => !viewModel.PaymentSchedule.HasValidationError, e => { });
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: true);
-            Console.WriteLine(engine.ToString());
+            Console.WriteLine(engine.ToDotFormat());
             viewModel.CanApply.ShouldBe(false);
             engineInstrumentation.AssertSetCount("viewModel.CanApply", 1);
 
             viewModel.RegeneratePaymentSchedule(hasValidationError: false);
-            Console.WriteLine(engine.ToString());
+            Console.WriteLine(engine.ToDotFormat());
             viewModel.CanApply.ShouldBe(true);
             engineInstrumentation.AssertSetCount("viewModel.CanApply", 2);
 
             viewModel.PaymentSchedule.HasValidationError = true;
-            Console.WriteLine(engine.ToString());
+            Console.WriteLine(engine.ToDotFormat());
             viewModel.CanApply.ShouldBe(false);
             engineInstrumentation.AssertSetCount("viewModel.CanApply", 3);
 
-            Console.WriteLine(engine.ToString());
+            Console.WriteLine(engine.ToDotFormat());
         }
 
         [Fact]

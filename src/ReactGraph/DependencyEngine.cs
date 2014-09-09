@@ -47,7 +47,7 @@ namespace ReactGraph
 
             var changedInstance = nodeRepository.Get(instance);
 
-            INodeInfo node;
+            IValueSource node;
             if (!FindChangedNode(pathToChangedValue, changedInstance, out node))
             {
                 return false;
@@ -62,8 +62,7 @@ namespace ReactGraph
                 var firstVertex = orderToReeval.Dequeue();
                 engineInstrumenter.DependecyWalkStarted(pathToChangedValue, firstVertex.Id);
 
-                // TODO I don't think the name of this method describes particulary well what it's doing
-                node.ValueChanged();
+                node.UnderlyingValueHasBeenChanged();
                 while (orderToReeval.Count > 0)
                 {
                     var vertex = orderToReeval.Dequeue();
@@ -114,8 +113,8 @@ namespace ReactGraph
 
         // TODO I tried pretty hard to understand this but couldn't. Lookups based on "Path.EndsWith(pathToChangedValue)" looks really flaky to me
         // TODO Also looks like there is a bug (see new failing tests for repro)
-        // TODO it's also doing lots of iterations and lookups, and it's happening every single time ValueChanged is called
-        bool FindChangedNode(string pathToChangedValue, INodeInfo changedInstance, out INodeInfo node)
+        // TODO it's also doing lots of iterations and lookups, and it's happening every single time UnderlyingValueHasBeenChanged is called
+        bool FindChangedNode(string pathToChangedValue, INodeInfo changedInstance, out IValueSource node)
         {
             // The idea of this is for a expression viewModel.Foo.Bar
             // When Foo, "Bar" is passed into this method, we lookup the node with value of Foo
@@ -126,9 +125,9 @@ namespace ReactGraph
             // TODO Should make this visible via instrumentation
 
             if (successors.Length > 1)
-                node = changedInstance;
+                node = (IValueSource) changedInstance;
             else if (successors.Length == 1)
-                node = successors[0].Data;
+                node = (IValueSource) successors[0].Data;
             else
             {
                 // When path is contained in a formula, i.e Foo.Bar and Bar changes but
@@ -137,9 +136,9 @@ namespace ReactGraph
                     .Where(v => v.Data.Path.Contains(changedInstance.Path))
                     .ToArray();
                 if (successors.Length > 1)
-                    node = changedInstance;
+                    node = (IValueSource) changedInstance;
                 else if (successors.Length == 1)
-                    node = successors[0].Data;
+                    node = (IValueSource) successors[0].Data;
                 else
                 {
                     node = null;

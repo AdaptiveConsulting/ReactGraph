@@ -5,25 +5,25 @@ namespace ReactGraph
 {
     class WriteOnlyNode<T> : ITakeValue<T>
     {
+        readonly Action<Exception> exceptionHandler;
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
-        Action<Exception> exceptionHandler;
 
-        public WriteOnlyNode(Action<T> setValue, string path)
+        public WriteOnlyNode(Action<T> setValue, Action<Exception> exceptionHandler, string path)
         {
             this.setValue = setValue;
+            this.exceptionHandler = exceptionHandler;
             Path = path;
         }
 
         public string Path { get; private set; }
 
-        public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
+        public void SetSource(IValueSource<T> sourceNode)
         {
             if (valueSource != null)
                 throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
 
             valueSource = sourceNode;
-            exceptionHandler = errorHandler;
         }
 
         public NodeType Type { get { return NodeType.Action; } }
@@ -33,7 +33,7 @@ namespace ReactGraph
             // TODO again, I think the engine should do that
             if (valueSource != null)
             {
-                ValueChanged();
+                UnderlyingValueHasBeenChanged();
                 var value = valueSource.GetValue();
                 if (value.HasValue)
                 {
@@ -49,7 +49,7 @@ namespace ReactGraph
             return ReevaluationResult.NoChange;
         }
 
-        public void ValueChanged()
+        public void UnderlyingValueHasBeenChanged()
         {
         }
 
@@ -57,6 +57,7 @@ namespace ReactGraph
         {
             return Path;
         }
+
         protected bool Equals(WriteOnlyNode<T> other)
         {
             return string.Equals(Path, other.Path);
@@ -66,13 +67,13 @@ namespace ReactGraph
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((WriteOnlyNode<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return (Path != null ? Path.GetHashCode() : 0);
+            return Path.GetHashCode();
         }
     }
 }
