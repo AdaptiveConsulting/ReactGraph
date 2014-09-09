@@ -12,7 +12,7 @@ namespace ReactGraph.NodeInfo
         // TODO rename to indicate that this get and set to the corresponding member / property?
         readonly Action<T> setValue;
         readonly Func<T> getValue;
-        readonly NodeType type;
+        readonly NodeType visualisationNodeType;
 
         // TODO isn't that always a formula? why do we call it valueSource? This node is related to 2 things: a property/member and a formula, source could apply to both.
         IValueSource<T> valueSource;
@@ -20,11 +20,11 @@ namespace ReactGraph.NodeInfo
         // TODO why is the exception handler on a ReadWriteNode?
         Action<Exception> exceptionHandler;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType type, NodeRepository nodeRepository, bool shouldTrackChanges)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string path, NodeType visualisationNodeType, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
             Path = path;
             // TODO isn't type always "member"? 
-            this.type = type;
+            this.visualisationNodeType = visualisationNodeType;
             this.nodeRepository = nodeRepository;
 
             this.shouldTrackChanges = shouldTrackChanges;
@@ -65,7 +65,7 @@ namespace ReactGraph.NodeInfo
         }
 
         // TODO always Member?
-        public NodeType Type { get { return type; } }
+        public NodeType VisualisationNodeType { get { return visualisationNodeType; } }
 
         // TODO have you considered putting that logic in the depdendency engine?
         // it looks to me that the depdendency engine would have evaluated the source formula just before, so it could have the result and set it on this node, this would remove the need to have valueSource
