@@ -2,8 +2,8 @@ namespace ReactGraph.NodeInfo
 {
     interface IValueSource<T> : IValueSource
     {
-        new Maybe<T> GetValue();
+        Maybe<T> GetValue();
         void TrackChanges();
-        void SetTarget(ITakeValue<T> targetNode);
+        void SetTarget(ITakeValue<T> targetNode, Maybe<T> initialValue);
     }
 }

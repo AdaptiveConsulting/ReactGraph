@@ -2,12 +2,12 @@ namespace ReactGraph.NodeInfo
 {
     interface INodeInfo
     {
-        NodeType Type { get; }
+        NodeType VisualisationNodeType { get; }
 
-        string Path { get; }
+        string FullPath { get; }
 
         ReevaluationResult Reevaluate();
 
-        void ValueChanged();
+        bool PathMatches(string pathToChangedValue);
     }
 }

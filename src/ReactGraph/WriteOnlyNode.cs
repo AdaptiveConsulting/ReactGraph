@@ -5,35 +5,35 @@ namespace ReactGraph
 {
     class WriteOnlyNode<T> : ITakeValue<T>
     {
+        readonly Action<Exception> exceptionHandler;
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
-        Action<Exception> exceptionHandler;
 
-        public WriteOnlyNode(Action<T> setValue, string path)
+        public WriteOnlyNode(Action<T> setValue, Action<Exception> exceptionHandler, string fullPath)
         {
             this.setValue = setValue;
-            Path = path;
+            FullPath = fullPath;
+            this.exceptionHandler = exceptionHandler;
         }
 
-        public string Path { get; private set; }
+        public string FullPath { get; private set; }
 
-        public void SetSource(IValueSource<T> sourceNode, Action<Exception> errorHandler)
+        public void SetSource(IValueSource<T> sourceNode)
         {
             if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", Path));
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", FullPath));
 
             valueSource = sourceNode;
-            exceptionHandler = errorHandler;
         }
 
-        public NodeType Type { get { return NodeType.Action; } }
+        public NodeType VisualisationNodeType { get { return NodeType.Action; } }
 
         public ReevaluationResult Reevaluate()
         {
             // TODO again, I think the engine should do that
             if (valueSource != null)
             {
-                ValueChanged();
+                UnderlyingValueHasBeenChanged();
                 var value = valueSource.GetValue();
                 if (value.HasValue)
                 {
@@ -49,30 +49,36 @@ namespace ReactGraph
             return ReevaluationResult.NoChange;
         }
 
-        public void ValueChanged()
+        public void UnderlyingValueHasBeenChanged()
         {
+        }
+
+        public bool PathMatches(string pathToChangedValue)
+        {
+            return false;
         }
 
         public override string ToString()
         {
-            return Path;
+            return FullPath;
         }
+
         protected bool Equals(WriteOnlyNode<T> other)
         {
-            return string.Equals(Path, other.Path);
+            return string.Equals(FullPath, other.FullPath);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((WriteOnlyNode<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return (Path != null ? Path.GetHashCode() : 0);
+            return FullPath.GetHashCode();
         }
     }
 }

@@ -258,10 +258,10 @@ namespace ReactGraph.Graph
             return verticies[data];
         }
 
-        public IEnumerable<Vertex<T>> SuccessorsOf(T data)
+        public IEnumerable<Edge<T>> SuccessorsOf(T data)
         {
             var vertex = verticies[data];
-            return vertex.Successors.Select(e => e.Target);
+            return vertex.Successors;
         }
     }
 }

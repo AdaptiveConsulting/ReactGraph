@@ -15,7 +15,9 @@ namespace ReactGraph
         {
             this.targetMemberExpression = targetMemberExpression;
             this.assignmentLambda = assignmentLambda;
+            PathToParent = ((MemberExpression) targetMemberExpression.Body).Member.Name;
             SourcePaths = new List<ISourceDefinition>();
+            IsWritable = targetMemberExpression.IsWritable();
         }
 
         public Func<T, T> CreateGetValueDelegateWithCurrentValue()
@@ -28,6 +30,8 @@ namespace ReactGraph
             return targetMemberExpression.Compile();
         }
 
+        public string PathToParent { get; private set; }
+
         public Action<T> CreateSetValueDelegate()
         {
             return assignmentLambda.Compile();
@@ -36,5 +40,7 @@ namespace ReactGraph
         public List<ISourceDefinition> SourcePaths { get; private set; }
 
         public Type SourceType { get { return typeof (T); } }
+
+        public bool IsWritable { get; private set; }
     }
 }

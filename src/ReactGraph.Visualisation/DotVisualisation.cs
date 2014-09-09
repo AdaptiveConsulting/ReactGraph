@@ -71,9 +71,9 @@ namespace ReactGraph.Visualisation
             {
                 return string.Format(@"digraph {0} {{
 {1}
-{2}}})", title, labels, graphDefinition);
+{2}}}", title, labels, graphDefinition);
             }
-            return string.Format(@"digraph {0} {{ {1} {2}}})", title, labels, graphDefinition);
+            return string.Format(@"digraph {0} {{ {1} {2}}}", title, labels, graphDefinition);
         }
     }
 }

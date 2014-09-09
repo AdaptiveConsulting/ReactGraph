@@ -14,5 +14,6 @@ namespace ReactGraph
     {
         Func<T, T> CreateGetValueDelegateWithCurrentValue();
         Func<T> CreateGetValueDelegate();
+        string PathToParent { get; }
     }
 }
