@@ -1,7 +1,6 @@
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using ReactGraph.Construction;
 
 namespace ReactGraph
 {
@@ -40,7 +39,7 @@ namespace ReactGraph
         public WhenFormulaChangesBuilder<T> From(Expression<Func<T, T>> sourceExpression, Action<Exception> onError, string nodeId = null)
         {
             ISourceDefinition<T> sourceDefinition;
-            if (IsWritable(sourceExpression))
+            if (sourceExpression.IsWritable())
             {
                 sourceDefinition = CreateMemberDefinition(sourceExpression, nodeId, true);
             }

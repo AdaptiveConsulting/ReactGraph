@@ -1,6 +1,5 @@
 using System;
 using System.Linq.Expressions;
-using ReactGraph.Construction;
 
 namespace ReactGraph
 {
@@ -12,7 +11,7 @@ namespace ReactGraph
         public WhenFormulaChangesBuilder(Expression<Func<T, T>> sourceFunction, string nodeId, DependencyEngine dependencyEngine)
         {
             this.dependencyEngine = dependencyEngine;
-            if (IsWritable(sourceFunction))
+            if (sourceFunction.IsWritable())
                 sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true);
             else
                 sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true);

@@ -1,27 +1,12 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Reflection;
 using ReactGraph.Construction;
 
 namespace ReactGraph
 {
     public class BuilderBase
     {
-        protected bool IsWritable(LambdaExpression expression)
-        {
-            var memberExpression = expression.Body as MemberExpression;
-            if (memberExpression == null) return false;
-            var propertyInfo = memberExpression.Member as PropertyInfo;
-            var fieldInfo = memberExpression.Member as FieldInfo;
-
-            if (propertyInfo == null && fieldInfo == null) return false;
-            if (propertyInfo != null && !propertyInfo.CanWrite) return false;
-            if (fieldInfo != null && fieldInfo.IsInitOnly) return false;
-
-            return true;
-        }
-
         // TODO this needs to go somewhere else, some factory
         public static MemberDefinition<T> CreateMemberDefinition<T>(Expression<Func<T>> expression, string nodeId,
             bool calculateChildren)
