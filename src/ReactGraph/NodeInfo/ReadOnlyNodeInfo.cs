@@ -18,8 +18,8 @@ namespace ReactGraph.NodeInfo
             this.nodeRepository = nodeRepository;
             this.shouldTrackChanges = shouldTrackChanges;
 
-            // TODO Jake, why do we evaluate? This evaluates formulas at construction time (and execute actions, ie. .Do) ??
-            ValueChanged();
+            if (shouldTrackChanges)
+                ValueChanged();
         }
 
         public Maybe<T> GetValue()
@@ -31,6 +31,7 @@ namespace ReactGraph.NodeInfo
         {
             // I don't understand what is the purpose of this. WHat does it mean to "track" an expression?
             shouldTrackChanges = true;
+            ValueChanged();
         }
 
         public void SetTarget(ITakeValue<T> targetNode)
@@ -48,7 +49,7 @@ namespace ReactGraph.NodeInfo
 
         // TODO If the type is always formula, why do we call that a "ReadOnlyNodeInfo"? It's quite confusing to have an abstract name for something which can actually be only one thing. 
         // Also exposing a type like that means that there is a switch somewhere, which should ideally be replaced by a polymorphic call (code small?)
-        public NodeType Type { get { return NodeType.Formula; } }
+        public NodeType VisualisationNodeType { get { return NodeType.Formula; } }
 
         public string Path { get; private set; }
 

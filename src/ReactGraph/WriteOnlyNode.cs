@@ -26,7 +26,7 @@ namespace ReactGraph
             exceptionHandler = errorHandler;
         }
 
-        public NodeType Type { get { return NodeType.Action; } }
+        public NodeType VisualisationNodeType { get { return NodeType.Action; } }
 
         public ReevaluationResult Reevaluate()
         {
