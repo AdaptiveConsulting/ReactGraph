@@ -44,6 +44,7 @@
     <Compile Include="DependencyEngine.cs" />
     <Compile Include="ExpressionAdder.cs" />
     <Compile Include="ExpressionDefinition.cs" />
+    <Compile Include="ExpressionExtensions.cs" />
     <Compile Include="FormulaDefinition.cs" />
     <Compile Include="Graph\CycleDetectedException.cs" />
     <Compile Include="Construction\FormulaNullReferenceException.cs" />

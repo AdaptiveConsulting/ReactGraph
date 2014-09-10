@@ -68,7 +68,12 @@ namespace ReactGraph.Construction
             ISourceDefinition ToPath<T>(MemberExpression node)
             {
                 var getter = Expression.Lambda<Func<T>>(node);
-                return BuilderBase.CreateMemberDefinition(getter, null, false);
+                if (node.IsWritable())
+                    return BuilderBase.CreateMemberDefinition(getter, null, false);
+
+                var parameterExpression = Expression.Parameter(typeof(T));
+                var wrapped = Expression.Lambda<Func<T, T>>(node, new[] { parameterExpression });
+                return BuilderBase.CreateFormulaDefinition(wrapped, null, false);
             }
         }
     }
