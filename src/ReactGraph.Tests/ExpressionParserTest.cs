@@ -18,10 +18,10 @@ namespace ReactGraph.Tests
             var subExpressions = ExpressionParser.GetChildSources(expr);
             subExpressions.Count.ShouldBe(1);
             var propertyNode = subExpressions.Single();
-            propertyNode.Path.ShouldBe("notifies.Total");
+            propertyNode.FullPath.ShouldBe("notifies.Total");
             propertyNode.SourcePaths.Count.ShouldBe(1);
             var notifiesNode = propertyNode.SourcePaths[0];
-            notifiesNode.Path.ShouldBe("notifies");
+            notifiesNode.FullPath.ShouldBe("notifies");
         }
 
         [Fact]
@@ -31,13 +31,13 @@ namespace ReactGraph.Tests
             viewModel.RegeneratePaymentSchedule(false);
             Expression<Func<bool>> expr = () => viewModel.PaymentSchedule.HasValidationError;
             var node = ExpressionParser.GetChildSources(expr).Single();
-            node.Path.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
+            node.FullPath.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
             node.SourcePaths.Count.ShouldBe(1);
             var paymentScheduleNode = node.SourcePaths[0];
-            paymentScheduleNode.Path.ShouldBe("viewModel.PaymentSchedule");
+            paymentScheduleNode.FullPath.ShouldBe("viewModel.PaymentSchedule");
 
             var rootNode = paymentScheduleNode.SourcePaths.Single();
-            rootNode.Path.ShouldBe("viewModel");
+            rootNode.FullPath.ShouldBe("viewModel");
             rootNode.SourcePaths.ShouldBeEmpty();
         }
 
@@ -50,14 +50,14 @@ namespace ReactGraph.Tests
             var node = ExpressionParser.GetChildSources(expr);
             node.Count.ShouldBe(1);
             var validationErrorNode = node[0];
-            validationErrorNode.Path.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
+            validationErrorNode.FullPath.ShouldBe("viewModel.PaymentSchedule.HasValidationError");
             validationErrorNode.SourcePaths.Count.ShouldBe(1);
 
             var paymentScheduleNode = validationErrorNode.SourcePaths[0];
-            paymentScheduleNode.Path.ShouldBe("viewModel.PaymentSchedule");
+            paymentScheduleNode.FullPath.ShouldBe("viewModel.PaymentSchedule");
 
             var rootNode = paymentScheduleNode.SourcePaths.Single();
-            rootNode.Path.ShouldBe("viewModel");
+            rootNode.FullPath.ShouldBe("viewModel");
             rootNode.SourcePaths.ShouldBeEmpty();
         }
 
@@ -69,9 +69,9 @@ namespace ReactGraph.Tests
             var node = ExpressionParser.GetChildSources(expr);
             node.Count.ShouldBe(1);
             var valueNode = node.Single();
-            valueNode.Path.ShouldBe("simple.Value");
+            valueNode.FullPath.ShouldBe("simple.Value");
             var rootNode = valueNode.SourcePaths.Single();
-            rootNode.Path.ShouldBe("simple");
+            rootNode.FullPath.ShouldBe("simple");
             rootNode.SourcePaths.ShouldBeEmpty();
         }
 
@@ -84,14 +84,14 @@ namespace ReactGraph.Tests
             var node = ExpressionParser.GetChildSources(expr);
             node.Count.ShouldBe(2);
             var valueNode = node[0];
-            valueNode.Path.ShouldBe("simple.Value");
+            valueNode.FullPath.ShouldBe("simple.Value");
             var rootNode = valueNode.SourcePaths.Single();
-            rootNode.Path.ShouldBe("simple");
+            rootNode.FullPath.ShouldBe("simple");
             rootNode.SourcePaths.ShouldBeEmpty();
             var valueNode2 = node[1];
-            valueNode2.Path.ShouldBe("simple2.Value");
+            valueNode2.FullPath.ShouldBe("simple2.Value");
             var rootNode2 = valueNode2.SourcePaths.Single();
-            rootNode2.Path.ShouldBe("simple2");
+            rootNode2.FullPath.ShouldBe("simple2");
             rootNode2.SourcePaths.ShouldBeEmpty();
         }
 

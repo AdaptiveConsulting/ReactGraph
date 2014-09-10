@@ -8,13 +8,15 @@ namespace ReactGraph.NodeInfo
         readonly Maybe<T> currentValue = new Maybe<T>();
         // would be good to not have this depdendency on the repoisitory here
         readonly NodeRepository nodeRepository;
+        readonly string pathFromParent;
         readonly Func<T, T> getValue;
         bool shouldTrackChanges;
 
-        public ReadOnlyNodeInfo(Func<T, T> getValue, string path, NodeRepository nodeRepository, bool shouldTrackChanges)
+        public ReadOnlyNodeInfo(Func<T, T> getValue, string fullPath, string pathFromParent, NodeRepository nodeRepository, bool shouldTrackChanges)
         {
-            Path = path;
+            FullPath = fullPath;
             this.getValue = getValue;
+            this.pathFromParent = pathFromParent;
             this.nodeRepository = nodeRepository;
             this.shouldTrackChanges = shouldTrackChanges;
 
@@ -42,7 +44,7 @@ namespace ReactGraph.NodeInfo
             var initialValue = ((ReadWriteNode<T>) targetNode).GetValue();
             if (initialValue.HasValue)
             {
-                currentValue.NewValue(initialValue.Value);                
+                currentValue.NewValue(initialValue.Value);
             }
         }
 
@@ -50,7 +52,7 @@ namespace ReactGraph.NodeInfo
         // Also exposing a type like that means that there is a switch somewhere, which should ideally be replaced by a polymorphic call (code small?)
         public NodeType Type { get { return NodeType.Formula; } }
 
-        public string Path { get; private set; }
+        public string FullPath { get; private set; }
 
         public ReevaluationResult Reevaluate()
         {
@@ -89,6 +91,11 @@ namespace ReactGraph.NodeInfo
             }
         }
 
+        public bool PathMatches(string pathToChangedValue)
+        {
+            return pathFromParent == pathToChangedValue;
+        }
+
         IMaybe IValueSource.GetValue()
         {
             return GetValue();
@@ -97,7 +104,7 @@ namespace ReactGraph.NodeInfo
         protected bool Equals(ReadOnlyNodeInfo<T> other)
         {
             // is that enough to identify a node?
-            return string.Equals(Path, other.Path);
+            return string.Equals(FullPath, other.FullPath);
         }
 
         public override bool Equals(object obj)
@@ -110,12 +117,12 @@ namespace ReactGraph.NodeInfo
 
         public override int GetHashCode()
         {
-            return (Path != null ? Path.GetHashCode() : 0);
+            return (FullPath != null ? FullPath.GetHashCode() : 0);
         }
 
         public override string ToString()
         {
-            return Path;
+            return FullPath;
         }
     }
 }
