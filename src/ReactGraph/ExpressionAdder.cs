@@ -25,20 +25,25 @@ namespace ReactGraph
 
         public void Add<T>(ISourceDefinition<T> source, ITargetDefinition<T> target, Action<Exception> onError)
         {
-            var sourceNode = GetSourceNode(source);
-            var targetNode = GetTargetNode(target);
+            var sourceNode = GetSourceNode(source, onError);
+            var targetNode = GetTargetNode(target, onError);
 
-            targetNode.SetSource(sourceNode, onError);
-            sourceNode.SetTarget(targetNode);
+            targetNode.SetSource(sourceNode);
+            var valueSource = (targetNode) as IValueSource<T>;
+            if (valueSource != null)
+            {
+                var initialValue = valueSource.GetValue();
+                sourceNode.SetTarget(targetNode, initialValue);
+            }
 
             graph.AddEdge(sourceNode, targetNode, source.NodeName, target.NodeName);
-            AddSourcePathExpressions(source, sourceNode);
+            AddSourcePathExpressions(source, sourceNode, onError);
             var targetAsSource = target as ISourceDefinition<T>;
             if (targetAsSource != null)
-                AddSourcePathExpressions(targetAsSource, (IValueSource) targetNode);
+                AddSourcePathExpressions(targetAsSource, (IValueSource) targetNode, onError);
         }
 
-        void AddSourcePathExpressions(ISourceDefinition sourceDefinition, IValueSource sourceNode)
+        void AddSourcePathExpressions(ISourceDefinition sourceDefinition, IValueSource sourceNode, Action<Exception> onError)
         {
             foreach (var sourcePath in sourceDefinition.SourcePaths)
             {
@@ -47,16 +52,16 @@ namespace ReactGraph
                     pathNode = (IValueSource) definitionToNodeLookup[sourcePath];
                 else
                 {
-                    pathNode = CreateSourceNode(sourcePath, true);
+                    pathNode = CreateSourceNode(sourcePath, onError);
                     definitionToNodeLookup.Add(sourcePath, pathNode);
                 }
 
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
-                AddSourcePathExpressions(sourcePath, pathNode);
+                AddSourcePathExpressions(sourcePath, pathNode, onError);
             }
         }
 
-        IValueSource<T> GetSourceNode<T>(ISourceDefinition<T> source)
+        IValueSource<T> GetSourceNode<T>(ISourceDefinition<T> source, Action<Exception> onError)
         {
             IValueSource<T> sourceNode;
             if (definitionToNodeLookup.ContainsKey(source))
@@ -66,15 +71,14 @@ namespace ReactGraph
             }
             else
             {
-                var shouldTrackChanges = !source.SourceType.IsValueType;
-                sourceNode = CreateSourceNode(source, shouldTrackChanges);
+                sourceNode = CreateSourceNode(source, onError);
                 definitionToNodeLookup.Add(source, sourceNode);
             }
 
             return sourceNode;
         }
 
-        ITakeValue<T> GetTargetNode<T>(ITargetDefinition<T> target)
+        ITakeValue<T> GetTargetNode<T>(ITargetDefinition<T> target, Action<Exception> onError)
         {
             ITakeValue<T> targetNode;
             if (definitionToNodeLookup.ContainsKey(target))
@@ -83,59 +87,75 @@ namespace ReactGraph
             }
             else
             {
-                targetNode = CreateTargetNode(target, false);
+                targetNode = CreateTargetNode(target, onError);
                 definitionToNodeLookup.Add(target, targetNode);
             }
 
             return targetNode;
         }
 
-        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target, bool shouldTrackChanges)
+        ITakeValue<T> CreateTargetNode<T>(ITargetDefinition<T> target, Action<Exception> onError)
         {
             // TODO this smells: generally when you switch on a type like that it's that you should be doing a polymorphic call somewhere else. 
             // shouldn't it be like that instead:
             // - an ActionDefinition know how to create a WriteOnlyNode (which could be renamed ActionNode btw)
             // - a MemberDefinition know how to create ReadWriteNode (which could be renamed MemberNode)
             // - a FormulaDefinition know how to create ReadOnlyNode (which could be renamed FormulaNode)
+
+            // Jake: If we do that the internals need to be opened up and the public API will start bleeding implementation details.
+            // I think it is better to have the switch?
             switch (target.NodeType)
             {
                 case NodeType.Formula:
                     throw new ArgumentException("Formula nodes cannot be a value target");
                 case NodeType.Member:
-                    // TODO Figure out how to remove cast
-                    var sourceDefinition = ((ISourceDefinition<T>)target);
-                    var getValueDelegate = sourceDefinition.CreateGetValueDelegate();
-                    var setValueDelegate = target.CreateSetValueDelegate();
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, sourceDefinition.PathToParent, NodeType.Member, nodeRepository, shouldTrackChanges);
+                    var memberDefinition = (MemberDefinition<T>)target;
+                    var getValueDelegate = memberDefinition.CreateGetValueDelegate();
+                    var setValueDelegate = memberDefinition.CreateSetValueDelegate();
+                    if (!memberDefinition.IsWritable)
+                    {
+                        throw new InvalidOperationException("A readonly member cannot be a target");
+                    }
+
+                    var shouldTrackChanges = !memberDefinition.SourceType.IsValueType;
+                    var visualisationNodeType = memberDefinition.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, memberDefinition.PathToParent, visualisationNodeType, nodeRepository, shouldTrackChanges, onError);
                 case NodeType.Action:
-                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), target.FullPath);
+                    return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), onError, target.FullPath);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source, bool shouldTrackChanges)
+        IValueSource<T> CreateSourceNode<T>(ISourceDefinition<T> source, Action<Exception> onError)
         {
             switch (source.NodeType)
             {
                 case NodeType.Formula:
-                case NodeType.Action: // TODO An action can be a source node????
-                    return new ReadOnlyNodeInfo<T>(source.CreateGetValueDelegateWithCurrentValue(), source.FullPath, source.PathToParent, nodeRepository, shouldTrackChanges);
+                    var getValue = source.CreateGetValueDelegateWithCurrentValue();
+                    return new ReadOnlyNodeInfo<T>(getValue, source.FullPath, source.PathToParent, nodeRepository, false, onError, NodeType.Formula);
                 case NodeType.Member:
-                    // TODO Figure out how to remove cast
-                    var getValueDelegate = source.CreateGetValueDelegate();
-                    var setValueDelegate = ((ITargetDefinition<T>)source).CreateSetValueDelegate();
-                    var type = source.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, source.PathToParent, type, nodeRepository, shouldTrackChanges);
+                    var memberDefinition = (MemberDefinition<T>)source;
+                    var getValueDelegate = memberDefinition.CreateGetValueDelegate();
+                    var setValueDelegate = memberDefinition.CreateSetValueDelegate();
+
+                    var shouldTrackChanges = !source.SourceType.IsValueType;
+                    var visualisationNodeType = memberDefinition.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
+                    if (memberDefinition.IsWritable)
+                    {
+                        return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, memberDefinition.PathToParent, visualisationNodeType, nodeRepository, shouldTrackChanges, onError);
+                    }
+
+                    return new ReadOnlyNodeInfo<T>(_ => getValueDelegate(), memberDefinition.FullPath, memberDefinition.PathToParent, nodeRepository, shouldTrackChanges, onError, visualisationNodeType);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        IValueSource CreateSourceNode(ISourceDefinition source, bool shouldTrackChanges)
+        IValueSource CreateSourceNode(ISourceDefinition source, Action<Exception> onError)
         {
             var method = createSourceInfo.MakeGenericMethod(source.SourceType);
-            return (IValueSource)method.Invoke(this, new object[] { source, shouldTrackChanges });
+            return (IValueSource)method.Invoke(this, new object[] { source, onError });
         }
     }
 }
