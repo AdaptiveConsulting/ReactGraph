@@ -113,7 +113,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent Condition="Exists($(SolutionDir)lib\GraphViz\)">xcopy "$(SolutionDir)lib\GraphViz\*.*" "$(TargetDir)" /D /Y /E</PreBuildEvent>
+    <PreBuildEvent Condition="Exists('$(SolutionDir)lib\GraphViz\')">xcopy "$(SolutionDir)lib\GraphViz\*.*" "$(TargetDir)" /D /Y /E</PreBuildEvent>
   </PropertyGroup>
   <Import Project="..\packages\Fody.1.24.0\build\Fody.targets" Condition="Exists('..\packages\Fody.1.24.0\build\Fody.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
