@@ -4,16 +4,16 @@ namespace ReactGraph.NodeInfo
 {
     class ReadOnlyNodeInfo<T> : IValueSource<T>
     {
+        readonly VisualisationInfo visualisationInfo;
         readonly Maybe<T> currentValue;
         // would be good to not have this depdendency on the repoisitory here
         readonly NodeRepository nodeRepository;
         readonly string pathFromParent;
         readonly Func<T, T> getValue;
         readonly Action<Exception> onError;
-        readonly NodeType type;
         bool shouldTrackChanges;
 
-        public ReadOnlyNodeInfo(Func<T, T> getValue, string fullPath, string pathFromParent, NodeRepository nodeRepository, bool shouldTrackChanges, Action<Exception> onError, NodeType type)
+        public ReadOnlyNodeInfo(Func<T, T> getValue, string fullPath, string pathFromParent, NodeRepository nodeRepository, bool shouldTrackChanges, Action<Exception> onError, VisualisationInfo visualisationInfo)
         {
             FullPath = fullPath;
             currentValue = new Maybe<T>();
@@ -22,7 +22,7 @@ namespace ReactGraph.NodeInfo
             this.nodeRepository = nodeRepository;
             this.shouldTrackChanges = shouldTrackChanges;
             this.onError = onError;
-            this.type = type;
+            this.visualisationInfo = visualisationInfo;
 
             if (shouldTrackChanges)
                 UnderlyingValueHasBeenChanged();
@@ -48,7 +48,7 @@ namespace ReactGraph.NodeInfo
             }
         }
 
-        public NodeType VisualisationNodeType { get { return type; } }
+        public VisualisationInfo VisualisationInfo { get { return visualisationInfo; } }
 
         public string FullPath { get; private set; }
 

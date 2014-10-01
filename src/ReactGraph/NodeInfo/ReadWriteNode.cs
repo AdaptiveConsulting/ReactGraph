@@ -7,8 +7,8 @@ namespace ReactGraph.NodeInfo
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
 
-        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string fullPath, string pathFromParent, NodeType visualisationNodeType, NodeRepository nodeRepository, bool shouldTrackChanges, Action<Exception> exceptionHandler) :
-            base(_ => getValue(), fullPath, pathFromParent, nodeRepository, shouldTrackChanges, exceptionHandler, visualisationNodeType)
+        public ReadWriteNode(Func<T> getValue, Action<T> setValue, string fullPath, string pathFromParent, VisualisationInfo visualsationInfo, NodeRepository nodeRepository, bool shouldTrackChanges, Action<Exception> exceptionHandler) :
+            base(_ => getValue(), fullPath, pathFromParent, nodeRepository, shouldTrackChanges, exceptionHandler, visualsationInfo)
         {
             this.setValue = setValue;
         }

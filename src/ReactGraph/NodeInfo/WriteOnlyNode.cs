@@ -7,9 +7,11 @@ namespace ReactGraph.NodeInfo
         readonly Action<Exception> exceptionHandler;
         readonly Action<T> setValue;
         IValueSource<T> valueSource;
+        VisualisationInfo visualisationInfo;
 
         public WriteOnlyNode(Action<T> setValue, Action<Exception> exceptionHandler, string path)
         {
+            visualisationInfo = new VisualisationInfo(NodeType.Action);
             this.setValue = setValue;
             this.FullPath = path;
             this.exceptionHandler = exceptionHandler;
@@ -25,7 +27,7 @@ namespace ReactGraph.NodeInfo
             this.valueSource = sourceNode;
         }
 
-        public NodeType VisualisationNodeType { get { return NodeType.Action; } }
+        public VisualisationInfo VisualisationInfo { get { return visualisationInfo; } }
 
         public ReevaluationResult Reevaluate()
         {

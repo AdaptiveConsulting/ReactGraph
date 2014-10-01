@@ -18,6 +18,54 @@ namespace ReactGraph.Tests
         }
 
         [Fact]
+        public void ExcludesRootsByDefault()
+        {
+            var foo = new Foo();
+
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
+
+            var dotFormat = engine.ToDotFormat();
+
+            Console.WriteLine(dotFormat);
+            Approvals.Verify(dotFormat);
+        }
+
+        [Fact]
+        public void CanIncludeRoots()
+        {
+            var foo = new Foo();
+
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
+
+            var dotFormat = engine.ToDotFormat(options: new VisualisationOptions { ShowRoot = true });
+
+            Console.WriteLine(dotFormat);
+            Approvals.Verify(dotFormat);
+        }
+
+        [Fact]
+        public void CanExcludeFormulas()
+        {
+            var foo = new Foo();
+
+            engine.Assign(() => foo.C)
+                  .From(() => foo.A + foo.B, e => { });
+            engine.Assign(() => foo.D)
+                  .From(() => foo.A + foo.C, e => { });
+
+            var dotFormat = engine.ToDotFormat(options: new VisualisationOptions { ShowFormulas = false });
+
+            Console.WriteLine(dotFormat);
+            Approvals.Verify(dotFormat);
+        }
+
+        [Fact]
         public void AddMetadataToNodesTest()
         {
             /*

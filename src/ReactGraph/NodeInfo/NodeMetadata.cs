@@ -2,13 +2,14 @@ namespace ReactGraph.NodeInfo
 {
     class NodeMetadata : INodeMetadata
     {
-        public NodeType NodeType { get; private set; }
+        public VisualisationInfo VisualisationInfo { get; private set; }
+
         public string Label { get; private set; }
         public string Id { get; private set; }
 
-        public NodeMetadata(NodeType nodeType, string label, string id)
+        public NodeMetadata(VisualisationInfo visualisationInfo, string label, string id)
         {
-            NodeType = nodeType;
+            this.VisualisationInfo = visualisationInfo;
             Label = label;
             Id = id;
         }
@@ -28,8 +29,12 @@ namespace ReactGraph.NodeInfo
 
         public override int GetHashCode()
         {
-            // TODO Jake, is the 0 intentional?
-            return (Id != null ? Id.GetHashCode() : 0);
+            return Id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return Label;
         }
     }
 }

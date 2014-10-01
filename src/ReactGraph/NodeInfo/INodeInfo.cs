@@ -2,7 +2,7 @@ namespace ReactGraph.NodeInfo
 {
     interface INodeInfo
     {
-        NodeType VisualisationNodeType { get; }
+        VisualisationInfo VisualisationInfo { get; }
 
         string FullPath { get; }
 

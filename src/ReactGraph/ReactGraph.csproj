@@ -72,6 +72,7 @@
     <Compile Include="NodeInfo\ReadOnlyNodeInfo.cs" />
     <Compile Include="NodeInfo\INodeInfo.cs" />
     <Compile Include="NodeInfo\NodeRepository.cs" />
+    <Compile Include="NodeInfo\VisualisationInfo.cs" />
     <Compile Include="RegistrationExtensions.cs" />
     <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
