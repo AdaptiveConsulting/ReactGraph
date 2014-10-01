@@ -1,8 +1,7 @@
-using System;
-using ReactGraph.NodeInfo;
-
-namespace ReactGraph
+namespace ReactGraph.NodeInfo
 {
+    using System;
+
     class WriteOnlyNode<T> : ITakeValue<T>
     {
         readonly Action<Exception> exceptionHandler;
@@ -12,7 +11,7 @@ namespace ReactGraph
         public WriteOnlyNode(Action<T> setValue, Action<Exception> exceptionHandler, string path)
         {
             this.setValue = setValue;
-            FullPath = path;
+            this.FullPath = path;
             this.exceptionHandler = exceptionHandler;
         }
 
@@ -20,10 +19,10 @@ namespace ReactGraph
 
         public void SetSource(IValueSource<T> sourceNode)
         {
-            if (valueSource != null)
-                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", FullPath));
+            if (this.valueSource != null)
+                throw new InvalidOperationException(string.Format("{0} already has a source associated with it", this.FullPath));
 
-            valueSource = sourceNode;
+            this.valueSource = sourceNode;
         }
 
         public NodeType VisualisationNodeType { get { return NodeType.Action; } }
@@ -31,18 +30,18 @@ namespace ReactGraph
         public ReevaluationResult Reevaluate()
         {
             // TODO again, I think the engine should do that
-            if (valueSource != null)
+            if (this.valueSource != null)
             {
-                UnderlyingValueHasBeenChanged();
-                var value = valueSource.GetValue();
+                this.UnderlyingValueHasBeenChanged();
+                var value = this.valueSource.GetValue();
                 if (value.HasValue)
                 {
                     // TODO Don't set and return NoChange when value has not changed
-                    setValue(value.Value);
+                    this.setValue(value.Value);
                     return ReevaluationResult.Changed;
                 }
 
-                exceptionHandler(value.Exception);
+                this.exceptionHandler(value.Exception);
                 return ReevaluationResult.Error;
             }
 
@@ -60,25 +59,25 @@ namespace ReactGraph
 
         public override string ToString()
         {
-            return FullPath;
+            return this.FullPath;
         }
 
         protected bool Equals(WriteOnlyNode<T> other)
         {
-            return string.Equals(FullPath, other.FullPath);
+            return string.Equals(this.FullPath, other.FullPath);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((WriteOnlyNode<T>)obj);
+            if (obj.GetType() != this.GetType()) return false;
+            return this.Equals((WriteOnlyNode<T>)obj);
         }
 
         public override int GetHashCode()
         {
-            return FullPath.GetHashCode();
+            return this.FullPath.GetHashCode();
         }
     }
 }
