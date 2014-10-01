@@ -94,7 +94,7 @@
     <ItemGroup>
        <FilesToDelete Include="$(SolutionDir)..\Artifacts\ReactGraph.*.nupkg"/>
     </ItemGroup>
-    <Delete Files="$(FilesToDelete)" />
+    <Delete Files="@(FilesToDelete)" />
     <Exec Command="$(SolutionDir)..\tools\nuget.exe pack $(ProjectDir)ReactGraph.nuspec -BasePath $(ProjectDir)bin\$(Configuration) -version $(GitVersion_NuGetVersion) -OutputDirectory $(SolutionDir)..\Artifacts" />
   </Target>
 </Project>
