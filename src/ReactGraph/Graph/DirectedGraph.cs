@@ -4,6 +4,8 @@ using System.Linq;
 
 namespace ReactGraph.Graph
 {
+    using ReactGraph.NodeInfo;
+
     public class DirectedGraph<T>
     {
         private readonly Dictionary<T, Vertex<T>> verticies = new Dictionary<T, Vertex<T>>();
@@ -262,6 +264,20 @@ namespace ReactGraph.Graph
         {
             var vertex = verticies[data];
             return vertex.Successors;
+        }
+
+        public void DeleteVertex(T data)
+        {
+            var vertex = verticies[data];
+            verticies.Remove(data);
+            foreach (var predecessor in vertex.Predecessors.ToArray())
+            {
+                predecessor.Source.RemoveSuccessorEdge(predecessor);
+            }
+            foreach (var successor in vertex.Successors.ToArray())
+            {
+                vertex.RemoveSuccessorEdge(successor);
+            }
         }
     }
 }

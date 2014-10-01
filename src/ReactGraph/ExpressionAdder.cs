@@ -27,6 +27,8 @@ namespace ReactGraph
         {
             var sourceNode = GetSourceNode(source, onError);
             var targetNode = GetTargetNode(target, onError);
+            sourceNode.VisualisationInfo.IsDirectlyReferenced = true;
+            targetNode.VisualisationInfo.IsDirectlyReferenced = true;
 
             targetNode.SetSource(sourceNode);
             var valueSource = (targetNode) as IValueSource<T>;
@@ -56,6 +58,7 @@ namespace ReactGraph
                     definitionToNodeLookup.Add(sourcePath, pathNode);
                 }
 
+                pathNode.VisualisationInfo.IsDirectlyReferenced = false;
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
                 AddSourcePathExpressions(sourcePath, pathNode, onError);
             }
@@ -118,8 +121,11 @@ namespace ReactGraph
                     }
 
                     var shouldTrackChanges = !memberDefinition.SourceType.IsValueType;
-                    var visualisationNodeType = memberDefinition.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, memberDefinition.PathToParent, visualisationNodeType, nodeRepository, shouldTrackChanges, onError);
+                    var visualisationInfo = new VisualisationInfo(NodeType.Member)
+                    {
+                        IsRoot = !memberDefinition.SourcePaths.Any()
+                    };
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, memberDefinition.PathToParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
                 case NodeType.Action:
                     return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), onError, target.FullPath);
                 default:
@@ -133,20 +139,23 @@ namespace ReactGraph
             {
                 case NodeType.Formula:
                     var getValue = source.CreateGetValueDelegateWithCurrentValue();
-                    return new ReadOnlyNodeInfo<T>(getValue, source.FullPath, source.PathToParent, nodeRepository, false, onError, NodeType.Formula);
+                    return new ReadOnlyNodeInfo<T>(getValue, source.FullPath, source.PathToParent, nodeRepository, false, onError, new VisualisationInfo(NodeType.Formula));
                 case NodeType.Member:
                     var memberDefinition = (MemberDefinition<T>)source;
                     var getValueDelegate = memberDefinition.CreateGetValueDelegate();
                     var setValueDelegate = memberDefinition.CreateSetValueDelegate();
 
                     var shouldTrackChanges = !source.SourceType.IsValueType;
-                    var visualisationNodeType = memberDefinition.SourcePaths.Any() ? NodeType.Member : NodeType.RootMember;
+                    var visualisationInfo = new VisualisationInfo(NodeType.Member)
+                    {
+                        IsRoot = !memberDefinition.SourcePaths.Any()
+                    };
                     if (memberDefinition.IsWritable)
                     {
-                        return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, memberDefinition.PathToParent, visualisationNodeType, nodeRepository, shouldTrackChanges, onError);
+                        return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, memberDefinition.PathToParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
                     }
 
-                    return new ReadOnlyNodeInfo<T>(_ => getValueDelegate(), memberDefinition.FullPath, memberDefinition.PathToParent, nodeRepository, shouldTrackChanges, onError, visualisationNodeType);
+                    return new ReadOnlyNodeInfo<T>(_ => getValueDelegate(), memberDefinition.FullPath, memberDefinition.PathToParent, nodeRepository, shouldTrackChanges, onError, visualisationInfo);
                 default:
                     throw new ArgumentOutOfRangeException();
             }

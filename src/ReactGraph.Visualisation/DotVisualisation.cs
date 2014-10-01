@@ -5,6 +5,8 @@ using ReactGraph.NodeInfo;
 
 namespace ReactGraph.Visualisation
 {
+    using System.Linq;
+
     internal class DotVisualisation
     {
         readonly DirectedGraph<INodeMetadata> graph;
@@ -14,19 +16,26 @@ namespace ReactGraph.Visualisation
             this.graph = graph;
         }
 
-        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties = null, bool indent = true)
+        public string Generate(string title, Func<VertexVisualProperties, VertexVisualProperties> overrideVisualProperties, bool indent, VisualisationOptions visualisationOptions)
         {
             var labels = new StringBuilder();
             var graphDefinition = new StringBuilder();
+            var currentGraph = graph;
+            if (!visualisationOptions.ShowFormulas)
+            {
+                currentGraph = ExcludeFormulaNodes(currentGraph);
+            }
 
-            foreach (var vertex in graph.Verticies)
+            foreach (var vertex in currentGraph.Verticies)
             {
                 var properties = new VertexVisualProperties(vertex.Id)
                 {
                     Label = vertex.Data.Label
                 };
 
-                switch (vertex.Data.NodeType)
+                if (!visualisationOptions.ShowRoot && vertex.Data.VisualisationInfo.IsRoot) continue;
+
+                switch (vertex.Data.VisualisationInfo.NodeType)
                 {
                     case NodeType.Formula:
                         properties.Color = "lightblue";
@@ -42,8 +51,6 @@ namespace ReactGraph.Visualisation
                         properties.AddCustomProperty("style", "filled");
                         properties.Color = "green";
                         break;
-                    case NodeType.RootMember:
-                        continue;
                 }
 
                 if (overrideVisualProperties != null)
@@ -55,16 +62,13 @@ namespace ReactGraph.Visualisation
                 if (indent) labels.AppendLine();
             }
 
-            foreach (var edge in graph.Edges)
+            foreach (var edge in currentGraph.Edges)
             {
-                if (edge.Source.Data.NodeType == NodeType.RootMember ||
-                    edge.Target.Data.NodeType == NodeType.RootMember)
+                if (!visualisationOptions.ShowRoot && (edge.Source.Data.VisualisationInfo.IsRoot || edge.Target.Data.VisualisationInfo.IsRoot))
                     continue;
-                    
+
                 graphDefinition.Append(indent ? "    " : string.Empty).AppendFormat("{0} -> {1};", edge.Source.Id, edge.Target.Id);
                 if (indent) graphDefinition.AppendLine();
-
-
             }
 
             if (indent)
@@ -74,6 +78,31 @@ namespace ReactGraph.Visualisation
 {2}}}", title, labels, graphDefinition);
             }
             return string.Format(@"digraph {0} {{ {1} {2}}}", title, labels, graphDefinition);
+        }
+
+        DirectedGraph<INodeMetadata> ExcludeFormulaNodes(DirectedGraph<INodeMetadata> directedGraph)
+        {
+            var newGraph = directedGraph.Clone(v => v.Data);
+            var formulaNodes = newGraph.Verticies.Where(v => v.Data.VisualisationInfo.NodeType == NodeType.Formula).ToArray();
+            // Add edge between formula successors and predecessors
+            foreach (var formulaNode in formulaNodes)
+            {
+                var predecessors = formulaNode.Predecessors.ToArray();
+                var successors = formulaNode.Successors.ToArray();
+                newGraph.DeleteVertex(formulaNode.Data);
+
+                foreach (var predecessor in predecessors)
+                {
+                    foreach (var successor in successors)
+                    {
+                        var source = predecessor.Source;
+                        var target = successor.Target;
+                        newGraph.AddEdge(source.Data, target.Data, source.Id, target.Id);
+                    }
+                }
+            }
+
+            return newGraph;
         }
     }
 }

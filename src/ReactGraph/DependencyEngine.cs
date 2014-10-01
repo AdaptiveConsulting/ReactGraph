@@ -36,7 +36,7 @@ namespace ReactGraph
 
         public DirectedGraph<INodeMetadata> GetGraphSnapshot()
         {
-            return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.VisualisationNodeType, vertex.Data.ToString(), vertex.Id));
+            return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.VisualisationInfo, vertex.Data.ToString(), vertex.Id));
         }
 
 
@@ -140,7 +140,7 @@ namespace ReactGraph
             {
                 var nodes = cycle.Reverse().ToList();
                 var vertex = nodes.First();
-                if (vertex.Data.VisualisationNodeType == NodeType.Member)
+                if (vertex.Data.VisualisationInfo.NodeType == NodeType.Member)
                     nodes.Add(vertex);
                 else
                     nodes.Insert(0, nodes.Last());

@@ -2,7 +2,7 @@ namespace ReactGraph.NodeInfo
 {
     public interface INodeMetadata
     {
-        NodeType NodeType { get; }
+        VisualisationInfo VisualisationInfo { get; }
         string Label { get; }
         string Id { get; }
     }

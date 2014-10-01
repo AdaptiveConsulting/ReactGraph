@@ -46,6 +46,7 @@
     <Compile Include="TransitionFileLogger.cs" />
     <Compile Include="VertexVisualProperties.cs" />
     <Compile Include="DependencyEngineVisualisationExtensions.cs" />
+    <Compile Include="VisualisationOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ReactGraph\ReactGraph.csproj">

@@ -10,16 +10,19 @@ namespace ReactGraph.Visualisation
     {
         readonly DependencyEngine dependencyEngine;
         readonly Action<string> onWalkComplete;
+        readonly VisualisationOptions visualisationOptions;
         readonly bool indent;
         DirectedGraph<INodeMetadata> graphSnapshot;
         readonly Dictionary<string, NodeDetails> nodesInPath = new Dictionary<string, NodeDetails>();
         int nodeIndex;
 
-        public DependencyEngineListener(DependencyEngine dependencyEngine, Action<string> onWalkComplete, bool indent = true)
+
+        public DependencyEngineListener(DependencyEngine dependencyEngine, Action<string> onWalkComplete, bool indent = true, VisualisationOptions visualisationOptions = null)
         {
             this.dependencyEngine = dependencyEngine;
             this.onWalkComplete = onWalkComplete;
             this.indent = indent;
+            this.visualisationOptions = visualisationOptions ?? new VisualisationOptions();
             dependencyEngine.AddInstrumentation(this);
         }
 
@@ -40,32 +43,32 @@ namespace ReactGraph.Visualisation
         {
             var visualisation = new DotVisualisation(graphSnapshot);
             onWalkComplete(visualisation.Generate("Transition" + walkIndex, prop =>
-            {
-                NodeDetails nodeDetails;
-                if (nodesInPath.TryGetValue(prop.Id, out nodeDetails))
                 {
-                    switch (nodeDetails.Result)
+                    NodeDetails nodeDetails;
+                    if (this.nodesInPath.TryGetValue(prop.Id, out nodeDetails))
                     {
-                        case ReevaluationResult.NoChange:
-                            prop.Color = "khaki1";
-                            break;
-                        case ReevaluationResult.Error:
-                            prop.Color = "firebrick1";
-                            break;
-                        case ReevaluationResult.Changed:
-                            prop.Color = "palegreen";
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        switch (nodeDetails.Result)
+                        {
+                            case ReevaluationResult.NoChange:
+                                prop.Color = "khaki1";
+                                break;
+                            case ReevaluationResult.Error:
+                                prop.Color = "firebrick1";
+                                break;
+                            case ReevaluationResult.Changed:
+                                prop.Color = "palegreen";
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
+                        prop.Label = "[" + nodeDetails.Index + "] " + prop.Label;
                     }
-                    prop.Label = "[" + nodeDetails.Index + "] " + prop.Label;
-                }
-                else
-                {
-                    prop.Color = "gray";
-                }
-                return prop;
-            }, indent));
+                    else
+                    {
+                        prop.Color = "gray";
+                    }
+                    return prop;
+                }, this.indent, visualisationOptions));
         }
 
         public void Dispose()
