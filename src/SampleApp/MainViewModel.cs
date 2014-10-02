@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
-using System.Windows;
+
 using PropertyChanged;
 using ReactGraph;
 using ReactGraph.Properties;
@@ -21,6 +21,7 @@ namespace SampleApp
 
         public MainViewModel()
         {
+            this.Mortgate = new MortgageViewModel();
             engine = new DependencyEngine();
 
             engine.Assign(() => C).From(() => Add(A, B), e => { });
@@ -84,6 +85,9 @@ namespace SampleApp
         }
 
         public int E { get; set; }
+
+        public MortgageViewModel Mortgate { get; private set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]

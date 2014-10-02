@@ -156,7 +156,9 @@ namespace ReactGraph.Graph
 
             // TODO Olivier: the normal topological sort needs to start from sources but here we know that the only source is origin, since we build the subgraph from there...
             // TODO this line can probably go away
-            var sources = new Stack<Vertex<T>>(subGraph.FindSources());
+            var sources = new Stack<Vertex<T>>();
+            var item = subGraph.verticies[origin];
+            sources.Push(item);
 
             while (sources.Count > 0)
             {
@@ -172,10 +174,10 @@ namespace ReactGraph.Graph
                 }
             }
 
-            if (subGraph.EdgesCount > 0)
-            {
-                throw new InvalidOperationException("Graph contains at least one cycle.");
-            }
+            //if (subGraph.EdgesCount > 0)
+            //{
+            //    throw new InvalidOperationException("Graph contains at least one cycle.");
+            //}
 
             return result;
         }
