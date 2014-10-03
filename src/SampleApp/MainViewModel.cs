@@ -13,15 +13,17 @@ namespace SampleApp
     [ImplementPropertyChanged]
     public class MainViewModel : INotifyPropertyChanged
     {
+        DependencyEngine mortgageEngine;
         readonly DependencyEngine engine;
         int a;
         int b;
         int c;
         int d;
 
+
         public MainViewModel()
         {
-            this.Mortgate = new MortgageViewModel();
+            this.Mortgage = new MortgageViewModel();
             engine = new DependencyEngine();
 
             engine.Assign(() => C).From(() => Add(A, B), e => { });
@@ -31,6 +33,23 @@ namespace SampleApp
             B = 3;
             D = 5;
             engine.LogTransitionsInDotFormat(Path.Combine(Environment.CurrentDirectory, "Transitions.log"));
+
+            mortgageEngine = new DependencyEngine();
+            engine.Assign(() => Mortgage.Payments)
+                .From(() => Mortgage.CalculatePayments(
+                        Mortgage.Amount,
+                        Mortgage.InterestRate,
+                        Mortgage.LoanLength,
+                        Mortgage.PaymentFrequency),
+                        ex => { });
+
+            engine.Assign(() => Mortgage.LoanLength)
+                .From(() => Mortgage.CalculateLength(
+                        Mortgage.Amount,
+                        Mortgage.Payments,
+                        Mortgage.InterestRate,
+                        Mortgage.PaymentFrequency),
+                        ex => { });
         }
 
         int Multiply(int i, int j)
@@ -86,7 +105,7 @@ namespace SampleApp
 
         public int E { get; set; }
 
-        public MortgageViewModel Mortgate { get; private set; }
+        public MortgageViewModel Mortgage { get; private set; }
 
         public event PropertyChangedEventHandler PropertyChanged;
 

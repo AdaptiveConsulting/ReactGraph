@@ -34,14 +34,25 @@
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
+                
                 <TextBlock Text="Amount: " />
-                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgate.Amount}" />
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount}" />
+                
                 <TextBlock Text="Annual Interest Rate: " Grid.Row="1" Grid.Column="0" />
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgate.InterestRate}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate}" />
+                
+                <TextBlock Text="Loan Length: " Grid.Row="2" Grid.Column="0" />
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength}" />
 
-                <TextBlock Text="Payment Frequency: " Grid.Row="2" Grid.Column="0" />
-                <ComboBox Grid.Row="2" Grid.Column="1" />
+                <TextBlock Text="Payment Frequency: " Grid.Row="3" Grid.Column="0" />
+                <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
+                          SelectedItem="{Binding Mortgage.PaymentFrequency}"/>
+                
+                <TextBlock Text="Payments: " Grid.Row="4" Grid.Column="0" />
+                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments}" />
             </Grid>
         </TabItem>
     </TabControl>

@@ -109,16 +109,6 @@ namespace ReactGraph.Tests
         }
 
         [Fact]
-        public void TopologicalSortThrowsOnCycle()
-        {
-            AddEdge(0, 1);
-            AddEdge(1, 2);
-            AddEdge(2, 0);
-
-            Assert.Throws<InvalidOperationException>(() => sut.TopologicalSort(0));
-        }
-
-        [Fact]
         public void CyclicGraph()
         {
             var mortgage = new Mortgate
