@@ -152,11 +152,36 @@ namespace ReactGraph.Graph
             // TODO Olivier: review subgraph algo, it could probably be faster
             // TODO Olivier: another problem is memory allocation, here the subgraph is a new datastructure. We probably want to profile before trying to make that allocation free..
             var subGraph = SubGraph(origin);
-            var result = new List<Vertex<T>>();
+            if (!subGraph.verticies.ContainsKey(origin))
+                return Enumerable.Empty<Vertex<T>>();
 
+            var result = TopologicalSort(origin, subGraph);
+
+            if (subGraph.EdgesCount > 0)
+            {
+                // TODO This is now quite inefficient, but only happens if there are cycles
+                var cycles = DetectCyles();
+                foreach (var cycle in cycles)
+                {
+                    var first = cycle.First();
+                    var last = cycle.Last();
+                    var cycleEdge = last.Predecessors.First(p => p.Source == first);
+                    subGraph.RemoveEdge(cycleEdge);
+                }
+                return TopologicalSort(origin, SubGraph(origin));
+            }
+
+            return result;
+        }
+
+        static List<Vertex<T>> TopologicalSort(T origin, DirectedGraph<T> subGraph)
+        {
             // TODO Olivier: the normal topological sort needs to start from sources but here we know that the only source is origin, since we build the subgraph from there...
             // TODO this line can probably go away
-            var sources = new Stack<Vertex<T>>(subGraph.FindSources());
+            var result = new List<Vertex<T>>();
+            var item = subGraph.verticies[origin];
+            var sources = new Stack<Vertex<T>>();
+            sources.Push(item);
 
             while (sources.Count > 0)
             {
@@ -171,12 +196,6 @@ namespace ReactGraph.Graph
                     }
                 }
             }
-
-            if (subGraph.EdgesCount > 0)
-            {
-                throw new InvalidOperationException("Graph contains at least one cycle.");
-            }
-
             return result;
         }
 
@@ -184,7 +203,7 @@ namespace ReactGraph.Graph
         /// <see cref="http://en.wikipedia.org/wiki/Tarjan%27s_strongly_connected_components_algorithm"/>
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IEnumerable<Vertex<T>>> DetectCyles()
+        public IEnumerable<List<Vertex<T>>> DetectCyles()
         {
             var index = 0;
             var stack = new Stack<Vertex<T>>();

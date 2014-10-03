@@ -6,6 +6,8 @@ using Xunit;
 
 namespace ReactGraph.Tests
 {
+    using ReactGraph.Visualisation;
+
     public class GraphTests
     {
         private readonly DirectedGraph<int> sut;
@@ -107,13 +109,85 @@ namespace ReactGraph.Tests
         }
 
         [Fact]
-        public void TopologicalSortThrowsOnCycle()
+        public void CyclicGraph()
         {
-            AddEdge(0, 1);
-            AddEdge(1, 2);
-            AddEdge(2, 0);
+            var mortgage = new Mortgate
+                               {
+                                   InterestRate = 5.5,
+                                   LoanAmount = 150000,
+                                   LoanLength = 15,
+                                   PaymentFrequency = PaymentFrequency.Monthly
+                               };
+            var engine = new DependencyEngine();
 
-            Assert.Throws<InvalidOperationException>(() => sut.TopologicalSort(0));
+            engine.Assign(() => mortgage.PaymentAmount)
+                .From(() => CalculatePayments(
+                        mortgage.LoanAmount,
+                        mortgage.InterestRate,
+                        mortgage.LoanLength,
+                        mortgage.PaymentFrequency),
+                        ex => { });
+
+            engine.Assign(() => mortgage.LoanLength)
+                .From(() => CalculateLength(
+                        mortgage.LoanAmount,
+                        mortgage.PaymentAmount,
+                        mortgage.InterestRate,
+                        mortgage.PaymentFrequency),
+                        ex => { });
+
+            Console.WriteLine(engine.ToDotFormat());
+
+            engine.ValueHasChanged(mortgage, "PaymentFrequency");
+
+            mortgage.PaymentAmount.ShouldBe(1225, 1);
+        }
+
+        public double CalculatePayments(
+            double loanAmount,
+            double interestRate,
+            double loanLength,
+            PaymentFrequency paymentFrequency)
+        {
+            var numberPayments = loanLength * 12;
+
+            interestRate /= 1200.00;
+            var monthlyPayment = -((-loanAmount * Math.Pow(1 + interestRate, numberPayments)) / (((Math.Pow((1 + interestRate), numberPayments) - 1) / interestRate))) * 12 / (int)paymentFrequency;
+            return monthlyPayment;
+        }
+
+        public double CalculateLength(
+           double loanAmount,
+           double paymentAmount,
+           double interestRate,
+           PaymentFrequency paymentFrequency)
+        {
+            interestRate /= 1200.00;
+            loanAmount *= (-1);
+            var monthlyPayment = paymentAmount / 12 * (int)paymentFrequency;
+
+            return Math.Log(monthlyPayment / (loanAmount * interestRate + monthlyPayment)) / Math.Log(1 + interestRate) / 12;
+        }
+
+        public class Mortgate
+        {
+            public double LoanAmount { get; set; }
+
+            public double LoanLength { get; set; }
+
+            public double InterestRate { get; set; }
+
+            public double PaymentAmount { get; set; }
+
+            public PaymentFrequency PaymentFrequency { get; set; }
+        }
+
+        public enum PaymentFrequency
+        {
+            Weekly = 52,
+            Fortnightly = 26,
+            Monthly = 12,
+            Quaterly = 4
         }
 
         [Fact]

@@ -138,7 +138,8 @@ namespace ReactGraph
             sb.AppendFormat("{0} cycles found:", cycles.Count).AppendLine();
             foreach (var cycle in cycles)
             {
-                var nodes = cycle.Reverse().ToList();
+                cycle.Reverse();
+                var nodes = cycle.ToList();
                 var vertex = nodes.First();
                 if (vertex.Data.VisualisationInfo.NodeType == NodeType.Member)
                     nodes.Add(vertex);

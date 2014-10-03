@@ -1,20 +1,59 @@
 ﻿<Window x:Class="SampleApp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="MainWindow" Height="144" Width="279">
-    <Grid>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,10,0,0" TextWrapping="Wrap" Text="{Binding A}" VerticalAlignment="Top" Width="43"/>
-        <Label Content="A" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <Label Content="B" HorizontalAlignment="Left" Margin="166,8,0,0" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="118,10,0,0" TextWrapping="Wrap" Text="{Binding B}" VerticalAlignment="Top" Width="43" />
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,38,0,0" TextWrapping="Wrap" Text="{Binding C}" VerticalAlignment="Top" Width="128"/>
-        <Label Content="C" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
-        <Label Content="D" HorizontalAlignment="Left" Margin="241,35,0,0" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="193,37,0,0" TextWrapping="Wrap" Text="{Binding D}" VerticalAlignment="Top" Width="43" />
-        <Label Content="+" HorizontalAlignment="Left" Margin="87,10,0,0" VerticalAlignment="Top"/>
-        <Label Content="x" HorizontalAlignment="Left" Margin="166,35,0,0" VerticalAlignment="Top"/>
-        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,66,0,0" TextWrapping="Wrap" Text="{Binding E}" VerticalAlignment="Top" Width="203"/>
-        <Label Content="E" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top"/>
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:sampleApp="clr-namespace:SampleApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="400" Width="600" d:DataContext="{d:DesignInstance sampleApp:MainViewModel}">
+    <TabControl>
+        <TabItem Header="Simple">
+            <Grid>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,10,0,0" TextWrapping="Wrap" Text="{Binding A}" VerticalAlignment="Top" Width="43"/>
+                <Label Content="A" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                <Label Content="B" HorizontalAlignment="Left" Margin="166,8,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="118,10,0,0" TextWrapping="Wrap" Text="{Binding B}" VerticalAlignment="Top" Width="43" />
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,38,0,0" TextWrapping="Wrap" Text="{Binding C}" VerticalAlignment="Top" Width="128"/>
+                <Label Content="C" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+                <Label Content="D" HorizontalAlignment="Left" Margin="241,35,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="193,37,0,0" TextWrapping="Wrap" Text="{Binding D}" VerticalAlignment="Top" Width="43" />
+                <Label Content="+" HorizontalAlignment="Left" Margin="87,10,0,0" VerticalAlignment="Top"/>
+                <Label Content="x" HorizontalAlignment="Left" Margin="166,35,0,0" VerticalAlignment="Top"/>
+                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,66,0,0" TextWrapping="Wrap" Text="{Binding E}" VerticalAlignment="Top" Width="203"/>
+                <Label Content="E" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top"/>
 
-    </Grid>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Mortgage Payment Calculator">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                
+                <TextBlock Text="Amount: " />
+                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount}" />
+                
+                <TextBlock Text="Annual Interest Rate: " Grid.Row="1" Grid.Column="0" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate}" />
+                
+                <TextBlock Text="Loan Length: " Grid.Row="2" Grid.Column="0" />
+                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength}" />
+
+                <TextBlock Text="Payment Frequency: " Grid.Row="3" Grid.Column="0" />
+                <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
+                          SelectedItem="{Binding Mortgage.PaymentFrequency}"/>
+                
+                <TextBlock Text="Payments: " Grid.Row="4" Grid.Column="0" />
+                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments}" />
+            </Grid>
+        </TabItem>
+    </TabControl>
 </Window>
