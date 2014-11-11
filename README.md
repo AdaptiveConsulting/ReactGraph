@@ -31,13 +31,13 @@ We can then visualise the dependencies in dot format (using GraphViz for example
 
 For example:
 
-Default:
+Default:  
 ![image](https://cloud.githubusercontent.com/assets/453152/4478542/66b8150c-4986-11e4-9c89-bc3ebee38a87.png)
 
-Include roots:
+Include roots:  
 ![image](https://cloud.githubusercontent.com/assets/453152/4478556/7b6b1080-4986-11e4-9cd0-23e20cab3ead.png)
 
-Exclude formulas:
+Exclude formulas:  
 ![image](https://cloud.githubusercontent.com/assets/453152/4478562/8e67d308-4986-11e4-801d-10f25714e5d4.png)
 
 ### Icon
