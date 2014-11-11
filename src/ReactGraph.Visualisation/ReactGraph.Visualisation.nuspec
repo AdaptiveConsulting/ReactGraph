@@ -13,10 +13,10 @@
     <description>Solves the problem of dependent properties and cascading changes by allowing you to declare formula's for properties and ReactGraph will cascade changes in the most efficient way possible</description>
     <copyright>Copyright Adaptive Consulting 2014</copyright>
     <tags>Dependency graph INotifyPropertyChanged formula calculated visualization</tags>
+    <dependencies>
+       <dependency id="ReactGraph" version="$version$" />
+    </dependencies>
   </metadata>
-  <dependencies>
-    <dependency id="ReactGraph" version="$version$" />
-  </dependencies>
   <files>
     <file src="ReactGraph.Visualisation.dll" target="lib\net40" />
     <file src="ReactGraph.Visualisation.pdb" target="lib\net40" />
