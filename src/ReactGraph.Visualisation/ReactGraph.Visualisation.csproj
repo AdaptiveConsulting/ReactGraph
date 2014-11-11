@@ -54,6 +54,9 @@
       <Name>ReactGraph</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="ReactGraph.Visualisation.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -62,4 +65,12 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Target Name="AfterBuild" Condition="$(GitVersion_NuGetVersion)!=''">
+    <MakeDir Directories="$(SolutionDir)..\Artifacts" />
+    <ItemGroup>
+      <FilesToDelete Include="$(SolutionDir)..\Artifacts\ReactGraph.Visualisation.*.nupkg" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+    <Exec Command="$(SolutionDir)..\tools\nuget.exe pack $(ProjectDir)ReactGraph.Visualisation.nuspec -BasePath $(ProjectDir)bin\$(Configuration) -version $(GitVersion_NuGetVersion) -OutputDirectory $(SolutionDir)..\Artifacts" />
+  </Target>
 </Project>
