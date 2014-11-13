@@ -6,54 +6,67 @@
         xmlns:sampleApp="clr-namespace:SampleApp"
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="600" d:DataContext="{d:DesignInstance sampleApp:MainViewModel}">
-    <TabControl>
-        <TabItem Header="Simple">
-            <Grid>
-                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,10,0,0" TextWrapping="Wrap" Text="{Binding A}" VerticalAlignment="Top" Width="43"/>
-                <Label Content="A" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-                <Label Content="B" HorizontalAlignment="Left" Margin="166,8,0,0" VerticalAlignment="Top"/>
-                <TextBox HorizontalAlignment="Left" Height="23" Margin="118,10,0,0" TextWrapping="Wrap" Text="{Binding B}" VerticalAlignment="Top" Width="43" />
-                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,38,0,0" TextWrapping="Wrap" Text="{Binding C}" VerticalAlignment="Top" Width="128"/>
-                <Label Content="C" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
-                <Label Content="D" HorizontalAlignment="Left" Margin="241,35,0,0" VerticalAlignment="Top"/>
-                <TextBox HorizontalAlignment="Left" Height="23" Margin="193,37,0,0" TextWrapping="Wrap" Text="{Binding D}" VerticalAlignment="Top" Width="43" />
-                <Label Content="+" HorizontalAlignment="Left" Margin="87,10,0,0" VerticalAlignment="Top"/>
-                <Label Content="x" HorizontalAlignment="Left" Margin="166,35,0,0" VerticalAlignment="Top"/>
-                <TextBox HorizontalAlignment="Left" Height="23" Margin="33,66,0,0" TextWrapping="Wrap" Text="{Binding E}" VerticalAlignment="Top" Width="203"/>
-                <Label Content="E" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top"/>
+  <TabControl>
+    <TabItem Header="Simple">
+      <Grid>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,10,0,0" TextWrapping="Wrap" Text="{Binding A}" VerticalAlignment="Top" Width="43"/>
+        <Label Content="A" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="B" HorizontalAlignment="Left" Margin="166,8,0,0" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="118,10,0,0" TextWrapping="Wrap" Text="{Binding B}" VerticalAlignment="Top" Width="43" />
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,38,0,0" TextWrapping="Wrap" Text="{Binding C}" VerticalAlignment="Top" Width="128"/>
+        <Label Content="C" HorizontalAlignment="Left" Margin="10,36,0,0" VerticalAlignment="Top"/>
+        <Label Content="D" HorizontalAlignment="Left" Margin="241,35,0,0" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="193,37,0,0" TextWrapping="Wrap" Text="{Binding D}" VerticalAlignment="Top" Width="43" />
+        <Label Content="+" HorizontalAlignment="Left" Margin="87,10,0,0" VerticalAlignment="Top"/>
+        <Label Content="x" HorizontalAlignment="Left" Margin="166,35,0,0" VerticalAlignment="Top"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="33,66,0,0" TextWrapping="Wrap" Text="{Binding E}" VerticalAlignment="Top" Width="203"/>
+        <Label Content="E" HorizontalAlignment="Left" Margin="11,67,0,0" VerticalAlignment="Top"/>
 
-            </Grid>
-        </TabItem>
-        <TabItem Header="Mortgage Payment Calculator">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
-                
-                <TextBlock Text="Amount: " />
-                <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount}" />
-                
-                <TextBlock Text="Annual Interest Rate: " Grid.Row="1" Grid.Column="0" />
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate}" />
-                
-                <TextBlock Text="Loan Length: " Grid.Row="2" Grid.Column="0" />
-                <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength}" />
+      </Grid>
+    </TabItem>
+    <TabItem Header="Mortgage Payment Calculator">
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="50"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
 
-                <TextBlock Text="Payment Frequency: " Grid.Row="3" Grid.Column="0" />
-                <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
-                          SelectedItem="{Binding Mortgage.PaymentFrequency}"/>
-                
-                <TextBlock Text="Payments: " Grid.Row="4" Grid.Column="0" />
-                <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments}" />
-            </Grid>
-        </TabItem>
-    </TabControl>
+        <TextBlock Text="Amount: " Margin="3" />
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+
+        <TextBlock Text="Annual Interest Rate (%): " Grid.Row="1" Grid.Column="0" Margin="3" />
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+
+        <TextBlock Text="Loan Length (Yrs): " Grid.Row="2" Grid.Column="0" Margin="3" />
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+
+        <TextBlock Text="Payment Frequency: " Grid.Row="3" Grid.Column="0" Margin="3" />
+        <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
+                          SelectedItem="{Binding Mortgage.PaymentFrequency, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+
+        <TextBlock Text="# Payments: " Grid.Row="4" Grid.Column="0" Margin="3" />
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+        <TextBlock Text="Loan calculator will calculate both number of payments and loan length. Amount, interest rate and frequency will never be automatically updated" TextWrapping="Wrap" Margin="10" Grid.ColumnSpan="2" Grid.Row="5" Grid.Column="0" />
+
+        <TextBlock Text="Graph: " Grid.Row="7" Grid.Column="0" Margin="3" />
+        <StackPanel Grid.Row="7" Grid.Column="1">
+          <CheckBox Content="Show Roots: " IsChecked="{Binding ShowRoots}" />
+          <CheckBox Content="Show Formulas: " IsChecked="{Binding ShowFormulas}" />
+        </StackPanel>
+        <TextBox Grid.Row="8" IsReadOnly="True" Text="{Binding MortgageGraph}" Grid.ColumnSpan="2" Grid.Column="0"
+                 VerticalScrollBarVisibility="Auto" Margin="3" />
+      </Grid>
+    </TabItem>
+  </TabControl>
 </Window>
