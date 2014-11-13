@@ -39,7 +39,6 @@ namespace ReactGraph
             return graph.Clone(vertex => (INodeMetadata)new NodeMetadata(vertex.Data.VisualisationInfo, vertex.Data.ToString(), vertex.Id));
         }
 
-
         // TODO we need to profile and make sure we are optimal on this code path, it's the main hot path of the library
         public bool ValueHasChanged(object instance, string pathToChangedValue)
         {

@@ -9,11 +9,11 @@ namespace ReactGraph
     {
         readonly Expression<Func<T, T>> sourceExpression;
 
-        public FormulaDefinition(Expression<Func<T, T>> sourceExpression, string nodeId) : 
-            base(sourceExpression, NodeType.Formula, nodeId)
+        public FormulaDefinition(Expression<Func<T, T>> sourceExpression, string nodeId, string pathOverride = null) : 
+            base(sourceExpression, NodeType.Formula, nodeId, pathOverride)
         {
             this.sourceExpression = sourceExpression;
-            PathToParent = null;
+            PathFromParent = null;
             SourcePaths = new List<ISourceDefinition>();
         }
 
@@ -22,7 +22,7 @@ namespace ReactGraph
             throw new NotSupportedException("Formulas should always be re-evaluated with a provided current value.");
         }
 
-        public string PathToParent { get; private set; }
+        public string PathFromParent { get; private set; }
 
         public Func<T, T> CreateGetValueDelegateWithCurrentValue()
         {
@@ -32,5 +32,10 @@ namespace ReactGraph
         public List<ISourceDefinition> SourcePaths { get; private set; }
 
         public Type SourceType { get { return typeof (T); } }
+
+        public override string ToString()
+        {
+            return FullPath;
+        }
     }
 }

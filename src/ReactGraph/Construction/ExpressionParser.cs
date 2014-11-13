@@ -16,10 +16,12 @@ namespace ReactGraph.Construction
         class GetNodeVisitor : ExpressionVisitor
         {
             static readonly MethodInfo ToPathGenericMethod;
+            static readonly MethodInfo CreateThisGenericMethod;
 
             static GetNodeVisitor()
             {
                 ToPathGenericMethod = typeof(GetNodeVisitor).GetMethod("ToPath", BindingFlags.NonPublic | BindingFlags.Instance);
+                CreateThisGenericMethod = typeof(GetNodeVisitor).GetMethod("CreateThis", BindingFlags.NonPublic | BindingFlags.Instance);
             }
 
             readonly List<ISourceDefinition> subExpressions = new List<ISourceDefinition>();
@@ -52,6 +54,9 @@ namespace ReactGraph.Construction
             {
                 if (current != null)
                 {
+                    // Create node for 'this'
+                    currentTopLevelDefinition.SourcePaths.Add(MemberToSourcePath(node));
+
                     subExpressions.Add(current);
                     current = null;
                     currentTopLevelDefinition = null;
@@ -59,21 +64,28 @@ namespace ReactGraph.Construction
                 return base.VisitConstant(node);
             }
 
+            ISourceDefinition MemberToSourcePath(ConstantExpression node)
+            {
+                return (ISourceDefinition)CreateThisGenericMethod.MakeGenericMethod(node.Type).Invoke(this, new object[] { node });
+            }
+
             ISourceDefinition MemberToSourcePath(MemberExpression node)
             {
-                return (ISourceDefinition) ToPathGenericMethod.MakeGenericMethod(node.Type).Invoke(this, new object[] {node});
+                return (ISourceDefinition)ToPathGenericMethod.MakeGenericMethod(node.Type).Invoke(this, new object[] { node });
+            }
+
+            [UsedImplicitly]
+            ISourceDefinition CreateThis<T>(ConstantExpression node)
+            {
+                var getter = Expression.Lambda<Func<T>>(node);
+                return BuilderBase.CreateMemberDefinition(getter, null, false, false, pathOverride: "this");
             }
 
             [UsedImplicitly]
             ISourceDefinition ToPath<T>(MemberExpression node)
             {
                 var getter = Expression.Lambda<Func<T>>(node);
-                if (node.IsWritable())
-                    return BuilderBase.CreateMemberDefinition(getter, null, false);
-
-                var parameterExpression = Expression.Parameter(typeof(T));
-                var wrapped = Expression.Lambda<Func<T, T>>(node, new[] { parameterExpression });
-                return BuilderBase.CreateFormulaDefinition(wrapped, null, false);
+                return BuilderBase.CreateMemberDefinition(getter, null, false, node.IsWritable());
             }
         }
     }

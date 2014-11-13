@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -283,6 +284,12 @@ namespace ReactGraph.Graph
         {
             var vertex = verticies[data];
             return vertex.Successors;
+        }
+
+        public IEnumerable<Edge<T>> PredecessorsOf(T data)
+        {
+            var vertex = verticies[data];
+            return vertex.Predecessors;
         }
 
         public void DeleteVertex(T data)

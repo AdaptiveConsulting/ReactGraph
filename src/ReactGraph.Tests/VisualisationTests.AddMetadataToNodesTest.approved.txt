@@ -2,9 +2,9 @@
      Addition [label="+", fillcolor=".7 .3 1.0", style="filled", shape="octagon"];
      C [label="c.Value", fillcolor=".7 .3 .5", shape="box", style="filled,rounded"];
      __1 [label="a.Value", shape="box", style="filled,rounded"];
-     __3 [label="b.Value", shape="box", style="filled,rounded"];
+     __4 [label="b.Value", shape="box", style="filled,rounded"];
 
     Addition -> C;
     __1 -> Addition;
-    __3 -> Addition;
+    __4 -> Addition;
 }

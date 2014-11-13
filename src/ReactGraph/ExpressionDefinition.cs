@@ -6,11 +6,11 @@ namespace ReactGraph
 {
     public class ExpressionDefinition : IDefinitionIdentity
     {
-        public ExpressionDefinition(Expression expression, NodeType nodeType, string nodeName)
+        public ExpressionDefinition(Expression expression, NodeType nodeType, string nodeName, string pathOverride = null)
         {
             NodeType = nodeType;
             NodeName = nodeName;
-            FullPath = ExpressionStringBuilder.ToString(expression);
+            FullPath = pathOverride ?? ExpressionStringBuilder.ToString(expression);
         }
 
         public string FullPath { get; private set; }

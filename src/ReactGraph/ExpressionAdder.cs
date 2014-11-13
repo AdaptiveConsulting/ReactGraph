@@ -43,6 +43,16 @@ namespace ReactGraph
             var targetAsSource = target as ISourceDefinition<T>;
             if (targetAsSource != null)
                 AddSourcePathExpressions(targetAsSource, (IValueSource) targetNode, onError);
+
+            // Formulas should treat all arguments are directly referenced
+            if (source.NodeType == NodeType.Formula)
+            {
+                var successorsOf = graph.PredecessorsOf(sourceNode);
+                foreach (var edge in successorsOf)
+                {
+                    edge.Source.Data.VisualisationInfo.IsDirectlyReferenced = true;
+                }
+            }
         }
 
         void AddSourcePathExpressions(ISourceDefinition sourceDefinition, IValueSource sourceNode, Action<Exception> onError)
@@ -121,11 +131,8 @@ namespace ReactGraph
                     }
 
                     var shouldTrackChanges = !memberDefinition.SourceType.IsValueType;
-                    var visualisationInfo = new VisualisationInfo(NodeType.Member)
-                    {
-                        IsRoot = !memberDefinition.SourcePaths.Any()
-                    };
-                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, memberDefinition.PathToParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
+                    var visualisationInfo = new VisualisationInfo(NodeType.Member, IsRoot(memberDefinition));
+                    return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, target.FullPath, memberDefinition.PathFromParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
                 case NodeType.Action:
                     return new WriteOnlyNode<T>(target.CreateSetValueDelegate(), onError, target.FullPath);
                 default:
@@ -139,26 +146,27 @@ namespace ReactGraph
             {
                 case NodeType.Formula:
                     var getValue = source.CreateGetValueDelegateWithCurrentValue();
-                    return new ReadOnlyNodeInfo<T>(getValue, source.FullPath, source.PathToParent, nodeRepository, false, onError, new VisualisationInfo(NodeType.Formula));
+                    return new ReadOnlyNodeInfo<T>(getValue, source.FullPath, source.PathFromParent, nodeRepository, false, onError, new VisualisationInfo(NodeType.Formula, false));
                 case NodeType.Member:
                     var memberDefinition = (MemberDefinition<T>)source;
                     var getValueDelegate = memberDefinition.CreateGetValueDelegate();
-                    var setValueDelegate = memberDefinition.CreateSetValueDelegate();
 
                     var shouldTrackChanges = !source.SourceType.IsValueType;
-                    var visualisationInfo = new VisualisationInfo(NodeType.Member)
-                    {
-                        IsRoot = !memberDefinition.SourcePaths.Any()
-                    };
+                    var visualisationInfo = new VisualisationInfo(NodeType.Member, IsRoot(memberDefinition));
                     if (memberDefinition.IsWritable)
                     {
-                        return new ReadWriteNode<T>(getValueDelegate, setValueDelegate, source.FullPath, memberDefinition.PathToParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
+                        return new ReadWriteNode<T>(getValueDelegate, memberDefinition.CreateSetValueDelegate(), source.FullPath, memberDefinition.PathFromParent, visualisationInfo, nodeRepository, shouldTrackChanges, onError);
                     }
 
-                    return new ReadOnlyNodeInfo<T>(_ => getValueDelegate(), memberDefinition.FullPath, memberDefinition.PathToParent, nodeRepository, shouldTrackChanges, onError, visualisationInfo);
+                    return new ReadOnlyNodeInfo<T>(_ => getValueDelegate(), memberDefinition.FullPath, memberDefinition.PathFromParent, nodeRepository, shouldTrackChanges, onError, visualisationInfo);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+        }
+
+        static bool IsRoot<T>(MemberDefinition<T> memberDefinition)
+        {
+            return !memberDefinition.SourcePaths.Any(s => s.FullPath != "this");
         }
 
         IValueSource CreateSourceNode(ISourceDefinition source, Action<Exception> onError)

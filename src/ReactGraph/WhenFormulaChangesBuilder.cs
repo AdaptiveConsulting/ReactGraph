@@ -12,7 +12,7 @@ namespace ReactGraph
         {
             this.dependencyEngine = dependencyEngine;
             if (sourceFunction.IsWritable())
-                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true);
+                sourceDefinition = CreateMemberDefinition(sourceFunction, nodeId, true, true);
             else
                 sourceDefinition = CreateFormulaDefinition(sourceFunction, nodeId, true);
         }

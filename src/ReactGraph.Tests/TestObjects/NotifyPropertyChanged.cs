@@ -3,7 +3,7 @@ using ReactGraph.Tests.Annotations;
 
 namespace ReactGraph.Tests.TestObjects
 {
-    class NotifyPropertyChanged : INotifyPropertyChanged
+    public class NotifyPropertyChanged : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
