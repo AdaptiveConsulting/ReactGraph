@@ -1,4 +1,4 @@
-![Logo](https://raw.githubusercontent.com/AdaptiveConsulting/ReactGraph/master/icon/package_icon.png) ReactGraph
+![Logo](resources/package_icon.png) ReactGraph
 ==========
 
 ReactGraph is a library to make change propagation easy in .NET. It allows you to define formulas targeting properties and when any value used in that formula is changed it will be re-evaluated.
