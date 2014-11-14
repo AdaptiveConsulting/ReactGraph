@@ -38,7 +38,10 @@ namespace ReactGraph.Tests
 
             var rootNode = paymentScheduleNode.SourcePaths.Single();
             rootNode.FullPath.ShouldBe("viewModel");
-            rootNode.SourcePaths.ShouldBeEmpty();
+
+            var thisNode = rootNode.SourcePaths.Single();
+            thisNode.FullPath.ShouldBe("this");
+            thisNode.SourcePaths.ShouldBeEmpty();
         }
 
         [Fact]
@@ -58,7 +61,10 @@ namespace ReactGraph.Tests
 
             var rootNode = paymentScheduleNode.SourcePaths.Single();
             rootNode.FullPath.ShouldBe("viewModel");
-            rootNode.SourcePaths.ShouldBeEmpty();
+
+            var thisNode = rootNode.SourcePaths.Single();
+            thisNode.FullPath.ShouldBe("this");
+            thisNode.SourcePaths.ShouldBeEmpty();
         }
 
         [Fact]
@@ -72,7 +78,10 @@ namespace ReactGraph.Tests
             valueNode.FullPath.ShouldBe("simple.Value");
             var rootNode = valueNode.SourcePaths.Single();
             rootNode.FullPath.ShouldBe("simple");
-            rootNode.SourcePaths.ShouldBeEmpty();
+
+            var thisNode = rootNode.SourcePaths.Single();
+            thisNode.FullPath.ShouldBe("this");
+            thisNode.SourcePaths.ShouldBeEmpty();
         }
 
         [Fact]
@@ -87,12 +96,19 @@ namespace ReactGraph.Tests
             valueNode.FullPath.ShouldBe("simple.Value");
             var rootNode = valueNode.SourcePaths.Single();
             rootNode.FullPath.ShouldBe("simple");
-            rootNode.SourcePaths.ShouldBeEmpty();
+
+            var thisNode = rootNode.SourcePaths.Single();
+            thisNode.FullPath.ShouldBe("this");
+            thisNode.SourcePaths.ShouldBeEmpty();
+
             var valueNode2 = node[1];
             valueNode2.FullPath.ShouldBe("simple2.Value");
             var rootNode2 = valueNode2.SourcePaths.Single();
             rootNode2.FullPath.ShouldBe("simple2");
-            rootNode2.SourcePaths.ShouldBeEmpty();
+
+            thisNode = rootNode2.SourcePaths.Single();
+            thisNode.FullPath.ShouldBe("this");
+            thisNode.SourcePaths.ShouldBeEmpty();
         }
 
         int Add(int value, int value2)

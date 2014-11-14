@@ -2,12 +2,15 @@ namespace ReactGraph.NodeInfo
 {
     public class VisualisationInfo
     {
-        public VisualisationInfo(NodeType nodeType)
+        readonly bool isRoot;
+
+        public VisualisationInfo(NodeType nodeType, bool isRoot)
         {
-            this.NodeType = nodeType;
+            this.isRoot = isRoot;
+            NodeType = nodeType;
         }
 
-        public bool IsRoot { get; set; }
+        public bool IsRoot { get { return isRoot && !IsDirectlyReferenced; } }
 
         public bool IsDirectlyReferenced { get; set; }
 

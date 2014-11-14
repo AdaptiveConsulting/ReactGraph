@@ -1,15 +1,15 @@
 ﻿digraph  {
      __1 [label="(foo.A + foo.B)", fillcolor="lightblue", style="filled", shape="octagon"];
      __2 [label="foo.C", shape="box", style="filled,rounded"];
-     __6 [label="(foo.A + foo.C)", fillcolor="lightblue", style="filled", shape="octagon"];
+     __7 [label="(foo.A + foo.C)", fillcolor="lightblue", style="filled", shape="octagon"];
      __3 [label="foo.A", shape="box", style="filled,rounded"];
-     __5 [label="foo.B", shape="box", style="filled,rounded"];
-     __7 [label="foo.D", shape="box", style="filled,rounded"];
+     __6 [label="foo.B", shape="box", style="filled,rounded"];
+     __8 [label="foo.D", shape="box", style="filled,rounded"];
 
     __1 -> __2;
-    __2 -> __6;
-    __6 -> __7;
+    __2 -> __7;
+    __7 -> __8;
     __3 -> __1;
-    __3 -> __6;
-    __5 -> __1;
+    __3 -> __7;
+    __6 -> __1;
 }

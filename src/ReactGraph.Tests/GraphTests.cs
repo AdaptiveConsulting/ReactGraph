@@ -136,11 +136,13 @@ namespace ReactGraph.Tests
                         mortgage.PaymentFrequency),
                         ex => { });
 
-            Console.WriteLine(engine.ToDotFormat());
+            var dotFormat = engine.ToDotFormat();
+            Console.WriteLine(dotFormat);
 
             engine.ValueHasChanged(mortgage, "PaymentFrequency");
 
             mortgage.PaymentAmount.ShouldBe(1225, 1);
+            engine.ToDotFormat().ShouldBe(dotFormat);
         }
 
         public double CalculatePayments(

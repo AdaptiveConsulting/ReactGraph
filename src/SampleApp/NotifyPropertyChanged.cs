@@ -1,14 +1,15 @@
 ﻿using System.ComponentModel;
-using ReactGraph.Tests.Annotations;
+using System.Runtime.CompilerServices;
+using ReactGraph.Properties;
 
-namespace ReactGraph.Tests.TestObjects
+namespace SampleApp
 {
     public class NotifyPropertyChanged : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        [NotifyPropertyChangedInvocator]
-        protected void OnPropertyChanged(string propertyName)
+        [NotifyPropertyChangedInvocator, UsedImplicitly]
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));

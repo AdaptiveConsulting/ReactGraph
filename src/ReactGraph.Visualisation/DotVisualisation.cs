@@ -21,6 +21,11 @@ namespace ReactGraph.Visualisation
             var labels = new StringBuilder();
             var graphDefinition = new StringBuilder();
             var currentGraph = graph;
+            var thisNodes = graph.Verticies.Where(v => v.Data.Label == "this").ToArray();
+            foreach (var source in thisNodes)
+            {
+                currentGraph.DeleteVertex(source.Data);
+            }
             if (!visualisationOptions.ShowFormulas)
             {
                 currentGraph = ExcludeFormulaNodes(currentGraph);

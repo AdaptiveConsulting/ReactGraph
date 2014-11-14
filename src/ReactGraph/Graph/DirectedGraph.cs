@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -160,15 +161,16 @@ namespace ReactGraph.Graph
             if (subGraph.EdgesCount > 0)
             {
                 // TODO This is now quite inefficient, but only happens if there are cycles
-                var cycles = DetectCyles();
+                var clone = Clone(v => v.Data);
+                var cycles = clone.DetectCyles();
                 foreach (var cycle in cycles)
                 {
                     var first = cycle.First();
                     var last = cycle.Last();
                     var cycleEdge = last.Predecessors.First(p => p.Source == first);
-                    subGraph.RemoveEdge(cycleEdge);
+                    clone.RemoveEdge(cycleEdge);
                 }
-                return TopologicalSort(origin, SubGraph(origin));
+                return TopologicalSort(origin, clone.SubGraph(origin));
             }
 
             return result;
@@ -283,6 +285,12 @@ namespace ReactGraph.Graph
         {
             var vertex = verticies[data];
             return vertex.Successors;
+        }
+
+        public IEnumerable<Edge<T>> PredecessorsOf(T data)
+        {
+            var vertex = verticies[data];
+            return vertex.Predecessors;
         }
 
         public void DeleteVertex(T data)

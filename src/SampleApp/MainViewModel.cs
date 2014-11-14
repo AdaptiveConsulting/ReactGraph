@@ -1,29 +1,19 @@
 ﻿using System;
-using System.ComponentModel;
 using System.IO;
-using System.Runtime.CompilerServices;
-
-using PropertyChanged;
 using ReactGraph;
-using ReactGraph.Properties;
 using ReactGraph.Visualisation;
 
 namespace SampleApp
 {
-    [ImplementPropertyChanged]
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : NotifyPropertyChanged
     {
-        DependencyEngine mortgageEngine;
+        readonly DependencyEngine mortgageEngine;
+        readonly DependencyEngine graphOptionsEngine;
         readonly DependencyEngine engine;
-        int a;
-        int b;
-        int c;
-        int d;
-
 
         public MainViewModel()
         {
-            this.Mortgage = new MortgageViewModel();
+            Mortgage = new MortgageViewModel();
             engine = new DependencyEngine();
 
             engine.Assign(() => C).From(() => Add(A, B), e => { });
@@ -35,85 +25,66 @@ namespace SampleApp
             engine.LogTransitionsInDotFormat(Path.Combine(Environment.CurrentDirectory, "Transitions.log"));
 
             mortgageEngine = new DependencyEngine();
-            engine.Assign(() => Mortgage.Payments)
-                .From(() => Mortgage.CalculatePayments(
+            mortgageEngine
+                .Assign(() => Mortgage.Payments)
+                .From(() => MortgageCalculations.CalculatePayments(
                         Mortgage.Amount,
                         Mortgage.InterestRate,
                         Mortgage.LoanLength,
                         Mortgage.PaymentFrequency),
                         ex => { });
 
-            engine.Assign(() => Mortgage.LoanLength)
-                .From(() => Mortgage.CalculateLength(
+            mortgageEngine
+                .Assign(() => Mortgage.LoanLength)
+                .From(() => MortgageCalculations.CalculateLength(
                         Mortgage.Amount,
                         Mortgage.Payments,
                         Mortgage.InterestRate,
                         Mortgage.PaymentFrequency),
                         ex => { });
+
+            graphOptionsEngine = new DependencyEngine();
+            graphOptionsEngine
+                .Assign(() => MortgageGraph)
+                .From(() => CreateMortgageGraph(ShowRoots, ShowFormulas), ex => { });
+            MortgageGraph = CreateMortgageGraph(ShowRoots, ShowFormulas);
         }
 
-        int Multiply(int i, int j)
+        string CreateMortgageGraph(bool showRoots, bool showFormulas)
         {
-            return i*j;
+            return mortgageEngine.ToDotFormat(options: new VisualisationOptions
+            {
+                ShowFormulas = showFormulas,
+                ShowRoot = showRoots
+            });
         }
 
-        private int Add(int i, int j)
+        public bool ShowFormulas { get; set; }
+
+        public bool ShowRoots { get; set; }
+
+        static int Multiply(int i, int j)
+        {
+            return i * j;
+        }
+
+        private static int Add(int i, int j)
         {
             throw new Exception("Boom");
-            return i + j;
         }
 
-        public int A
-        {
-            get { return a; }
-            set
-            {
-                a = value;
-                engine.ValueHasChanged(this, "A");
-            }
-        }
+        public int A { get; set; }
 
-        public int B
-        {
-            get { return b; }
-            set
-            {
-                b = value;
-                engine.ValueHasChanged(this, "B");
-            }
-        }
+        public int B { get; set; }
 
-        public int C
-        {
-            get { return c; }
-            set
-            {
-                c = value;
-                engine.ValueHasChanged(this, "C");
-            }
-        }
+        public int C { get; set; }
 
-        public int D
-        {
-            get { return d; }
-            set
-            {
-                d = value;
-                engine.ValueHasChanged(this, "D");
-            }
-        }
+        public int D { get; set; }
 
         public int E { get; set; }
 
         public MortgageViewModel Mortgage { get; private set; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        [NotifyPropertyChangedInvocator]
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public string MortgageGraph { get; private set; }
     }
 }

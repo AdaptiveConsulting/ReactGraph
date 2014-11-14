@@ -73,7 +73,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MortgageCalculations.cs" />
     <Compile Include="MortgageViewModel.cs" />
+    <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="PaymentFrequency.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>

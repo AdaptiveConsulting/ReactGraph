@@ -23,5 +23,17 @@ namespace ReactGraph
 
             return true;
         }
+
+        public static bool IsRoot(this LambdaExpression expression)
+        {
+            var memberExpression = expression.Body as MemberExpression;
+            return IsRoot(memberExpression);
+        }
+
+        public static bool IsRoot(this MemberExpression memberExpression)
+        {
+            if (memberExpression == null) return false;
+            return memberExpression.Expression is ConstantExpression;
+        }
     }
 }

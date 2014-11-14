@@ -10,14 +10,14 @@ namespace ReactGraph
         readonly Expression<Func<T>> targetMemberExpression;
         readonly Expression<Action<T>> assignmentLambda;
 
-        public MemberDefinition(Expression<Func<T>> targetMemberExpression, Expression<Action<T>> assignmentLambda, string targetMemberId) : 
-            base(targetMemberExpression, NodeType.Member, targetMemberId)
+        public MemberDefinition(Expression<Func<T>> targetMemberExpression, Expression<Action<T>> assignmentLambda, string targetMemberId, bool isWritable, string pathOverride = null) :
+            base(targetMemberExpression, NodeType.Member, targetMemberId, pathOverride)
         {
             this.targetMemberExpression = targetMemberExpression;
             this.assignmentLambda = assignmentLambda;
-            PathToParent = ((MemberExpression) targetMemberExpression.Body).Member.Name;
+            PathFromParent = targetMemberExpression.Body is MemberExpression ? ((MemberExpression)targetMemberExpression.Body).Member.Name : null;
             SourcePaths = new List<ISourceDefinition>();
-            IsWritable = targetMemberExpression.IsWritable();
+            IsWritable = isWritable;
         }
 
         public Func<T, T> CreateGetValueDelegateWithCurrentValue()
@@ -30,7 +30,7 @@ namespace ReactGraph
             return targetMemberExpression.Compile();
         }
 
-        public string PathToParent { get; private set; }
+        public string PathFromParent { get; private set; }
 
         public Action<T> CreateSetValueDelegate()
         {
@@ -42,5 +42,10 @@ namespace ReactGraph
         public Type SourceType { get { return typeof (T); } }
 
         public bool IsWritable { get; private set; }
+
+        public override string ToString()
+        {
+            return FullPath;
+        }
     }
 }
