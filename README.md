@@ -12,16 +12,16 @@ Feedback welcome!
 ## A simple example - mortgage calculator
 Our sample app includes a mortgage calculator which allows you to edit both payment amount and the loan length. Doing this can be problematic normally because it is cyclic in nature, because ReactGraph understands this it can break it apart.
 
-![README](resources\README.png)
+![README](resources/README.png)
 
 If I change the payment amount then I see the impact on the length of the loan  
-![README1](resources\README1.png)
+![README1](resources/README1.png)
 
 We can then visualise the dependencies between the different fields and how they are related:  
-![README3](resources\README3.png)
+![README3](resources/README3.png)
 
 We can also turn off formulas so we can just see the dependencies between fields  
-![README4](resources\README4.png)
+![README4](resources/README4.png)
 
 ## GraphViz Online Viewers
 Currently ReactGraph just outputs graphs in [DOT](http://en.wikipedia.org/wiki/DOT_(graph_description_language)) format. You need to use an online viewer to then visualise the graph. 
