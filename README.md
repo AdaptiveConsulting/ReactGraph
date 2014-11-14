@@ -17,7 +17,7 @@ Our sample app includes a mortgage calculator which allows you to edit both paym
 If I change the payment amount then I see the impact on the length of the loan  
 ![README1](resources/README1.png)
 
-We can then visualise the dependencies between the different fields and how they are related:  
+We can then visualise the dependencies between the different fields and how they are related (using the ReactGraph.Visualisation library `.ToDotFormat()` extension method):  
 ![README3](resources/README3.png)
 
 We can also turn off formulas so we can just see the dependencies between fields  
