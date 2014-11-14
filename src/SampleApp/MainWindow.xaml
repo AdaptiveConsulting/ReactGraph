@@ -55,9 +55,9 @@
         <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
                           SelectedItem="{Binding Mortgage.PaymentFrequency}" Margin="3" />
 
-        <TextBlock Text="# Payments: " Grid.Row="4" Grid.Column="0" Margin="3" />
+        <TextBlock Text="Payment amount: " Grid.Row="4" Grid.Column="0" Margin="3" />
         <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments}" Margin="3" />
-        <TextBlock Text="Loan calculator will calculate both number of payments and loan length. Amount, interest rate and frequency will never be automatically updated" TextWrapping="Wrap" Margin="10" Grid.ColumnSpan="2" Grid.Row="5" Grid.Column="0" />
+        <TextBlock Text="Loan calculator will calculate both payment amount and loan length. Amount, interest rate and frequency will never be automatically updated" TextWrapping="Wrap" Margin="10" Grid.ColumnSpan="2" Grid.Row="5" Grid.Column="0" />
 
         <TextBlock Text="Graph: " Grid.Row="7" Grid.Column="0" Margin="3" />
         <StackPanel Grid.Row="7" Grid.Column="1">

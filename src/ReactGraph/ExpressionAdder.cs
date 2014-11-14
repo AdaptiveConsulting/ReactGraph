@@ -68,7 +68,6 @@ namespace ReactGraph
                     definitionToNodeLookup.Add(sourcePath, pathNode);
                 }
 
-                pathNode.VisualisationInfo.IsDirectlyReferenced = false;
                 graph.AddEdge(pathNode, sourceNode, sourcePath.NodeName, sourceDefinition.NodeName);
                 AddSourcePathExpressions(sourcePath, pathNode, onError);
             }

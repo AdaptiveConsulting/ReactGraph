@@ -65,7 +65,7 @@ namespace SampleApp
 
         static int Multiply(int i, int j)
         {
-            return i*j;
+            return i * j;
         }
 
         private static int Add(int i, int j)
