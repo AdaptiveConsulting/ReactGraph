@@ -43,20 +43,20 @@
         </Grid.RowDefinitions>
 
         <TextBlock Text="Amount: " Margin="3" />
-        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+        <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Mortgage.Amount}" Margin="3" />
 
         <TextBlock Text="Annual Interest Rate (%): " Grid.Row="1" Grid.Column="0" Margin="3" />
-        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Mortgage.InterestRate}" Margin="3" />
 
         <TextBlock Text="Loan Length (Yrs): " Grid.Row="2" Grid.Column="0" Margin="3" />
-        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Mortgage.LoanLength}" Margin="3" />
 
         <TextBlock Text="Payment Frequency: " Grid.Row="3" Grid.Column="0" Margin="3" />
         <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Mortgage.PaymentFrequencies}"
-                          SelectedItem="{Binding Mortgage.PaymentFrequency, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+                          SelectedItem="{Binding Mortgage.PaymentFrequency}" Margin="3" />
 
         <TextBlock Text="# Payments: " Grid.Row="4" Grid.Column="0" Margin="3" />
-        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments, UpdateSourceTrigger=PropertyChanged}" Margin="3" />
+        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Mortgage.Payments}" Margin="3" />
         <TextBlock Text="Loan calculator will calculate both number of payments and loan length. Amount, interest rate and frequency will never be automatically updated" TextWrapping="Wrap" Margin="10" Grid.ColumnSpan="2" Grid.Row="5" Grid.Column="0" />
 
         <TextBlock Text="Graph: " Grid.Row="7" Grid.Column="0" Margin="3" />
