@@ -178,3 +178,4 @@ Artifacts/*
 *.received.txt
 src/lib/GraphViz/*
 src/Output/
+src/ReactGraph.sln.ide/
