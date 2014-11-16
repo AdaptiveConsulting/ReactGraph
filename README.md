@@ -61,5 +61,8 @@ Currently ReactGraph just outputs graphs in [DOT](http://en.wikipedia.org/wiki/D
 [http://stamm-wilbrandt.de/GraphvizFiddle/](http://stamm-wilbrandt.de/GraphvizFiddle/)  
 [http://sandbox.kidstrythisathome.com/erdos/](http://sandbox.kidstrythisathome.com/erdos/)
 
+## Other resources
+[http://weareadaptive.com/blog/2014/11/16/released-reactgraph-library/](Introduction Blog Post)
+
 ### Icon
 Network by Murali Krishna from The Noun Project
