@@ -7,7 +7,7 @@ What makes ReactGraph useful is that it does not blindly react to changes, when 
 
 It is basically *excel formulas* in .net, except better.
 
-ReactGraph was built because of pain building complex forms with many fields calculating defaults based on other fields changing common in larger line of buisiness applications. This library has not been used in production yet and we are putting it out there to see if people like the idea/implementation. 
+ReactGraph was built because of pain building complex forms with many fields calculating defaults based on other fields changing common in larger line of business applications. This library has not been used in production yet and we are putting it out there to see if people like the idea/implementation. 
 
 Feedback welcome!
 
